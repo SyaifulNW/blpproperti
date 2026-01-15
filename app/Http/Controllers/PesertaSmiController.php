@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class PesertaSmiController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $query = \App\Models\PesertaSmi::query();
+
+        // Filter SPP
+        if ($request->has('filter_spp_month') && $request->has('filter_spp_status') && $request->filter_spp_month && $request->filter_spp_status !== null) {
+            $month = $request->filter_spp_month;
+            $status = $request->filter_spp_status; // 1 = lunas, 0 = belum
+            
+            // Validate month 1-12
+            if (in_array($month, range(1, 12))) {
+                $query->where('spp_' . $month, $status);
+
+                // Ensure the month is within the user's active period
+                // Logic: 
+                // IF filtering for Month M. 
+                // We want users whose ACTIVE PERIOD covers Month M.
+                // Since this system uses 12 specific columns (Jan-Dec) without specific year links in the columns themselves,
+                // we generally check if the month exists in the range. 
+                // However, doing this strictly in SQL across years is complex without a year filter.
+                // BUT, if the user explicitly also filters by YEAR, we can be precise.
+                
+                // If filtering by YEAR + MONTH:
+                if($request->has('filter_year') && $request->filter_year) {
+                    // Start <= SelectedYear-Month-End AND End >= SelectedYear-Month-Start
+                    // Essentially: was the user active in that specific Month of that Year?
+                     $dateStart = \Carbon\Carbon::createFromDate($request->filter_year, $month, 1)->startOfMonth()->format('Y-m-d');
+                     $dateEnd = \Carbon\Carbon::createFromDate($request->filter_year, $month, 1)->endOfMonth()->format('Y-m-d');
+                     
+                     $query->whereDate('tanggal_masuk', '<=', $dateEnd)
+                           ->whereDate('tanggal_selesai', '>=', $dateStart);
+
+                } else {
+                    // General Logic (Any Year) checks: Is Month M inside the range [Start, End]?
+                    $query->where(function($q) use ($month) {
+                        // Pass if dates are null (fallback to showing)
+                        $q->whereNull('tanggal_masuk')
+                          ->orWhereNull('tanggal_selesai')
+                          // Case 1: Same Year (Start <= M <= End)
+                          ->orWhere(function($sub) use ($month) {
+                              $sub->whereRaw('YEAR(tanggal_masuk) = YEAR(tanggal_selesai)')
+                                  ->whereRaw('MONTH(tanggal_masuk) <= ?', [$month])
+                                  ->whereRaw('MONTH(tanggal_selesai) >= ?', [$month]);
+                          })
+                          // Case 2: Different Years
+                          ->orWhere(function($sub) use ($month) {
+                              $sub->whereRaw('YEAR(tanggal_masuk) < YEAR(tanggal_selesai)')
+                                  ->where(function($nested) use ($month) {
+                                      // If gap > 1 year, user is active for ALL months in the middle years
+                                      $nested->whereRaw('YEAR(tanggal_selesai) - YEAR(tanggal_masuk) > 1')
+                                             // If gap is 1 year (adjacent), M must be >= StartMonth (End of first year)
+                                             // OR M <= EndMonth (Start of second year)
+                                             ->orWhere(function($check) use ($month) {
+                                                 $check->whereRaw('MONTH(tanggal_masuk) <= ?', [$month])
+                                                       ->orWhereRaw('MONTH(tanggal_selesai) >= ?', [$month]);
+                                             });
+                                  });
+                          });
+                    });
+                }
+            }
+        }
+
+        // Filter Tahun (based on tanggal_masuk)
+        if ($request->has('filter_year') && $request->filter_year) {
+            $query->whereYear('tanggal_masuk', $request->filter_year);
+        }
+        // sort pembayaran
+        if ($request->has('sort_spp')) {
+            $column = 'spp_' . $request->sort_spp; // e.g., spp_1
+            $direction = $request->get('sort_dir', 'desc'); // desc = lunas (1) first
+            $query->orderBy($column, $direction);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $data = $query->get();
+        // Get list of CS for dropdown (using roles if possible, or just all users for now)
+        // Assuming CS have a role 'CS' or just get all users
+        $listCs = \App\Models\User::whereIn('role', ['cs-mbc', 'cs-smi'])->orderBy('name')->get();
+
+        return view('admin.peserta-smi.index', compact('data', 'listCs'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'one_on_one_coaching' => 'nullable|date',
+        ]);
+        
+        // Cek limit 5 orang per hari
+        if ($request->one_on_one_coaching) {
+             $date = \Carbon\Carbon::parse($request->one_on_one_coaching)->format('Y-m-d');
+             $count = \App\Models\PesertaSmi::whereDate('one_on_one_coaching', $date)->count();
+             if ($count >= 5) {
+                 return redirect()->back()->with('error', 'Kuota One On One Coaching untuk tanggal ' . $date . ' sudah penuh (Maksimal 5 orang).');
+             }
+        }
+
+        $csName = null;
+        if($request->closing_cs_id) {
+            $user = \App\Models\User::find($request->closing_cs_id);
+            $csName = $user ? $user->name : null;
+        }
+
+        \App\Models\PesertaSmi::create($request->all() + [
+            'created_by' => auth()->id(),
+            'cs_name' => $csName
+        ]);
+
+        return redirect()->back()->with('success', 'Data Peserta SMI berhasil ditambahkan.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $peserta = \App\Models\PesertaSmi::findOrFail($id);
+        
+        // Validate date limit only if date changed
+        if ($request->one_on_one_coaching && $request->one_on_one_coaching != $peserta->one_on_one_coaching) {
+             $date = \Carbon\Carbon::parse($request->one_on_one_coaching)->format('Y-m-d');
+             // Count existing excluding self
+             $count = \App\Models\PesertaSmi::whereDate('one_on_one_coaching', $date)
+                        ->where('id', '!=', $id)
+                        ->count();
+             if ($count >= 5) {
+                 return redirect()->back()->with('error', 'Kuota One On One Coaching untuk tanggal ' . $date . ' sudah penuh (Maksimal 5 orang).');
+             }
+        }
+
+        // Handle checkboxes not present in request (unchecked)
+        $data = $request->all();
+        // Handle checkboxes for SPP 1-12
+        $sppFields = [];
+        for($i=1; $i<=12; $i++) {
+            $sppFields[] = 'spp_' . $i;
+        }
+        
+        foreach($sppFields as $spp) {
+            $data[$spp] = $request->has($spp) ? 1 : 0;
+        }
+        
+        if($request->closing_cs_id) {
+            $user = \App\Models\User::find($request->closing_cs_id);
+            $data['cs_name'] = $user ? $user->name : null;
+        }
+
+        $peserta->update($data);
+
+        return redirect()->back()->with('success', 'Data Peserta SMI berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        \App\Models\PesertaSmi::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'Data Peserta SMI berhasil dihapus.');
+    }
+}
