@@ -19,7 +19,18 @@ class DailyController extends Controller
         $userId  = auth()->id();
 
         // Ambil master aktivitas, dikelompokkan per kategori (key = categories_id)
-        $activities = Activity::orderBy('categories_id')->get()->groupBy('categories_id');
+        $userRole = strtolower(auth()->user()->role);
+        $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
+
+        if ($isCs) {
+            $activities = Activity::whereHas('kategori', function($q) {
+                $q->where('nama', 'Intake Activity');
+            })->get()->groupBy('categories_id');
+        } else {
+            $activities = Activity::whereHas('kategori', function($q) {
+                $q->where('nama', '!=', 'Intake Activity');
+            })->orderBy('categories_id')->get()->groupBy('categories_id');
+        }
 
         // Ambil realisasi user untuk TANGGAL yang dipilih (dipakai saat render form)
         $daily = DailyActiviti::where('user_id', $userId)
@@ -50,6 +61,7 @@ class DailyController extends Controller
             'Aktivitas Memprospek' => 20,
             'Aktivitas Closing' => 40,
             'Aktivitas Merawat Customer' => 10,
+            'Intake Activity' => 100,
         ];
 
         // Hitung rekap KPI per kategori (kpiData) dan total KPI akhir

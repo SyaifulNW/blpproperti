@@ -26,12 +26,20 @@
 
 
 
+        @php
+            $userRole = strtolower(auth()->user()->role);
+            $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
+        @endphp
+
         @foreach($activities as $kategoriId => $list)
+            @php
+                $kategoriNama = $list->first()->kategori->nama ?? 'Tanpa Kategori';
+            @endphp
             <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <span>{{ $list->first()->kategori->nama ?? 'Tanpa Kategori' }}</span>
+                <span>{{ $isCs ? 'RANGKUMAN INTAKE ACTIVITY' : $kategoriNama }}</span>
 
-                @if(($list->first()->kategori->nama ?? '') === 'Aktivitas Merawat Customer')
+                @if($kategoriNama === 'Aktivitas Merawat Customer')
                 <small class="fst-italic">
                     🌟 Aktivitas ini fleksibel, tidak harus diinput setiap hari, yang penting target bulanan tercapai
                 </small>
@@ -42,22 +50,39 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width:5%">No</th>
-                                <th style="width:25%">Aktivitas</th>
-                                <th style="width:10%">Target Daily</th>
-                                <th style="width:10%">Target Bulan</th>
-                                <th style="width:10%">Bobot</th>
-                                <th style="width:15%">Realisasi</th>
+                                <th style="width:40%">Aktivitas</th>
+                                @if(!$isCs)
+                                    <th style="width:10%">Target Daily</th>
+                                @endif
+                                <th style="width:{{ $isCs ? '25%' : '10%' }}">Target Bulan</th>
+                                @if(!$isCs)
+                                    <th style="width:10%">Bobot</th>
+                                @endif
+                                <th style="width:{{ $isCs ? '30%' : '15%' }}">Realisasi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($list as $i => $act)
                                 <tr>
                                     <td class="text-center">{{ $i+1 }}</td>
-                                    <td>{{ $act->nama }}</td>
-                                <td class="text-center">{{ number_format($act->target_daily, 0) }}</td>
-                            <td class="text-center">{{ number_format($act->target_bulanan, 0) }}</td>
+                                    <td>
+                                        {{ $act->nama }}
+                                        @if($isCs && $act->kategori->nama === 'Intake Activity')
+                                            @if($act->nama === 'Follow-up aktif') <span class="badge bg-light text-dark border">80-120</span>
+                                            @elseif($act->nama === 'Presentasi') <span class="badge bg-light text-dark border">8-12</span>
+                                            @elseif($act->nama === 'Closing') <span class="badge bg-light text-dark border">1-2 (Target hasil)</span>
+                                            @else <span class="badge bg-light text-dark border">Wajib</span>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    @if(!$isCs)
+                                        <td class="text-center">{{ number_format($act->target_daily, 0) }}</td>
+                                    @endif
+                                    <td class="text-center">{{ number_format($act->target_bulanan, 0) }}</td>
 
-                                    <td class="text-center">{{ $act->bobot }}</td>
+                                    @if(!$isCs)
+                                        <td class="text-center">{{ $act->bobot }}</td>
+                                    @endif
                                     <td>
                                         <input type="number" 
                                                name="realisasi[{{ $act->id }}]" 

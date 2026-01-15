@@ -40,8 +40,6 @@ public function index()
     {
          $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'deskripsi' => 'nullable|string',
         ]);
 
@@ -83,15 +81,13 @@ public function index()
     {
          $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'deskripsi' => 'nullable|string',
         ]);
 
 $kelas = Kelas::findOrFail($id);
 $kelas->update($request->all());
 
-return view('admin.kelas.index', compact('kelas'));
+return redirect()->route('admin.kelas.index')->with('success', 'Produk berhasil diupdate.');
 
     }
 

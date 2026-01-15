@@ -520,7 +520,7 @@
                 @if(\App\Models\Menu::isActive('jadwal_kelas'))
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('admin.kelas.index') }}">
-                        <strong><i class="fa-solid fa-chalkboard me-2"></i> JADWAL KELAS</strong> 
+                        <strong><i class="fa-solid fa-home me-2"></i> MANAJEMEN PRODUK</strong> 
                     </a>
                 </li>
                 @endif
@@ -580,8 +580,8 @@
                 {{-- Jadwal Kelas --}}
                 <li class="nav-item">
                     <a class="nav-link text-white" href="{{ route('admin.kelas.index') }}">
-                        <i class="fa-solid fa-chalkboard me-2"></i>
-                        <span>JADWAL KELAS</span>
+                        <i class="fa-solid fa-home me-2"></i>
+                        <span>MANAJEMEN PRODUK</span>
                     </a>
                 </li>
                 @endif

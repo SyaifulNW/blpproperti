@@ -9,8 +9,7 @@ class Kelas extends Model
 {
     use HasFactory;
     protected $table = 'kelas'; // Nama tabel
-    protected $fillable = ['nama_kelas', 'deskripsi',   'tanggal_mulai',
-        'tanggal_selesai']; // Kolom yang dapat diisi secara massal
+    protected $fillable = ['nama_kelas', 'deskripsi']; // Kolom yang dapat diisi secara massal
 
     /**
      * Relasi dengan model data.
