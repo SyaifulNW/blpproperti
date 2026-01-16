@@ -131,7 +131,7 @@ $now = Carbon::now();
 if(!isset($bulanLabel)) $bulanLabel = $now->isoFormat('MMMM YYYY');
 if(!isset($databaseBaru)) $databaseBaru = 0;
 if(!isset($totalDatabase)) $totalDatabase = 0;
-if(!isset($target)) $target = 50;
+if(!isset($target)) $target = 100;
 if(!isset($kurang)) $kurang = 0;
 if(!isset($data)) $data = collect([]);
 
@@ -284,43 +284,6 @@ if(!isset($data)) $data = collect([]);
             <option value="Alumni" {{ request('sumber') == 'Alumni' ? 'selected' : '' }}>Alumni</option>
             <option value="Mandiri" {{ request('sumber') == 'Mandiri' ? 'selected' : '' }}>Mandiri</option>
         </select>
-
-        {{-- Filter Provinsi --}}
-        <select id="filterProvinsi" class="form-select form-select-sm modern-select" style="min-width: 140px;" onchange="updateFilter('provinsi', this.value)">
-            <option value="">-- Semua Provinsi --</option>
-            @if(isset($provinsiList))
-                @foreach($provinsiList as $prov)
-                    <option value="{{ $prov }}" {{ request('provinsi') == $prov ? 'selected' : '' }}>{{ $prov }}</option>
-                @endforeach
-            @endif
-        </select>
-
-
-        {{-- Filter Kota --}}
-        <select id="filterKota" class="form-select form-select-sm modern-select" style="min-width: 140px;" onchange="updateFilter('kota', this.value)">
-            <option value="">-- Semua Kota --</option>
-            @if(isset($kotaList))
-                @foreach($kotaList as $kota)
-                     <option value="{{ $kota }}" {{ request('kota') == $kota ? 'selected' : '' }}>{{ $kota }}</option>
-                @endforeach
-            @endif
-        </select>
-        
-        {{-- Filter Spin --}}
-        <select id="filterSpin" class="form-select form-select-sm modern-select" style="min-width: 120px;" onchange="updateFilter('spin', this.value)">
-            <option value="">-- Spin --</option>
-            <option value="1" {{ request('spin') === '1' ? 'selected' : '' }}>Sudah Spin</option>
-            <option value="0" {{ request('spin') === '0' ? 'selected' : '' }}>Belum Spin</option>
-        </select>
-
-        {{-- Filter Zoom --}}
-        <select id="filterZoom" class="form-select form-select-sm modern-select" style="min-width: 120px;" onchange="updateFilter('zoom', this.value)">
-            <option value="">-- Zoom --</option>
-            <option value="1" {{ request('zoom') === '1' ? 'selected' : '' }}>Sudah Zoom</option>
-            <option value="0" {{ request('zoom') === '0' ? 'selected' : '' }}>Belum Zoom</option>
-        </select>
-
-
     @endif
     
     {{-- Filter Bulan (Server Side) --}}
@@ -361,56 +324,18 @@ if(!isset($data)) $data = collect([]);
             <i class="fas fa-search"></i>
         </button>
     </div>
+    <script>
+        document.getElementById('tableSearch').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                updateFilter('search', this.value);
+            }
+        });
+    </script>
   </div>
 </div>
 </div>
 </div>
 
-<script>
-    function updateFilter(key, val) {
-        var url = new URL(window.location.href);
-        if (val) {
-            url.searchParams.set(key, val);
-        } else {
-            url.searchParams.delete(key); 
-        }
-        url.searchParams.delete('page'); // Reset pagination
-        window.location.href = url.toString();
-    }
-</script>
-
-<script>
-    document.getElementById('tableSearch').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            updateFilter('search', this.value);
-        }
-    });
-
-    $(document).ready(function() {
-         // Re-implement visual filter for Sumber Leads & Kota since we moved them out of the table header
-         // NOTE: The previous script looked for specific elements. We need to ensure the IDs match.
-         
-         $('#filterSumber, #filterKota').on('change', function() {
-            var fSumber = $('#filterSumber').val().toLowerCase();
-            var fKotaName = $('#filterKota option:selected').text().trim().toLowerCase();
-            if (fKotaName.includes('--')) fKotaName = '';
-
-            $('#myTable tbody tr').each(function() {
-                var $tr = $(this);
-                // We need to find the hidden/visible values in the row.
-                // Since row structure is changing, we must be careful.
-                var trSumber = $tr.find('.select-sumber').val() || '';
-                var trKota = $tr.find('.select-kota option:selected').text().trim() || $tr.data('kota') || '';
-
-                var show = true;
-                if (fSumber && trSumber.toLowerCase() !== fSumber) show = false;
-                if (fKotaName && trKota.toLowerCase() !== fKotaName) show = false;
-                
-                $tr.toggle(show);
-            });
-         });
-    });
-</script>
 
         <div class="card-body">
             <div style="overflow-x: auto; overflow-y: auto; width: 100%; max-height: 500px;">
@@ -430,10 +355,9 @@ if(!isset($data)) $data = collect([]);
                                 <th style="min-width: 250px;">Nama Calon Pelanggan</th> {{-- Merged Name+WA+CTA --}}
                                 <th>Sumber Leads</th> {{-- Filter at top --}}
                                 <!--<th>Kota</th>         {{-- Filter at top --}}-->
-                                <th>Bisnis & Situasi</th>       {{-- Merged Bisnis & Situasi --}}
                             @else
                                 {{-- === LAYOUT NON-ADMIN (CS, Manager, Marketing, etc) === --}}
-                                <th>Nama Pelanggan</th>
+                                <th>Nama Calon Pelanggan</th>
                                 <th>
                                     Sumber Leads <br>
                                     <select id="filterSumber" class="form-control form-control-sm">
@@ -444,46 +368,46 @@ if(!isset($data)) $data = collect([]);
                                         <option value="Mandiri">Mandiri</option>
                                     </select>
                                 </th>
-                                @if(strtolower(auth()->user()->role) !== 'administrator')
-                                    <th>
-                                        Provinsi <br>
-                                        <select id="filterProvinsi" class="form-control form-control-sm" style="min-width: 150px;">
-                                            <option value="">-- Semua Provinsi --</option>
-                                        </select>
-                                    </th>
-                                @endif
-                                <th>
-                                    Kota <br>
-                                    <select id="filterKota" class="form-control form-control-sm" style="min-width: 150px;">
-                                        <option value="">-- Semua Kota --</option>
-                                    </select>
-                                </th>
-                                <th>Nama Bisnis</th>
-                                <th>Jenis Bisnis</th>
                                 <th>No.WA</th>
                                 <th>CTA</th>
                             @endif
 
-                            @if($userRole !== 'administrator')
-                                <th>Situasi Bisnis</th>
-                            @endif
-
-                            <th>Kendala</th>
                             
-                            <!-- New Columns (All Roles) -->
-                            <th class="text-center">Berhasil SPIN</th>
-                            <th class="text-center">Ikut Zoom</th>
 
                             {{-- Hanya tampil jika bukan marketing --}}
                             @if(strtolower(auth()->user()->role) !== 'marketing')
                                 <th>
-                                    Potensi Kelas Pertama
+                                    Potensi Produk Pertama
                                     <div style="min-width: 200px;">
                                         <select id="filterKelas" class="form-control-sm">
-                                            <option value="">-- Semua Potensi Kelas --</option>
+                                            <option value="">-- Semua Potensi  --</option>
                                             @foreach($kelas as $k)
                                                 <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option>
                                             @endforeach
+                                        </select>
+                                    </div>
+                                </th>
+
+                                {{-- Berhasil Spin Header --}}
+                                <th>
+                                    Berhasil Spin
+                                    <div style="min-width: 120px;">
+                                        <select id="filterSpin" class="form-control-sm">
+                                            <option value="">-- Semua Spin --</option>
+                                            <option value="Ya">Ya</option>
+                                            <option value="Tidak">Tidak</option>
+                                        </select>
+                                    </div>
+                                </th>
+
+                                {{-- Ikut Zoom Header --}}
+                                <th>
+                                    Ikut Zoom
+                                    <div style="min-width: 120px;">
+                                        <select id="filterZoom" class="form-control-sm">
+                                            <option value="">-- Semua Zoom --</option>
+                                            <option value="Ya">Ya</option>
+                                            <option value="Tidak">Tidak</option>
                                         </select>
                                     </div>
                                 </th>
@@ -523,7 +447,6 @@ if(!isset($data)) $data = collect([]);
                             @endif
                             
                             @if($userRole !== 'administrator')
-                                <th>Tanggal Input</th>
                                 <th>Action</th>
                             @endif
                         </tr>
@@ -539,32 +462,6 @@ if(!isset($data)) $data = collect([]);
                     </tbody>
                 </table>
                 
-                <!-- Script FIlter -->
-                <script>
-                    $(document).ready(function() {
-                        $('#filterLeads, #filterProvinsi, #filterKota, #filterJenisBisnis, #filterInputOleh').on('change', function() {
-                            let filters = {
-                                leads: $('#filterLeads').val(),
-                                provinsi: $('#filterProvinsi').val(),
-                                kota: $('#filterKota').val(),
-                                jenisbisnis: $('#filterJenisBisnis').val(),
-                                created_by: $('#filterInputOleh').val(),
-                            };
-
-                            $.ajax({
-                                url: "{{ route('admin.database.filter') }}",
-                                type: "GET",
-                                data: filters,
-                                success: function(response) {
-                                    $('#tableData').html(response);
-                                },
-                                // error: function() {
-                                //     alert('Gagal memuat data filter');
-                                // }
-                            });
-                        });
-                    });
-                </script>
 
 
                 <!-- Script JQuery -->
@@ -638,33 +535,6 @@ $(document).on('change', '.select-sumber', function() {
     });
 });
 
-// Delegated event for Spin and Zoom Checkboxes
-$(document).on('change', '.check-spin, .check-zoom', function() {
-    let $this = $(this);
-    let id = $this.data('id');
-    let field = $this.hasClass('check-spin') ? 'berhasil_spin' : 'ikut_zoom';
-    let value = $this.is(':checked') ? 1 : 0;
-
-    $.ajax({
-        url: '/admin/database/update-inline',
-        method: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            id: id,
-            field: field,
-            value: value
-        },
-        success: function(res) {
-            console.log('Updated checkbox:', field);
-        },
-        error: function(xhr) {
-            console.log('Error updating checkbox');
-            // Revert checkbox state if error?
-            // $this.prop('checked', !value);
-            alert('Gagal update status.');
-        }
-    });
-});
 
 function createNewRow(e) {
     if(e) e.preventDefault();
@@ -679,11 +549,6 @@ function createNewRow(e) {
                 $('#myTable tbody').prepend(response.html);
                 
                 let $newRow = $('#myTable tbody tr:first');
-                
-                // Populate Provinces for the new row
-                if(window.populateProvinceRow) {
-                    window.populateProvinceRow($newRow);
-                }
                 
                 // Optional: Highlight row or focus name
                 $newRow.css('background-color', '#d4edda').animate({backgroundColor: '#fff'}, 2000);
@@ -722,7 +587,6 @@ function createNewRow(e) {
                         color: red;
                     }
                 </style>
-                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                 <script>
                     $(document).ready(function() {
 
@@ -757,31 +621,6 @@ function createNewRow(e) {
                             });
                         });
 
-                        // Untuk dropdown Potensi Kelas
-                        $('.select-potensi').on('change', function() {
-                            let $this = $(this);
-                            let id = $this.data('id');
-                            let kelas_id = $this.val();
-                            let iconSpan = $this.next('.status-icon');
-
-                            $.ajax({
-                                url: `/admin/database/update-potensi/${id}`,
-                                type: 'POST',
-                                data: {
-                                    _token: '{{ csrf_token() }}',
-                                    kelas_id: kelas_id
-                                },
-                                success: function() {
-                                    iconSpan.html('<i class="fa fa-check status-success"></i>');
-                                    setTimeout(() => iconSpan.html(''), 2000);
-                                },
-                                error: function() {
-                                    iconSpan.html('<i class="fa fa-times status-error"></i>');
-                                    setTimeout(() => iconSpan.html(''), 2000);
-                                }
-                            });
-                        });
-
                         // Fungsi tampil icon centang atau silang
                         function showStatusIcon($element, success) {
                             let iconHtml = success ?
@@ -797,6 +636,31 @@ function createNewRow(e) {
                                 });
                             }, 2000);
                         }
+
+                        // Untuk dropdown Inline Update
+                        $(document).on('change', '.select-inline', function() {
+                            let $this = $(this);
+                            let id = $this.data('id');
+                            let field = $this.data('field');
+                            let value = $this.val();
+
+                            $.ajax({
+                                url: '/admin/database/update-inline',
+                                method: 'POST',
+                                data: {
+                                    _token: '{{ csrf_token() }}',
+                                    id: id,
+                                    field: field,
+                                    value: value
+                                },
+                                success: function() {
+                                    showStatusIcon($this, true);
+                                },
+                                error: function() {
+                                    showStatusIcon($this, false);
+                                }
+                            });
+                        });
 
                     });
                 </script>
@@ -818,199 +682,7 @@ function createNewRow(e) {
 
 <script>
 $(document).ready(function() {
-    // Global variables to cache default province list
-    let cachedProvinces = [];
-
-    // Helper: Populate specific select elements
-    function populateProvinceSelect($elements) {
-        if(cachedProvinces.length === 0) return;
-
-        $elements.each(function() {
-            let $select = $(this);
-            // check if already populated to avoid potential overwrite issues if logic changes
-            if($select.children('option').length > 1) return; 
-
-            let currentNama = $select.data('nama');
-            
-            // Keep existing "Pilih" if exists
-            let $default = $select.find('option:first');
-            $select.empty().append($default);
-
-            cachedProvinces.forEach(function(prov) {
-                let isSelected = (currentNama && currentNama.toUpperCase() === prov.name.toUpperCase()) ? 'selected' : '';
-                $select.append(`<option value="${prov.id}" data-name="${prov.name}" ${isSelected}>${prov.name}</option>`);
-            });
-        });
-    }
-
-    // 1. Fetch Provinces & Populate
-    $.getJSON('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json', function(provinces) {
-        // Sort: Alphabetical
-        provinces.sort((a, b) => a.name.localeCompare(b.name));
-        cachedProvinces = provinces;
-
-        // Populate existing rows
-        populateProvinceSelect($('.select-provinsi'));
-        
-        // Also populate Header Filter
-        let $filterProv = $('#filterProvinsi');
-        cachedProvinces.forEach(function(prov) {
-             // Avoid duplicate append if run multiple times
-             if($filterProv.find(`option[value="${prov.name}"]`).length === 0) {
-                 $filterProv.append(`<option value="${prov.name}" data-id="${prov.id}">${prov.name}</option>`);
-             }
-        });
-    });
-
-    // Expose populate function purely for local usage pattern if needed, 
-    // but better to attach a listener or just call it from createNewRow.
-    
-    // We attach it to window so createNewRow can access it if defined outside (though it is defined outside doc.ready)
-    window.populateProvinceRow = function($row) {
-         if(cachedProvinces.length > 0) {
-             populateProvinceSelect($row.find('.select-provinsi'));
-         } else {
-             // retry if not yet loaded? usually loaded by the time user clicks add
-         }
-    };
-
-    // 2. Change Province -> Find Cities & Save
-    $(document).on('change', '.select-provinsi', function() {
-        let $select = $(this);
-        let id = $select.data('id');
-        let provId = $select.val();
-        let provName = $select.find(':selected').data('name');
-        
-        let $kotaSelect = $select.closest('tr').find('.select-kota');
-        
-        // Save to DB
-        if(provId) {
-             $.post('/admin/database/update-location', {
-                _token: '{{ csrf_token() }}',
-                id: id,
-                provinsi_id: provId,
-                provinsi_nama: provName
-            }).done(function() {
-                 console.log('Provinsi saved');
-            });
-            
-            // Load Cities
-            loadCities(provId, $kotaSelect);
-        } else {
-            $kotaSelect.empty().append('<option value="">-- Pilih Kota --</option>');
-        }
-    });
-
-    // 3. Change City -> Save
-    $(document).on('change', '.select-kota', function() {
-        let $select = $(this);
-        let id = $select.data('id');
-        let kotaId = $select.val();
-        let kotaName = $select.find(':selected').data('name');
-
-        if(kotaId) {
-            $.post('/admin/database/update-location', {
-                 _token: '{{ csrf_token() }}',
-                 id: id,
-                 kota_id: kotaId,
-                 kota_nama: kotaName
-            }).done(function() {
-                 console.log('Kota saved');
-            });
-        }
-    });
-
-    // 4. Lazy Load Cities on Click (if not populated)
-    $(document).on('click', '.select-kota', function() {
-        let $kotaSelect = $(this);
-        // Only load if we haven't loaded options yet (length <= 1 means only default option)
-        // And ensure we have a province selected
-        if($kotaSelect.children('option').length <= 1) {
-             let $provSelect = $kotaSelect.closest('tr').find('.select-provinsi');
-             let provId = $provSelect.val();
-             
-             if(provId) {
-                 loadCities(provId, $kotaSelect);
-             } else {
-                 // Try to resolve province ID from its text if user hasn't touched it? 
-                 // Difficult because we haven't mapped ID to the initial text unless content matched.
-                 if($provSelect.find('option:selected').val()) {
-                     loadCities($provSelect.find('option:selected').val(), $kotaSelect);
-                 }
-             }
-        }
-    });
-
-    function loadCities(provId, $targetSelect) {
-        $targetSelect.empty().append('<option value="">Loading...</option>');
-        
-        $.getJSON(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`, function(cities) {
-             cities.sort((a, b) => a.name.localeCompare(b.name));
-             
-             $targetSelect.empty().append('<option value="">-- Pilih Kota --</option>');
-             
-             let currentKota = $targetSelect.data('nama');
-             
-             cities.forEach(function(city) {
-                 let isSelected = (currentKota && currentKota.toUpperCase() === city.name.toUpperCase()) ? 'selected' : '';
-                 $targetSelect.append(`<option value="${city.id}" data-name="${city.name}" ${isSelected}>${city.name}</option>`);
-             });
-        });
-    }
-
-    // ==========================================
-    // FILTER HEADER (Baru)
-    // ==========================================
-    
-    // A. Populate Header Filter Provinsi
-    $.getJSON('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json', function(provinces) {
-        provinces.sort((a, b) => a.name.localeCompare(b.name));
-        let $filterProv = $('#filterProvinsi');
-        
-        // Prevent duplicates (in case other scripts populated it)
-        $filterProv.find('option:not(:first)').remove();
-
-        provinces.forEach(function(prov) {
-            $filterProv.append(`<option value="${prov.name}" data-id="${prov.id}">${prov.name}</option>`);
-        });
-
-        // Initialize Select2 with search
-        $filterProv.select2({
-            theme: 'bootstrap4',
-            width: '100%',
-            placeholder: "-- Semua Provinsi --",
-            allowClear: true
-        });
-    });
-
-    // B. Event Listener Filter Provinsi
-    $('#filterProvinsi').on('change', function() {
-        let selectedProvName = $(this).val();
-        let selectedProvId = $(this).find(':selected').data('id');
-        let $filterKota = $('#filterKota');
-        
-        // 1. Reset & Reload Kota Filter
-        $filterKota.empty().append('<option value="">-- Semua Kota --</option>');
-        
-        if(selectedProvId) {
-            $.getJSON(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${selectedProvId}.json`, function(cities) {
-                 cities.sort((a, b) => a.name.localeCompare(b.name));
-                 cities.forEach(function(city) {
-                     $filterKota.append(`<option value="${city.name}">${city.name}</option>`);
-                 });
-            });
-        }
-        
-        // 2. Trigger Main Filter
-        applyTableFilters();
-    });
-
-    // C. Event Listener Filter Kota
-    $('#filterKota').on('change', function() {
-        applyTableFilters();
-    });
-
-    // D. Main Filtering Logic (Combines existing logic)
+    // D. Main Filtering Logic (Consolidated)
     function applyTableFilters() {
          var userRole = "{{ strtolower(auth()->user()->role) }}";
          
@@ -1019,12 +691,11 @@ $(document).ready(function() {
          var fBulan = $('#filterBulan').val();
          var fSumber = $('#filterSumber').val();
          var fKelas = $('#filterKelas').val();
-         // Header Filters
-         var fProv = $('#filterProvinsi').val();
-         var fKota = $('#filterKota').val();
+         var fSpin = $('#filterSpin').val();
+         var fZoom = $('#filterZoom').val();
          
          var search = $('#tableSearch').val() ? $('#tableSearch').val().toLowerCase() : '';
- 
+
          $('#myTable tbody tr').each(function() {
              var $tr = $(this);
              var trUser = $tr.data('created-by'); 
@@ -1036,19 +707,8 @@ $(document).ready(function() {
              var trText = $tr.text().toLowerCase();
              var trSumber = $tr.find('.select-sumber').val();
              
-             // Get Province/City from the dropdown data (most accurate) or text if fallback
-             var $trProvSelect = $tr.find('.select-provinsi');
-             var trProvinsi = $trProvSelect.length ? $trProvSelect.data('nama') : $tr.find('td[data-field="provinsi_nama"]').text();
-             
-             var $trKotaSelect = $tr.find('.select-kota');
-             var trKota = $trKotaSelect.length ? $trKotaSelect.data('nama') : $tr.find('td[data-field="kota_nama"]').text();
-
-             // Normalizing string for comparison (uppercase/trim)
-             if(trProvinsi) trProvinsi = trProvinsi.trim();
-             if(trKota) trKota = trKota.trim();
-             
              var show = true;
- 
+
              // Filter User
              if (fUser && trUser !== fUser) show = false;
              
@@ -1061,7 +721,7 @@ $(document).ready(function() {
              // Filter Sumber
              if (show && fSumber && trSumber !== fSumber) show = false;
              
-             // Filter Kelas (existing logic already covers this or we add it if not)
+             // Filter Kelas
              var trKelas = '';
              var $kelasSelect = $tr.find('.select-potensi');
              if ($kelasSelect.length > 0) {
@@ -1069,12 +729,13 @@ $(document).ready(function() {
              }
              if (show && fKelas && trKelas !== fKelas) show = false;
              
-             // --- NEW FILTERS ---
-             // Filter Provinsi
-             if (show && fProv && trProvinsi !== fProv) show = false;
-             
-             // Filter Kota
-             if (show && fKota && trKota !== fKota) show = false;
+             // Filter Spin
+             var trSpin = $tr.find('.select-spin').val();
+             if (show && fSpin && trSpin !== fSpin) show = false;
+
+             // Filter Zoom
+             var trZoom = $tr.find('.select-zoom').val();
+             if (show && fZoom && trZoom !== fZoom) show = false;
              
              // Search
              if (show && search && !trText.includes(search)) show = false;
@@ -1084,7 +745,7 @@ $(document).ready(function() {
     }
     
     // Hook into existing events to also call our unified filter
-    $('#filterSumber, #filterKelas').on('change', applyTableFilters);
+    $('#filterSumber, #filterKelas, #filterSpin, #filterZoom').on('change', applyTableFilters);
     
     // Note: older applyFilters function defined in document.ready above might conflict if not careful.
     // We are overriding or extending functionality. The previous script block used "applyFilters" name. 
@@ -1146,7 +807,7 @@ $(document).ready(function() {
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createPesertaModalLabel">Tambah Peserta</h5>
+                <h5 class="modal-title" id="createPesertaModalLabel">Tambah Calon Pelanggan</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -1157,7 +818,7 @@ $(document).ready(function() {
 
                     {{-- Nama Peserta --}}
                     <div class="form-group">
-                        <label for="nama">Nama Peserta</label>
+                        <label for="nama">Nama Calon Pelanggan</label>
                         <input type="text" class="form-control" id="nama" name="nama" required>
                     </div>
 
@@ -1166,9 +827,9 @@ $(document).ready(function() {
 
              {{-- Potensi Kelas --}}
 <div class="form-group">
-    <label for="kelas_id">Potensi Kelas</label>
+    <label for="kelas_id">Potensi Produk </label>
     <select name="kelas_id" id="kelas_id" class="form-control" required>
-        <option value="">Pilih Potensi Kelas</option>
+        <option value="">Pilih Potensi Produk</option>
 
         @forelse($kelas as $item)
             <option value="{{ $item->id }}">{{ $item->nama_kelas }}</option>
@@ -1190,101 +851,7 @@ $(document).ready(function() {
                         </select>
                     </div>
 
-                    {{-- Provinsi --}}
-                    <div class="form-group">
-                        <label for="provinsi">Provinsi</label>
-                        <select id="provinsi" class="form-control" name="provinsi_id" required>
-                            <option value="">Pilih Provinsi</option>
-                        </select>
-                        <input type="hidden" name="provinsi_nama" id="provinsi_nama">
-                    </div>
 
-                    {{-- Kota --}}
-                    <div class="form-group">
-                        <label for="kota">Kota</label>
-                        <select id="kota" class="form-control" name="kota_id" required>
-                            <option value="">Pilih Kota</option>
-                        </select>
-                        <input type="hidden" name="kota_nama" id="kota_nama">
-                    </div>
-
-                    {{-- Script Ambil Wilayah --}}
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script>
-                        fetch('/wilayah/provinsi')
-                            .then(res => res.json())
-                            .then(data => {
-                                data.forEach(prov => {
-                                    $('#provinsi').append(`<option value="${prov.id}" data-nama="${prov.name}">${prov.name}</option>`);
-                                });
-                            });
-
-                        $('#provinsi').on('change', function() {
-                            const id = $(this).val();
-                            const nama = $(this).find('option:selected').text();
-                            $('#provinsi_nama').val(nama);
-
-                            fetch(`/wilayah/kota/${id}`)
-                                .then(res => res.json())
-                                .then(data => {
-                                    $('#kota').html('<option value="">Pilih Kota</option>');
-                                    data.forEach(kota => {
-                                        $('#kota').append(`<option value="${kota.id}" data-nama="${kota.name}">${kota.name}</option>`);
-                                    });
-                                });
-                        });
-
-                        $('#kota').on('change', function() {
-                            const nama = $(this).find('option:selected').text();
-                            $('#kota_nama').val(nama);
-                        });
-                    </script>
-
-                    {{-- Nama Bisnis --}}
-                    <div class="form-group">
-                        <label for="nama_bisnis">Nama Bisnis</label>
-                        <input type="text" class="form-control" id="nama_bisnis" name="nama_bisnis" required>
-                    </div>
-
-                    {{-- Jenis Bisnis --}}
-                    <div class="form-group">
-                        <label for="jenisbisnis">Jenis Bisnis</label>
-                        <select name="jenisbisnis" id="jenisbisnis" class="form-control">
-                            <option value="Bisnis Properti">Bisnis Properti</option>
-                            <option value="Bisnis Manufaktur">Bisnis Manufaktur</option>
-                            <option value="Bisnis F&B (Food & Beverage)">Bisnis F&B (Food & Beverage)</option>
-                            <option value="Bisnis Jasa">Bisnis Jasa</option>
-                            <option value="Bisnis Digital">Bisnis Digital</option>
-                            <option value="Bisnis Online">Bisnis Online</option>
-                            <option value="Bisnis Franchise">Bisnis Franchise</option>
-                            <option value="Bisnis Edukasi & Pelatihan">Bisnis Edukasi & Pelatihan</option>
-                            <option value="Bisnis Kreatif">Bisnis Kreatif</option>
-                            <option value="Bisnis Agribisnis">Bisnis Agribisnis</option>
-                            <option value="Bisnis Kesehatan & Kecantikan">Bisnis Kesehatan & Kecantikan</option>
-                            <option value="Bisnis Keuangan">Bisnis Keuangan</option>
-                            <option value="Bisnis Transportasi & Logistik">Bisnis Transportasi & Logistik</option>
-                            <option value="Bisnis Pariwisata & Hospitality">Bisnis Pariwisata & Hospitality</option>
-                            <option value="Bisnis Sosial (Social Enterprise)">Bisnis Sosial (Social Enterprise)</option>
-                        </select>
-                    </div>
-
-                    {{-- No WA --}}
-                    <div class="form-group">
-                        <label for="no_wa">No. WA</label>
-                        <input type="text" class="form-control" id="no_wa" name="no_wa" required>
-                    </div>
-
-                    {{-- Situasi Bisnis --}}
-                    <div class="form-group">
-                        <label for="situasi_bisnis">Situasi Bisnis</label>
-                        <textarea class="form-control" id="situasi_bisnis" name="situasi_bisnis" rows="3"></textarea>
-                    </div>
-
-                    {{-- Kendala --}}
-                    <div class="form-group">
-                        <label for="kendala">Kendala</label>
-                        <textarea class="form-control" id="kendala" name="kendala" rows="3"></textarea>
-                    </div>
 
                 </div>
                 <div class="modal-footer">
@@ -1327,41 +894,3 @@ $(document).ready(function() {
 <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<script>
-    // Logic for new columns: Berhasil Spin & Ikut Zoom
-    $(document).on('change', '.check-spin, .check-zoom', function() {
-        let $this = $(this);
-        let id = $this.data('id');
-        let field = $this.hasClass('check-spin') ? 'berhasil_spin' : 'ikut_zoom';
-        let value = $this.is(':checked') ? 1 : 0;
-    
-        $.ajax({
-            url: '/admin/database/update-inline',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: id,
-                field: field,
-                value: value
-            },
-            success: function(res) {
-                console.log('Updated checkbox:', field);
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    timerProgressBar: true
-                })
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Status Updated'
-                })
-            },
-            error: function(xhr) {
-                console.log('Error updating checkbox');
-                // alert('Gagal update status.');
-            }
-        });
-    });
-</script>

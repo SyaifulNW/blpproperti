@@ -237,18 +237,17 @@
             {{-- ================== OMSET PER KELAS ================== --}}
             <div class="card mb-4 border-0 shadow-sm">
                 <div class="card-header bg-success text-white fw-bold">
-                    OMSET KELAS ({{ strtoupper($namaBulan) }} {{ $tahun }})
+                    OMSET Sales ({{ strtoupper($namaBulan) }} {{ $tahun }})
                 </div>
                 <div class="card-body table-responsive">
                     <table class="table table-bordered table-hover text-center align-middle">
                         <thead class="table-primary">
                             <tr>
-                                <th>Nama Kelas</th>
+                                <th>Nama Produk</th>
                                 <th>Tanggal</th>
                                 <th>Omset</th>
                                 <th>Target</th>
                                 <th>% Tercapai</th>
-                                <th>Insentif</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -268,9 +267,6 @@
                                     <td class="{{ $persen >= 100 ? 'text-success fw-bold' : ($persen >= 75 ? 'text-warning fw-bold' : 'text-danger fw-bold') }}">
                                         {{ $persen }}%
                                     </td>
-                                    <td class="text-primary fw-bold">
-                                        Rp {{ number_format($komisiTotal, 0, ',', '.') }}
-                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -281,7 +277,7 @@
             
                         @php
                         $totalOmset = $kelasOmsetFiltered->sum('omset');
-                        $targetBulanan = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 50000000;
+                        $targetBulanan = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 100000000;
                         $persenTercapai = $targetBulanan > 0 ? round(($totalOmset / $targetBulanan) * 100, 2) : 0;
 
                         // 🔹 Logika Reward Bulanan (nilai numerik + teks)
@@ -323,21 +319,6 @@
                                     {{ $persenTercapai }}%
                                 </td>
                             </tr>
-                            <tr class="bg-light fw-bold">
-                                <td colspan="3" class="text-end text-dark">Reward Bulanan</td>
-                                <td colspan="3" class="text-start text-success">
-                                    {{ $reward }}
-                                </td>
-                            </tr>
-                            <tr class="bg-light fw-bold">
-                                <td colspan="3" class="text-end text-dark">Reminder</td>
-                                <td colspan="3" class="text-start">
-                                    <div class="reminder-cell">
-                                        <i class="fa-solid fa-bell reminder-icon"></i>
-                                        {{ $keterangan }}
-                                    </div>
-                                </td>
-                            </tr>
                         </tfoot>
                     </table>
                 </div>
@@ -353,7 +334,7 @@
                     ->count();
 
                 $totalDatabase = Data::where('created_by', $namaUserData)->count();
-                $target = 50;
+                $target = 100;
 
                 $sumberDatabase = Data::select('leads', \DB::raw('COUNT(*) as total'))
                     ->where('created_by', $namaUserData)
@@ -374,7 +355,7 @@
 
             <div class="row g-4 mb-4">
                 {{-- Card Database --}}
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <div class="card shadow-lg border-0 h-100">
                         <div class="card-header bg-info text-white fw-bold py-2">
                             <i class="fas fa-database me-2"></i> JUMLAH DATABASE
@@ -396,37 +377,13 @@
                 </div>
 
                 {{-- Card Pie Chart --}}
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <div class="card shadow-lg border-0 h-100">
                         <div class="card-header bg-primary text-white fw-bold py-2">
                             <i class="fas fa-chart-pie me-2"></i> SUMBER LEADS
                         </div>
                         <div class="card-body d-flex justify-content-center align-items-center">
                             <canvas id="pieSumberDbSmall" width="200" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Card Total Komisi + Reward --}}
-                <div class="col-12 col-md-4">
-                    <div class="card shadow-lg border-0 h-100">
-                        <div class="card-header bg-secondary text-white fw-bold py-2">
-                            <i class="fas fa-file-invoice-dollar me-2"></i> TOTAL KOMISI + REWARD
-                        </div>
-                        <div class="card-body text-center">
-                            @php
-                                $totalDenganReward = $totalKomisi + $rewardBulanan;
-                            @endphp
-
-                            <h2 class="fw-bold text-success mb-2" style="font-size: 2.5rem;">
-                                Rp {{ number_format($totalDenganReward, 0, ',', '.') }}
-                            </h2>
-
-                            <p class="text-muted mb-1">Komisi: Rp {{ number_format($totalKomisi, 0, ',', '.') }}</p>
-                            <p class="text-muted mb-1">Reward: Rp {{ number_format($rewardBulanan, 0, ',', '.') }}</p>
-                            
-                            <hr>
-                            <p class="text-muted mb-0">Periode: {{ $namaBulan }} {{ $tahun }}</p>
                         </div>
                     </div>
                 </div>
@@ -457,45 +414,6 @@
                     }
                 });
             </script>
-
-            {{-- ================== KPI BULANAN ================== --}}
-            <div class="card shadow-lg border-0 mt-5 mb-5">
-                <div class="card-header bg-primary text-white text-center fw-bold fs-5">
-                  PENILAIAN AKTIVITAS (CS MBC)
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-bordered table-striped table-hover mb-0 text-center align-middle">
-                        <thead class="table-info">
-                            <tr>
-                                <th>No</th>
-                                <th>Aktivitas</th>
-                                <th>Target</th>
-                                <th>Bobot</th>
-                                <th>Presentase</th>
-                                <th>Nilai</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($kpiData as $i => $row)
-                                <tr>
-                                    <td class="fw-bold text-dark">{{ $i+1 }}</td>
-                                    <td class="fw-bold text-start text-dark">{{ $row['nama'] }}</td>
-                                    <td class="fw-bold text-dark">{{ $row['target'] }}</td>
-                                    <td class="fw-bold text-dark">{{ $row['bobot'] }}</td>
-                                    <td class="fw-bold text-dark">{{ $row['persentase'] }}%</td>
-                                    <td class="fw-bold text-dark">{{ number_format($row['nilai'],2) }}</td>
-                                </tr>
-                            @endforeach
-                            <tr class="table-success fw-bold fs-6">
-                                <td colspan="3" class="text-center text-dark fw-bold">TOTAL</td>
-                                <td class="text-dark fw-bold">{{ $totalBobot }}</td>
-                                <td>—</td>
-                                <td class="text-dark fw-bold">{{ number_format($totalNilai,2) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
         <!-- ================== TAB 2: PENILAIAN KINERJA SAYA ================== -->
@@ -563,7 +481,7 @@
                                 <tr>
                                     <td>1</td>
                                     <td class="text-start">Penjualan & Omset</td>
-                                    <td class="text-start">Target Rp 50 juta/bulan</td>
+                                    <td class="text-start">Target Rp 100 juta/bulan</td>
                                     <td>40%</td>
                                     <td>Rp {{ number_format($totalOmset ?? 0, 0, ',', '.') }}</td>
                                     <td>{{ $nilaiOmset ?? 0 }}</td>
@@ -581,7 +499,7 @@
                                 <tr>
                                     <td>3</td>
                                     <td class="text-start">Database Baru</td>
-                                    <td class="text-start">Target 50 database baru</td>
+                                    <td class="text-start">Target 100 database baru</td>
                                     <td>20%</td>
                                     <td>{{ $databaseBaru ?? 0 }}</td>
                                     <td>{{ $nilaiDatabaseBaru ?? 0 }}</td>

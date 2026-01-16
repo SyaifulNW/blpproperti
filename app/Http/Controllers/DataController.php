@@ -226,7 +226,7 @@ public function index(Request $request)
         ->whereMonth('created_at', $statsMonth)
         ->count();
 
-    $target = 50;
+    $target = 100;
     $kurang = max($target - $databaseBaru, 0);
 
     $data = $query->paginate($perPage);
@@ -582,7 +582,7 @@ private function filterKelasByUser($user)
             ->count();
             
         $totalDatabase = $query->count();
-        $target = 50;
+        $target = 100;
         $kurang = max($target - $databaseBaru, 0);
 
         return response()->json([

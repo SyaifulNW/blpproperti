@@ -36,7 +36,7 @@
     
         {{-- Sumber Leads (Simple) --}}
         <td>
-             <select class="form-control form-control-sm select-sumber" data-id="{{ $item->id }}">
+             <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="leads">
                 <option value="">- Pilih -</option>
                 <option value="Marketing" {{ $item->leads == 'Marketing' ? 'selected' : '' }}>Marketing</option>
                 <option value="Iklan" {{ $item->leads == 'Iklan' ? 'selected' : '' }}>Iklan</option>
@@ -53,19 +53,6 @@
         <!--</td>-->
 
 
-        {{-- Merged: Bisnis & Situasi --}}
-        <td>
-            <div contenteditable="true" class="editable fw-bold text-dark" data-field="nama_bisnis">{{ $item->nama_bisnis }}</div>
-            <small class="text-muted d-block mt-1">{{ $item->jenis_bisnis }}</small>
-            
-            {{-- Truncated Situasi Bisnis for Admin --}}
-            <div class="mt-2 text-secondary" style="font-size: 0.85rem; line-height: 1.3;">
-                @php
-                    $situasiShort = \Illuminate\Support\Str::limit($item->situasi_bisnis ?? '-', 50);
-                @endphp
-                <span title="{{ $item->situasi_bisnis }}">{{ $situasiShort }}</span>
-            </div>
-        </td>
 
 
     @else
@@ -76,7 +63,7 @@
         
         {{-- Sumber Leads --}}
         <td>
-             <select class="form-control form-control-sm select-sumber" data-id="{{ $item->id }}">
+             <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="leads">
                 <option value="">- Pilih Sumber Leads -</option>
                 <option value="Marketing" {{ $item->leads == 'Marketing' ? 'selected' : '' }}>Marketing</option>
                 <option value="Iklan" {{ $item->leads == 'Iklan' ? 'selected' : '' }}>Iklan</option>
@@ -85,25 +72,7 @@
             </select>
         </td>
 
-        {{-- Provinsi --}}
-        @if(strtolower(auth()->user()->role) !== 'administrator')
-            <td>
-                <select class="form-control form-control-sm select-provinsi" data-id="{{ $item->id }}" data-nama="{{ $item->provinsi_nama }}">
-                    <option value="">{{ $item->provinsi_nama ?: '-- Pilih Provinsi --' }}</option>
-                </select>
-            </td>
-        @endif
 
-        {{-- Kota --}}
-        <td>
-            <select class="form-control form-control-sm select-kota" data-id="{{ $item->id }}" data-prov-id="{{ $item->provinsi_id }}" data-nama="{{ $item->kota_nama }}">
-                 <option value="">{{ $item->kota_nama ?: '-- Pilih Kota --' }}</option>
-            </select>
-        </td>
-
-        {{-- Data Bisnis Terpisah --}}
-        <td contenteditable="true" class="editable" data-field="nama_bisnis">{{ $item->nama_bisnis }}</td>
-        <td contenteditable="true" class="editable" data-field="jenis_bisnis">{{ $item->jenis_bisnis }}</td>
         
         {{-- WA & CTA Terpisah --}}
         <td contenteditable="true" class="editable" data-field="no_wa">{{ $item->no_wa }}</td>
@@ -118,37 +87,36 @@
 
     {{-- Common Columns --}}
 
-    @if($userRole !== 'administrator')
-        <td contenteditable="true" class="editable" data-field="situasi_bisnis">{{ $item->situasi_bisnis }}</td>
-    @endif
 
-    <td contenteditable="true" class="editable" data-field="kendala">{{ $item->kendala }}</td>
     
-    {{-- New: Berhasil Spin (All Roles) --}}
-    <td class="text-center">
-        <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input check-spin" id="spin{{ $item->id }}" data-id="{{ $item->id }}" {{ $item->berhasil_spin ? 'checked' : '' }}>
-            <label class="custom-control-label" for="spin{{ $item->id }}"></label>
-        </div>
-    </td>
-
-    {{-- New: Ikut Zoom (All Roles) --}}
-    <td class="text-center">
-        <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input check-zoom" id="zoom{{ $item->id }}" data-id="{{ $item->id }}" {{ $item->ikut_zoom ? 'checked' : '' }}>
-            <label class="custom-control-label" for="zoom{{ $item->id }}"></label>
-        </div>
-    </td>
 
     @if(strtolower(auth()->user()->role) !== 'marketing')
     <td>
-        <select class="form-control form-control-sm select-potensi" data-id="{{ $item->id }}">
+        <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="kelas_id">
             <option value="">- Pilih Kelas -</option>
             @foreach($kelas as $k)
             <option value="{{ $k->id }}" {{ $item->kelas_id == $k->id ? 'selected' : '' }}>
                 {{ $k->nama_kelas }}
             </option>
             @endforeach
+        </select>
+    </td>
+
+    {{-- Berhasil Spin --}}
+    <td>
+        <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="berhasil_spin">
+            <option value="">- Pilih -</option>
+            <option value="Ya" {{ $item->berhasil_spin == 'Ya' ? 'selected' : '' }}>Ya</option>
+            <option value="Tidak" {{ $item->berhasil_spin == 'Tidak' ? 'selected' : '' }}>Tidak</option>
+        </select>
+    </td>
+
+    {{-- Ikut Zoom --}}
+    <td>
+        <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="ikut_zoom">
+            <option value="">- Pilih -</option>
+            <option value="Ya" {{ $item->ikut_zoom == 'Ya' ? 'selected' : '' }}>Ya</option>
+            <option value="Tidak" {{ $item->ikut_zoom == 'Tidak' ? 'selected' : '' }}>Tidak</option>
         </select>
     </td>
     @endif
@@ -171,10 +139,7 @@
     @endif
     @endif
     
-
-    @if($userRole !== 'administrator')
-        <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}</td>
-        
+    @if(strtolower(auth()->user()->role) !== 'administrator')
         <td>
             <a href="{{ route('admin.database.show', $item->id) }}" class="btn btn-info btn-sm">
                 <i class="fa-solid fa-eye" style="color:#fff;"></i>

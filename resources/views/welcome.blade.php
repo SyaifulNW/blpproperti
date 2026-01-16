@@ -78,12 +78,33 @@
         }
 
         h1 {
-            font-size: 2rem;
-            margin-bottom: 5px;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
             font-weight: 800;
-            letter-spacing: 1px;
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            color: #fff;
+            letter-spacing: -0.5px;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ORGANISASI CHART */
@@ -333,7 +354,8 @@
             <div class="logo">
                 <img src="{{ asset('backend/blp_logo.png') }}" alt="Logo BLP Properti">
             </div>
-            <h1>BLP PROPERTI</h1>
+            <h1>BLP Property <br> Sales & Management Portal</h1>
+            <!-- <p class="subtitle">👉 Sangat cocok dengan fitur login CS & Manager</p> -->
         </div>
 
 
@@ -358,7 +380,7 @@
                     <div class="logo-wrapper">
                         <img src="{{ asset('backend/blp_logo.png') }}" alt="Logo CS BLP">
                     </div>
-                    <h3>Login CS</h3>
+                    <h3>Login Sales</h3>
                     <a href="{{ route('home') }}" class="card-button">Masuk</a>
                 </div>
             </div>

@@ -14,8 +14,8 @@ class AddTrackingColumnsToDataTable extends Migration
     public function up()
     {
         Schema::table('data', function (Blueprint $table) {
-            $table->boolean('berhasil_spin')->default(false)->after('kendala');
-            $table->boolean('ikut_zoom')->default(false)->after('berhasil_spin');
+            $table->enum('berhasil_spin', ['Ya', 'Tidak'])->nullable()->after('status_peserta');
+            $table->enum('ikut_zoom', ['Ya', 'Tidak'])->nullable()->after('berhasil_spin');
         });
     }
 

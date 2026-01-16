@@ -24,7 +24,8 @@ class Data extends Model
         'kendala',
         'kelas_id', 'created_by', 'created_by_role',
         'ikut_kelas',
-        'kelas_id',
+        'berhasil_spin',
+        'ikut_zoom',
     ];
     public function kelas()
     {
