@@ -45,63 +45,26 @@ class HomeController extends Controller
         $isCsSmi = auth()->user()->role === 'cs-smi';
         $isCsMbc = auth()->user()->role === 'cs-mbc';
 
+        // Ambil SEMUA produk dari Kelas
+        $allProducts = Kelas::all();
+
         if ($isCsSmi) {
-            // Khusus CS SMI: Ambil kelas Start-Up Muda Indonesia & Start-Up Muslim Indonesia
-            $kelasOmset = Kelas::where(function($q) {
-                    $q->where('nama_kelas', 'like', '%Start-Up Muda Indonesia%')
-                      ->orWhere('nama_kelas', 'like', '%Start-Up Muslim Indonesia%');
-                })
-                ->with(['salesplans' => function ($query) use ($csId, $tahun, $bulanNum) {
-                    $query->where('created_by', $csId)
-                        ->whereYear('updated_at', $tahun)
-                        ->whereMonth('updated_at', $bulanNum)
-                        ->where('status', 'sudah_transfer');
-                }])
-                ->get();
-        } elseif ($isCsMbc) {
-            // Khusus CS MBC: Start-Up Muslim (tanpa filter tanggal) + Kelas lain (bulan berjalan)
-            $kelasOmset = Kelas::where(function ($q) use ($tahun, $bulanNum) {
-                    $q->where('nama_kelas', 'like', '%Start-Up Muslim Indonesia%')
-                      ->orWhere(function ($sub) use ($tahun, $bulanNum) {
-                          $sub->whereYear('tanggal_mulai', $tahun)
-                              ->whereMonth('tanggal_mulai', $bulanNum);
-                      });
-                })
-                ->with(['salesplans' => function ($query) use ($csId, $tahun, $bulanNum) {
-                    $query->where('created_by', $csId)
-                        ->whereYear('updated_at', $tahun)
-                        ->whereMonth('updated_at', $bulanNum);
-                }])
-                ->get();
-        } else {
-            // Role Lain: Ambil kelas sesuai bulan berjalan
-            $kelasOmset = Kelas::whereYear('tanggal_mulai', $tahun)
-                ->whereMonth('tanggal_mulai', $bulanNum)
-                ->with(['salesplans' => function ($query) use ($csId, $tahun, $bulanNum) {
-                    $query->where('created_by', $csId)
-                        ->whereYear('updated_at', $tahun)
-                        ->whereMonth('updated_at', $bulanNum);
-                }])
-                ->get();
+            // Khusus CS SMI: Filter salesplans sesuai CS dan waktu
+            $allProducts = $allProducts->filter(function($q) {
+                return \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muda Indonesia') || \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muslim Indonesia');
+            });
         }
 
-        $kelasOmsetFiltered = $kelasOmset->groupBy('nama_kelas')->map(function ($group) {
-            // Ambil data pertama untuk info nama & tanggal (asumsi tanggal sama/mirip)
-            $kelas = $group->first();
-            
-            // Hitung total omset dari SEMUA kelas yang namanya sama
-            $omset = $group->sum(function ($k) {
-                return $k->salesplans->sum('nominal');
-            });
+        $kelasOmsetFiltered = $allProducts->map(function ($kelas) use ($csId, $tahun, $bulanNum) {
+            // Hitung omset untuk produk ini pada bulan yang dipilih
+            $omset = $kelas->salesplans()
+                ->where('created_by', $csId)
+                ->whereYear('updated_at', $tahun)
+                ->whereMonth('updated_at', $bulanNum)
+                ->where('status', 'sudah_transfer')
+                ->sum('nominal');
 
-            $targetGlobal = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 50000000;
-            $targetSmi = \App\Models\Setting::where('key', 'target_omset_smi')->value('value') ?? 50000000;
-
-            if (str_contains($kelas->nama_kelas, 'Start-Up Muda Indonesia') || str_contains($kelas->nama_kelas, 'Start-Up Muslim Indonesia')) {
-                $target = $targetSmi;
-            } else {
-                $target = $targetGlobal / 2;
-            }
+            $target = 500000000; // Target 500 juta tiap produk
 
             $komisiSementara = $omset * 0.01;
             $komisiTotal = $omset >= $target ? $komisiSementara + 300000 : $komisiSementara;
@@ -217,7 +180,7 @@ class HomeController extends Controller
     
     // OMSET
     $totalOmset = $kelasOmsetFiltered->sum('omset'); 
-    $targetBulananOmset = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 50000000;
+    $targetBulananOmset = 1000000000; // Target Tetap 1 Miliar
     
     // 🔥 Pencapaian Omset untuk ditampilkan di tabel
     $pencapaianOmset = $totalOmset;
@@ -227,37 +190,27 @@ class HomeController extends Controller
         ? min(100, round(($totalOmset / $targetBulananOmset) * 100))
         : 0;
     
-    // Bobot 40%
-    $nilaiOmset = round(($nilaiOmset / 100) * 40, 2);
+    // Bobot 60%
+    $nilaiOmset = round(($nilaiOmset / 100) * 60, 2);
     
     
-    // ============ Closing Paket ============
-    $closingPaket = SalesPlan::where('created_by', $csId)
-        ->whereYear('updated_at', $tahun)
-        ->whereMonth('updated_at', $bulanNum)
-        ->where('status', 'sudah_transfer')
-        ->count();
-    
-    // 🔥 Pencapaian Closing Paket untuk tabel
-    $pencapaianClosingPaket = $closingPaket;
-    
-    $nilaiClosingPaket = $closingPaket >= 1 ? 100 : 0;
-    $nilaiClosingPaket = round(($nilaiClosingPaket / 100) * 30, 2);
+    // ============ Closing Paket (REMOVED) ============
+    $closingPaket = 0;
+    $pencapaianClosingPaket = 0;
+    $nilaiClosingPaket = 0;
     
     
     // ============ Database Baru ============
     $databaseBaru = Data::where('created_by', $csId)
-        ->whereYear('updated_at', $tahun)
-        ->whereMonth('updated_at', $bulanNum)
+        ->whereYear('created_at', $tahun)
+        ->whereMonth('created_at', $bulanNum)
         ->count();
     
     // 🔥 Pencapaian Database Baru untuk tabel
     $pencapaianDatabaseBaru = $databaseBaru;
     
-    $nilaiDatabaseBaru = $databaseBaru >= 50 ? 100 : ($databaseBaru * 2);
-    if ($nilaiDatabaseBaru > 100) $nilaiDatabaseBaru = 100;
-    
-    $nilaiDatabaseBaru = round(($nilaiDatabaseBaru / 100) * 30, 2);
+    // Target 100 Database, Bobot 20%
+    $nilaiDatabaseBaru = min(20, round(($databaseBaru / 100) * 20, 2));
 
 
 
@@ -357,62 +310,26 @@ private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $ro
     }
 
     $totalOmset = $kelasOmset->sum(fn ($k) => $k->salesplans->sum('nominal'));
-    $targetGlobal = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 50000000;
+    $targetGlobal = 1000000000;
     
-    // Nilai Omset (0-100) -> Bobot 40%
+    // Nilai Omset (0-100) -> Bobot 60%
     $nilaiOmsetSkor = $targetGlobal > 0 ? min(100, round(($totalOmset / $targetGlobal) * 100)) : 0;
-    $nilaiOmset = round(($nilaiOmsetSkor / 100) * 40, 2);
+    $nilaiOmset = round(($nilaiOmsetSkor / 100) * 60, 2);
 
 
-    // CLOSING PAKET (20%)
-    if ($role === 'cs-smi') {
-        $nilaiClosing = 0;
-    } else {
-        $closing = SalesPlan::where('created_by', $csId)
-            ->where('closing_paket', 1)
-            ->whereYear('updated_at', $tahun)
-            ->whereMonth('updated_at', $bulan)
-            ->count();
-            
-        // Rule match logic below: 1 paket = 100 poin (capped), then 30% weight? 
-        // Based on existing logic: $nilaiClosingPaket = $closingPaket >= 1 ? 100 : 0; -> * 30% ??
-        // Wait, existing logic in index says: $nilaiClosingPaket = round(($nilaiClosingPaket / 100) * 30, 2);
-        // But PenilaianController says 20%?
-        
-        // Let's match the logic in index() currently:
-        // $nilaiClosingPaket = $closingPaket >= 1 ? 100 : 0;
-        // $nilaiClosingPaket = round(($nilaiClosingPaket / 100) * 30, 2);
-        
-        $closingScore = $closing >= 1 ? 100 : 0;
-        $nilaiClosing = round(($closingScore / 100) * 30, 2);
-    }
+    // CLOSING PAKET (REMOVED)
+    $nilaiClosing = 0;
 
-    // DATABASE BARU (20% or 30%)
-    $dbBaru = Data::where('created_by', $namaUserData)
+    // DATABASE BARU (20%)
+    $dbBaru = Data::where('created_by', $csId)
         ->whereYear('created_at', $tahun)
         ->whereMonth('created_at', $bulan)
         ->count();
 
-    // Logic in index():
-    // $nilaiDatabaseBaru = $databaseBaru >= 50 ? 100 : ($databaseBaru * 2);
-    // if ($nilaiDatabaseBaru > 100) $nilaiDatabaseBaru = 100;
-    // $nilaiDatabaseBaru = round(($nilaiDatabaseBaru / 100) * 30, 2);
-    
-    $dbScore = $dbBaru >= 50 ? 100 : ($dbBaru * 2);
-    if ($dbScore > 100) $dbScore = 100;
-    $nilaiDb = round(($dbScore / 100) * 30, 2);
+    $dbScore = min(20, round(($dbBaru / 100) * 20, 2));
+    $nilaiDb = $dbScore;
 
-    // MANUAL (20% or 30%)
-    // But weight 30+30+40 = 100. So Manual is extra?
-    // Wait, let's check index logic again. 
-    // Omset 40%, Closing 30%, Database 30%. Total 100%.
-    // If Manual exists, presumably it rebalances or is part of it.
-    // PenilaianController logic was: Omset 40%, Closing 20%, Database 20%, Manual 20%.
-    // But HomeController logic seems to be 40/30/30.
-    
-    // I should stick to adding Manual if it exists.
-    // Let's replicate what I just added to index()
-    
+    // MANUAL (20%)
     $manual = \App\Models\PenilaianManual::where('user_id', $csId)
                 ->where('bulan', $bulan)
                 ->where('tahun', $tahun)
@@ -421,9 +338,7 @@ private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $ro
     $nilaiManualPart = 0;
     if ($manual) {
         $sum = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
-        $bobotManual = ($role === 'cs-smi') ? 30 : 20; 
-        // Note: This matches PenilaianController but might conflict with 40/30/30 if not adjusted.
-        // However, user just wants "history" to appear.
+        $bobotManual = 20; 
         $nilaiManualPart = round(($sum / 500) * $bobotManual);
     }
 

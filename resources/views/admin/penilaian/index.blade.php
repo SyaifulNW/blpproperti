@@ -38,10 +38,10 @@
 <div class="container mt-4">
 
     {{-- ================== JUDUL ================== --}}
-    <h3 class="fw-bold mb-3 text-center">Penilaian Hasil CS</h3>
+    <h3 class="fw-bold mb-3 text-center">Penilaian Sales</h3>
     {{-- ================== FILTER BULAN ================== --}}
 <form method="GET" class="mb-3 d-flex justify-content-center" style="gap: 10px;">
-    <select name="bulan" class="form-select w-auto" onchange="this.form.submit()">
+    <!-- <select name="bulan" class="form-select w-auto" onchange="this.form.submit()">
         @php
             $daftarBulan = [
                 '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
@@ -56,7 +56,7 @@
                 {{ $nama }}
             </option>
         @endforeach
-    </select>
+    </select> -->
 
     <select name="tahun" class="form-select w-auto" onchange="this.form.submit()">
         @php
@@ -94,8 +94,8 @@
 
     {{-- ================== TABEL PENILAIAN ================== --}}
     <div class="card shadow-lg border-0 mt-4">
-        <div class="card-header bg-success text-white text-center fw-bold fs-5">
-            PENILAIAN HASIL cs
+        <div class="card-header bg-success text-white text-center fw-bold fs-5 text-uppercase">
+            Penilaian Sales
         </div>
 
         <div class="card-body p-0">
@@ -117,46 +117,28 @@
                     <tr>
                         <td class="text-center fw-bold">{{ $no++ }}</td>
                         <td class="fw-bold">Penjualan & Omset</td>
-                        <td>Target Rp 50 juta/bulan</td>
-                        <td class="text-center fw-bold">40%</td>
+                        <td>Target Rp 1 Miliar/bulan</td>
+                        <td class="text-center fw-bold">60%</td>
                         <td class="fw-bold">Rp {{ number_format($totalOmset) }}</td>
                         <td class="text-center fw-bold">{{ $nilaiOmset }}</td>
                     </tr>
 
-                    {{-- 2 (Closing Paket - Hide for cs-smi) --}}
-                    @if(auth()->user()->role !== 'cs-smi')
-                    <tr>
-                        <td class="text-center fw-bold">{{ $no++ }}</td>
-                        <td class="fw-bold">Closing Paket</td>
-                        <td>Target 1 closing paket per bulan</td>
-                        <td class="text-center fw-bold">20%</td>
-                        <td class="fw-bold">{{ $closingPaket }} peserta</td>
-                        <td class="text-center fw-bold">{{ $nilaiClosingPaket }}</td>
-                    </tr>
-                    @endif
-
-                    {{-- 3 --}}
+                    {{-- 2 --}}
                     <tr>
                         <td class="text-center fw-bold">{{ $no++ }}</td>
                         <td class="fw-bold">Database Baru</td>
-                        <td>Target 50 database baru</td>
-                        <td class="text-center fw-bold">{{ auth()->user()->role == 'cs-smi' ? '30%' : '20%' }}</td>
+                        <td>Target 100 database baru</td>
+                        <td class="text-center fw-bold">20%</td>
                         <td class="fw-bold">{{ $databaseBaru }}</td>
                         <td class="text-center fw-bold">{{ $nilaiDatabaseBaru }}</td>
                     </tr>
 
-                    {{-- 4 --}}
-                    @php
-                        $totalSumManual = 0;
-                        if(isset($manual)){
-                            $totalSumManual = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
-                        }
-                    @endphp
+                    {{-- 3 --}}
                     <tr>
                         <td class="text-center fw-bold">{{ $no++ }}</td>
                         <td class="fw-bold">Penilaian Atasan</td>
                         <td>Total Skor Kualitatif (Max 500)</td>
-                        <td class="text-center fw-bold">{{ auth()->user()->role == 'cs-smi' ? '30%' : '20%' }}</td>
+                        <td class="text-center fw-bold">20%</td>
                         <td class="fw-bold">{{ $totalSumManual }}</td>
                         <td class="text-center fw-bold">{{ $nilaiManualPart ?? 0 }}</td>
                     </tr>

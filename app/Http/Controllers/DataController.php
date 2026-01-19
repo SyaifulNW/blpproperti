@@ -526,25 +526,30 @@ private function filterKelasByUser($user)
     {
         // Ambil data peserta dari tabel data
         $data = Data::findOrFail($id);
+
+        // Validasi: Harus pilih produk (kelas_id)
+        if (empty($data->kelas_id)) {
+            return redirect()->back()->with('error', 'Gagal: Silakan pilih produk terlebih dahulu sebelum pindah ke Sales Plan.');
+        }
+
         $salesPlan = new SalesPlan();
         $salesPlan->nama = $data->nama;          // dari tabel peserta
         $salesPlan->situasi_bisnis      = $data->situasi_bisnis; // dari tabel peserta
         $salesPlan->kendala      = $data->kendala;       // dari tabel peserta
         $salesPlan->kelas_id     = $data->kelas_id;
-       $salesPlan->data_id      = $data->id; // Link ke data asli 
+        $salesPlan->data_id      = $data->id; // Link ke data asli 
         $salesPlan->created_by   = auth()->id();
         $salesPlan->status       = 'cold'; // default awal
 
-        // Kolom tambahan biarkan kosong dulu, admin yang isi nant
+        // Kolom tambahan biarkan kosong dulu, admin yang isi nanti
         $salesPlan->save();
 
+        // Update status_peserta agar hilang dari view Database
+        $data->status_peserta = 'sales_plan';
+        $data->save();
 
-        // Kalau mau pindahkan (hapus dari tabel data) bisa tambahkan:
-        // $data->delete();
-
-          return redirect()->back()
+        return redirect()->back()
             ->with('success', 'Peserta berhasil dipindahkan ke Sales Plan.');
-        
     }
     public function getStatistik(Request $request)
     {

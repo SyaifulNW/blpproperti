@@ -152,7 +152,7 @@
 
 <div class="container">
 @php
-    $targetOmset = 25000000; // Rp 25.000.000
+    $targetOmset = 1000000000; // Rp 1.000.000.000
     $groupedByCS = $salesplans->groupBy('created_by');
 
     $namaCS = [
@@ -437,14 +437,14 @@
         // Tentukan Target Omset
         if ($isSmiClass) {
             // Default 50 juta untuk SMI jika tidak ada setting
-            $targetOmset = isset($targetOmsetSmi) && $targetOmsetSmi > 0 ? $targetOmsetSmi : 50000000;
+            $targetOmset = isset($targetOmsetSmi) && $targetOmsetSmi > 0 ? $targetOmsetSmi : 1000000000;
     } elseif (empty(request('kelas')) && !empty(request('bulan'))) {
-             // Jika Filter Bulan dipilih & Kelas "Semua Kelas", Target = 50 Juta
-            $targetOmset = 50000000;
+             // Jika Filter Bulan dipilih & Kelas "Semua Kelas", Target = 1 Miliar
+            $targetOmset = 1000000000;
             
         } else {
-            // Default 25 juta untuk lainnya (Filter Per Kelas atau Default)
-            $targetOmset = isset($targetOmsetGlobal) && $targetOmsetGlobal > 0 ? $targetOmsetGlobal : 25000000;
+            // Default 1 Miliar untuk lainnya (Filter Per Kelas atau Default)
+            $targetOmset = isset($targetOmsetGlobal) && $targetOmsetGlobal > 0 ? $targetOmsetGlobal : 1000000000;
         }
         $selisih = max(0, $targetOmset - $totalNominal);
         $tercapai = $totalNominal >= $targetOmset;
@@ -561,10 +561,12 @@
 
 /* Custom Badge Colors for Leads */
 .badge-leads-iklan { background-color: #28a745; color: white; } /* Hijau */
-.badge-leads-instagram { background-color: #6f42c1; color: white; } /* Ungu */
-.badge-leads-facebook { background-color: #0d6efd; color: white; } /* Biru */
-.badge-leads-alumni { background-color: #dc3545; color: white; } /* Merah */
+.badge-leads-referal { background-color: #dc3545; color: white; } /* Merah */
 .badge-leads-marketing { background-color: #ffc107; color: black; } /* Kuning */
+.badge-leads-mandiri { background-color: #0d6efd; color: white; } /* Biru */
+.badge-leads-pameran { background-color: #fd7e14; color: white; } /* Orange */
+.badge-leads-sosmed { background-color: #6f42c1; color: white; } /* Ungu */
+.badge-leads-canvasing { background-color: #20c997; color: white; } /* Teal */
 .badge-leads-lain { background-color: #6c757d; color: white; } /* Abu-abu */
 
 
@@ -606,7 +608,7 @@
 
     $totalSalesplan = $countTertarik + $countMauTransfer + $countNo + $countSudahTransfer + $countCold;
 
-    $targetSalesplan = 30;
+    $targetSalesplan = 2;
     $selisihTarget = $targetSalesplan - $totalSalesplan;
 @endphp
 
@@ -619,7 +621,7 @@
                 Target
             </div>
             <span class="badge bg-primary fs-5 px-4 py-2 fw-bold text-white">
-                {{ $targetSalesplan }}
+                {{ $targetSalesplan }} unit
             </span>
         </div>
         &nbsp;
@@ -646,7 +648,7 @@
         <!-- Keterangan -->
         <div class="text-center">
             <div class="mb-1 fw-semibold text-dark">
-                Closing Paket
+                Keterangan
             </div>
             @if($totalSalesplan >= $targetSalesplan)
                 <span class="badge bg-success fs-6 px-4 py-2 fw-bold text-white">
@@ -834,17 +836,13 @@ $(document).ready(function() {
                             <th colspan="10" class="text-center">Follow Up</th>
 
                             <th rowspan="3">Potensi</th>
-                            <th rowspan="3">Closing Paket</th>
+                             <th rowspan="3">Keterangan</th>
                             <th rowspan="5">Status</th>
-                            @if(strtolower(auth()->user()->role) !== 'administrator')
-                                <th rowspan="3">Terakhir Update</th>
-                            @endif
                         
                             @if(Auth::user()->email == "mbchamasah@gmail.com")
                             <th rowspan="3">Input Oleh</th>
                             @endif
-                            <th rowspan="3" style="min-width: 200px;">Komentar Atasan</th>
-                            <th rowspan="3">Aksi</th>
+                            <th rowspan="3">Hapus</th>
                         </tr>
                         <tr>
                             {{-- Header FU 1 - 5 --}}
@@ -906,14 +904,18 @@ $(document).ready(function() {
 
                                 if (str_contains($leadLower, 'iklan')) {
                                     $badgeClass = 'badge-leads-iklan';
-                                } elseif (str_contains($leadLower, 'instagram') || str_contains($leadLower, 'ig')) {
-                                    $badgeClass = 'badge-leads-instagram';
-                                } elseif (str_contains($leadLower, 'facebook') || str_contains($leadLower, 'fb')) {
-                                    $badgeClass = 'badge-leads-facebook';
-                                } elseif (str_contains($leadLower, 'alumni')) {
-                                    $badgeClass = 'badge-leads-alumni';
+                                } elseif (str_contains($leadLower, 'referal') || str_contains($leadLower, 'alumni')) {
+                                    $badgeClass = 'badge-leads-referal';
                                 } elseif (str_contains($leadLower, 'marketing')) {
                                     $badgeClass = 'badge-leads-marketing';
+                                } elseif (str_contains($leadLower, 'mandiri')) {
+                                    $badgeClass = 'badge-leads-mandiri';
+                                } elseif (str_contains($leadLower, 'pameran')) {
+                                    $badgeClass = 'badge-leads-pameran';
+                                } elseif (str_contains($leadLower, 'sosmed') || str_contains($leadLower, 'instagram') || str_contains($leadLower, 'ig') || str_contains($leadLower, 'facebook') || str_contains($leadLower, 'fb')) {
+                                    $badgeClass = 'badge-leads-sosmed';
+                                } elseif (str_contains($leadLower, 'canvasing')) {
+                                    $badgeClass = 'badge-leads-canvasing';
                                 }
                             @endphp
                             <td>
@@ -1038,11 +1040,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                     </select>
                                 </td>
 
-                                @if(strtolower(auth()->user()->role) !== 'administrator')
-                                <td class="text-center">
-                                    <small>{{ $plan->updated_at ? $plan->updated_at->format('d M Y H:i') : '-' }}</small>
-                                </td>
-                                @endif
 
 
                                 <style>
@@ -1137,14 +1134,6 @@ $(document).on('change', '.status-dropdown', function() {
                                 @endif
 
                                 <!-- Komentar Atasan -->
-                                <td @if(strtolower(auth()->user()->role) == 'administrator') 
-                                        contenteditable="true" 
-                                        class="editable bg-light"
-                                    @endif
-                                    data-id="{{ $plan->id }}"
-                                    data-field="komentar_atasan">
-                                    {{ $plan->komentar_atasan ?? '' }}
-                                </td>
 
                                 <!--Form Hapus-->
                                 <td>
@@ -1190,7 +1179,7 @@ $(document).on('change', '.status-dropdown', function() {
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="22" class="text-center text-muted">
+                            <td colspan="20" class="text-center text-muted">
                                 Tidak ada data sales plan ditemukan.
                             </td>
                         </tr>

@@ -19,18 +19,7 @@ class DailyController extends Controller
         $userId  = auth()->id();
 
         // Ambil master aktivitas, dikelompokkan per kategori (key = categories_id)
-        $userRole = strtolower(auth()->user()->role);
-        $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
-
-        if ($isCs) {
-            $activities = Activity::whereHas('kategori', function($q) {
-                $q->where('nama', 'Intake Activity');
-            })->get()->groupBy('categories_id');
-        } else {
-            $activities = Activity::whereHas('kategori', function($q) {
-                $q->where('nama', '!=', 'Intake Activity');
-            })->orderBy('categories_id')->get()->groupBy('categories_id');
-        }
+        $activities = Activity::orderBy('categories_id')->get()->groupBy('categories_id');
 
         // Ambil realisasi user untuk TANGGAL yang dipilih (dipakai saat render form)
         $daily = DailyActiviti::where('user_id', $userId)
@@ -109,12 +98,12 @@ class DailyController extends Controller
                 'target'      => '100%',
                 'bobot'       => $bobotKategori,
                 'persentase'  => round($skorKategori, 2),   // tampilkan sebagai % (mis. 86.00)
-                'nilai'       => round($nilaiKategori, 2),  // poin kontribusi dari kategori
-            ];
-
             $totalKpi += $nilaiKategori;
             $totalBobot += $bobotKategori;
         }
+
+        // Hitung Total Nilai Akhir
+        $totalNilai = $totalKpi;
 
         // Kirim ke view: activities, daily (harian), tanggal, dan kpiData + totals
       $totalNilai = $totalKpi; // alias biar nyambung dengan blade

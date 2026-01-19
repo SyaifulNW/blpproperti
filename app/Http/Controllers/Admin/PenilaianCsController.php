@@ -16,13 +16,13 @@ class PenilaianCsController extends Controller
         // (Ganti dengan query DB Anda)
         // ================================
         $totalOmset = 52000000; 
-        $nilaiOmset = 40;
+        $nilaiOmset = 3.12; // Example: 52jt / 1M * 60
 
-        $closingPaket = 2;
-        $nilaiClosingPaket = 25;
+        $closingPaket = 0;
+        $nilaiClosingPaket = 0;
 
         $databaseBaru = 48;
-        $nilaiDatabaseBaru = 27;
+        $nilaiDatabaseBaru = 9.6; // Example: 48 / 100 * 20
 
         // Total nilai keseluruhan
         $totalNilai = $nilaiOmset + $nilaiClosingPaket + $nilaiDatabaseBaru;
@@ -110,13 +110,13 @@ class PenilaianCsController extends Controller
     {
         // Data sama seperti index (bisa pakai query real)
         $totalOmset = 52000000;
-        $nilaiOmset = 40;
+        $nilaiOmset = 3.12;
 
-        $closingPaket = 2;
-        $nilaiClosingPaket = 25;
+        $closingPaket = 0;
+        $nilaiClosingPaket = 0;
 
         $databaseBaru = 48;
-        $nilaiDatabaseBaru = 27;
+        $nilaiDatabaseBaru = 9.6;
 
         $totalNilai = $nilaiOmset + $nilaiClosingPaket + $nilaiDatabaseBaru;
 

@@ -150,26 +150,19 @@ class PenilaianCsController extends Controller
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
         
-        $targetOmset = 50000000; // 50 Juta
+        // 1. Omset (Bobot 60%)
+        $targetOmset = 1000000000; // 1 Miliar
+        $scoreOmset = $targetOmset > 0 ? min(60, round(($totalOmset / $targetOmset) * 60, 2)) : 0;
         $nilaiOmset = $targetOmset > 0 ? min(100, round(($totalOmset / $targetOmset) * 100)) : 0;
-        
-        // --- SCORE CALCULATIONS ---
 
-        // 1. Omset (Bobot 40%)
-        $scoreOmset = $targetOmset > 0 ? min(40, round(($totalOmset / $targetOmset) * 40)) : 0;
-
-        // 2. Closing Paket (Bobot 20%)
-        $closingPaketCount = SalesPlan::where('created_by', $userId)
-            ->whereYear('updated_at', $tahun)
-            ->whereMonth('updated_at', $bulan)
-            ->where('closing_paket', 1)
-            ->count();
-        $targetClosingPaket = 1;
-        $scoreClosingPaket = min(20, $closingPaketCount * 20);
+        // 2. Closing Paket (REMOVED)
+        $scoreClosingPaket = 0;
+        $closingPaketCount = 0;
+        $targetClosingPaket = 0;
 
         // 3. Database Baru (Bobot 20%)
-        $targetDatabase = 50;
-        $scoreDatabase = $targetDatabase > 0 ? min(20, round(($totalDatabase / $targetDatabase) * 20)) : 0;
+        $targetDatabase = 100;
+        $scoreDatabase = $targetDatabase > 0 ? min(20, round(($totalDatabase / $targetDatabase) * 20, 2)) : 0;
 
         // 4. Manual (Bobot 20%)
         $scoreManual = 0;
@@ -182,7 +175,7 @@ class PenilaianCsController extends Controller
                 ->first();
 
         if ($manual) {
-             $scoreManual = round(($manual->total_nilai / 100) * 20);
+             $scoreManual = round(($manual->total_nilai / 100) * 20, 2);
              $manualTotalSum = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
         }
 
@@ -539,41 +532,36 @@ public function store(Request $request)
 
     private function hitungTotalNilaiCS($userId, $bulan, $tahun)
     {
-        // 1. Omset
+        // 1. Omset (60%)
         $totalOmset = SalesPlan::where('created_by', $userId)
             ->whereYear('updated_at', $tahun)
             ->whereMonth('updated_at', $bulan)
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
-        $targetOmset = 50000000; 
-        $scoreOmset = $targetOmset > 0 ? min(40, round(($totalOmset / $targetOmset) * 40)) : 0;
+        $targetOmset = 1000000000; 
+        $scoreOmset = $targetOmset > 0 ? min(60, round(($totalOmset / $targetOmset) * 60, 2)) : 0;
 
-        // 2. Closing Paket
-        $closingPaketCount = SalesPlan::where('created_by', $userId)
-            ->whereYear('updated_at', $tahun)
-            ->whereMonth('updated_at', $bulan)
-            ->where('closing_paket', 1)
-            ->count();
-        $scoreClosingPaket = min(20, $closingPaketCount * 20);
+        // 2. Closing Paket (REMOVED)
+        $scoreClosingPaket = 0;
 
-        // 3. Database
+        // 3. Database (20%)
         $userTarget = User::find($userId);
         $namaUser = $userTarget->name ?? '';
         $totalDatabase = Data::where('created_by', $namaUser)
             ->whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->count();
-        $targetDatabase = 50;
-        $scoreDatabase = $targetDatabase > 0 ? min(20, round(($totalDatabase / $targetDatabase) * 20)) : 0;
+        $targetDatabase = 100;
+        $scoreDatabase = $targetDatabase > 0 ? min(20, round(($totalDatabase / $targetDatabase) * 20, 2)) : 0;
 
-        // 4. Manual
+        // 4. Manual (20%)
         $manual = \App\Models\PenilaianManual::where('user_id', $userId)
                 ->where('bulan', $bulan)
                 ->where('tahun', $tahun)
                 ->first();
         $scoreManual = 0;
         if ($manual) {
-             $scoreManual = round(($manual->total_nilai / 100) * 20);
+             $scoreManual = round(($manual->total_nilai / 100) * 20, 2);
         }
 
         return $scoreOmset + $scoreClosingPaket + $scoreDatabase + $scoreManual;

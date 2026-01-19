@@ -138,6 +138,16 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
+
+        /* Sidebar Item Separators */
+        .sidebar .nav-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            margin-bottom: 2px;
+        }
+
+        .sidebar .nav-item:last-child {
+            border-bottom: none;
+        }
     </style>
 
     <script>
@@ -348,7 +358,7 @@
                     <li class="nav-item">
                         <a class="nav-link text-white" href="{{ route('marketing.penilaian.index') }}">
                             <i class="fas fa-fw fa-star me-2"></i>
-                            <span>Penilaian Kinerja</span>
+                            <span>Penilaian Sales</span>
                         </a>
                     </li>
                 @endif
@@ -535,7 +545,7 @@
                 @if(\App\Models\Menu::isActive('penilaian_karyawan'))
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('admin.penilaian-cs.index') }}">
-                        <strong><i class="fa-solid fa-list-user me-2"></i> PENILAIAN KARYAWAN</strong> 
+                        <strong><i class="fa-solid fa-list-user me-2"></i> PENILAIAN SALES</strong> 
                     </a>
                 </li>
                 @endif
@@ -649,7 +659,7 @@
 
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-star-half-stroke me-2"></i> Penilaian Kinerja</strong> 
+                        <strong><i class="fa-solid fa-star-half-stroke me-2"></i> Penilaian Sales</strong> 
                     </a>
                 </li>
 

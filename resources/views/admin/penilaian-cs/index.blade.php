@@ -200,7 +200,7 @@
         <!-- Card Tabel Penilaian Hasil -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 bg-success">
-                 <h6 class="m-0 font-weight-bold text-white text-center">PENILAIAN HASIL (CS {{ strtoupper($namaUser ?? '') }})</h6>
+                 <h6 class="m-0 font-weight-bold text-white text-center">PENILAIAN SALES (CS {{ strtoupper($namaUser ?? '') }})</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -219,29 +219,21 @@
                             <tr>
                                 <td>1</td>
                                 <td>Penjualan & Omset</td>
-                                <td>Target Rp {{ number_format($targetOmset ?? 0,0,',','.') }}/bulan</td>
-                                <td>40%</td>
+                                <td>Target Rp 1 Miliar/bulan</td>
+                                <td>60%</td>
                                 <td>Rp {{ number_format($totalOmset ?? 0,0,',','.') }}</td>
                                 <td>{{ $scoreOmset ?? 0 }}</td>
                             </tr>
                             <tr>
-                                 <td>2</td>
-                                 <td>Closing Paket</td>
-                                 <td>Target {{ $targetClosingPaket ?? 1 }} closing paket per bulan</td>
-                                 <td>20%</td>
-                                 <td>{{ $closingPaketCount ?? 0 }} peserta</td>
-                                 <td>{{ $scoreClosingPaket ?? 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
+                                <td>2</td>
                                 <td>Database Baru</td>
-                                <td>Target {{ $targetDatabase ?? 50 }} database baru</td>
+                                <td>Target 100 database baru</td>
                                 <td>20%</td>
                                 <td>{{ $totalDatabase ?? 0 }}</td>
                                 <td>{{ $scoreDatabase ?? 0 }}</td>
                             </tr>
                             <tr>
-                                <td>4</td>
+                                <td>3</td>
                                 <td>Penilaian Atasan</td>
                                 <td>Total Skor Kualitatif (Max 500)</td>
                                 <td>20%</td>
@@ -249,7 +241,7 @@
                                  <td>{{ $scoreManual ?? 0 }}</td>
                             </tr>
                             <tr>
-                                <td>5</td>
+                                <td>4</td>
                                 <td>Daily Activity
                                 </td>
                                 <td>Pencapaian KPI Harian</td>

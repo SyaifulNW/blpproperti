@@ -13,6 +13,13 @@ class SalesPlan extends Model
     protected $table = 'salesplans'; // Specify the table name if it differs from the model name
     protected $fillable = [
         'data_id',
+        'nama',
+        'situasi_bisnis',
+        'kendala',
+        'kelas_id',
+        'tanggal',
+        'status',
+        'nominal',
         'fu1_hasil',
         'fu1_tindak_lanjut',
         'fu2_hasil',
@@ -30,7 +37,6 @@ class SalesPlan extends Model
         'fu8_hasil',
         'fu8_tindak_lanjut',
         'keterangan',
-        'nominal',
         'kebutuhan',
         'created_by',
         'komentar_atasan'

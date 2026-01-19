@@ -250,7 +250,7 @@
         <!-- Card Tabel Penilaian Hasil -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                 <h6 class="m-0 font-weight-bold text-white text-center">PENILAIAN HASIL (MARKETING {{ strtoupper($targetUser->name ?? auth()->user()->name) }})</h6>
+                 <h6 class="m-0 font-weight-bold text-white text-center">PENILAIAN SALES (MARKETING {{ strtoupper($targetUser->name ?? auth()->user()->name) }})</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">

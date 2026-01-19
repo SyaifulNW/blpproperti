@@ -68,6 +68,47 @@
         </tr>
     </table>
 
+    {{-- RANGKUMAN INTAKE ACTIVITY --}}
+    <table style="width: 50%; margin-bottom: 20px;">
+        <thead>
+            <tr>
+                <th colspan="3" style="background: #333; color: white;">RANGKUMAN INTAKE ACTIVITY</th>
+            </tr>
+            <tr>
+                <th>Aktivitas</th>
+                <th>Target Bulanan</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="left">Database baru</td>
+                <td>100</td>
+                <td style="color: red; font-weight: bold;">Wajib</td>
+            </tr>
+            <tr>
+                <td class="left">Follow-up aktif</td>
+                <td>80–120</td>
+                <td style="color: red; font-weight: bold;">Wajib</td>
+            </tr>
+            <tr>
+                <td class="left">Presentasi</td>
+                <td>8–12</td>
+                <td style="color: red; font-weight: bold;">Wajib</td>
+            </tr>
+            <tr>
+                <td class="left">Visit lokasi</td>
+                <td>10</td>
+                <td style="color: red; font-weight: bold;">Wajib</td>
+            </tr>
+            <tr>
+                <td class="left">Closing</td>
+                <td>1–2</td>
+                <td style="color: green; font-weight: bold;">Target hasil</td>
+            </tr>
+        </tbody>
+    </table>
+
     {{-- LOOP PER KATEGORI --}}
     @foreach($categories as $kategori => $aktivitasList)
     <table>

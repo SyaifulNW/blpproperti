@@ -222,12 +222,8 @@ class SalesPlanController extends Controller
                 if (!$item->kelas) continue;
                 $namaKelas = $item->kelas->nama_kelas;
                 
-                // Logic Target: SMI = 50jt, Lainnya = 25jt
-                if (str_contains($namaKelas, 'Start-Up Muda Indonesia') || str_contains($namaKelas, 'Start-Up Muslim Indonesia')) {
-                    $t = 50000000;
-                } else {
-                    $t = 25000000;
-                }
+                // Logic Target: 1 Miliar per kelas
+                $t = 1000000000;
                 $totalTargetCS += $t;
             }
             $csTargets[$csId] = $totalTargetCS;

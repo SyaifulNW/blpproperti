@@ -244,10 +244,7 @@
                         <thead class="table-primary">
                             <tr>
                                 <th>Nama Produk</th>
-                                <th>Tanggal</th>
                                 <th>Omset</th>
-                                <th>Target</th>
-                                <th>% Tercapai</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -259,13 +256,8 @@
                                 @endphp
                                 <tr>
                                     <td class="fw-semibold">{{ $k['nama_kelas'] }}</td>
-                                    <td>{{ $jadwalKelas[$k['nama_kelas']] ?? '-' }}</td>
                                     <td class="text-success fw-bold">
                                         Rp {{ number_format($k['omset'], 0, ',', '.') }}
-                                    </td>
-                                    <td>Rp {{ number_format($k['target'], 0, ',', '.') }}</td>
-                                    <td class="{{ $persen >= 100 ? 'text-success fw-bold' : ($persen >= 75 ? 'text-warning fw-bold' : 'text-danger fw-bold') }}">
-                                        {{ $persen }}%
                                     </td>
                                 </tr>
                             @empty
@@ -277,7 +269,7 @@
             
                         @php
                         $totalOmset = $kelasOmsetFiltered->sum('omset');
-                        $targetBulanan = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 100000000;
+                        $targetBulanan = 1000000000;
                         $persenTercapai = $targetBulanan > 0 ? round(($totalOmset / $targetBulanan) * 100, 2) : 0;
 
                         // 🔹 Logika Reward Bulanan (nilai numerik + teks)
@@ -301,21 +293,21 @@
                         @endphp
 
                         <tfoot>
-                            <tr class="bg-light fw-bold">
-                                <td colspan="3" class="text-end text-dark">Total Omset</td>
-                                <td colspan="3" class="text-start text-success">
+                             <tr class="bg-light fw-bold">
+                                <td colspan="1" class="text-end text-dark">Total Omset</td>
+                                <td colspan="1" class="text-start text-success">
                                     Rp {{ number_format($totalOmset, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr class="bg-light fw-bold">
-                                <td colspan="3" class="text-end text-dark">Target Omset Bulanan</td>
-                                <td colspan="3" class="text-start text-dark">
+                                <td colspan="1" class="text-end text-dark">Target Omset Bulanan</td>
+                                <td colspan="1" class="text-start text-dark">
                                     Rp {{ number_format($targetBulanan, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr class="bg-light fw-bold">
-                                <td colspan="3" class="text-end text-dark">Persentase Tercapai</td>
-                                <td colspan="3" class="text-start {{ $persenTercapai >= 100 ? 'text-success' : ($persenTercapai >= 75 ? 'text-warning' : 'text-danger') }}">
+                                <td colspan="1" class="text-end text-dark">Persentase Tercapai</td>
+                                <td colspan="1" class="text-start {{ $persenTercapai >= 100 ? 'text-success' : ($persenTercapai >= 75 ? 'text-warning' : 'text-danger') }}">
                                     {{ $persenTercapai }}%
                                 </td>
                             </tr>
@@ -423,7 +415,7 @@
                 
                 {{-- JUDUL --}}
                 <div class="text-center mb-3">
-                    <h3 class="fw-bold" style="color: #5a5c69;">Penilaian Hasil CS</h3>
+                    <h3 class="fw-bold" style="color: #5a5c69;">Penilaian Sales</h3>
                 </div>
 
                 {{-- FILTER BULAN & TAHUN --}}
@@ -462,7 +454,7 @@
                 {{-- TABEL PENILAIAN UTAMA --}}
                 <div class="card shadow border-0 mb-4">
                     <div class="card-header text-white text-center fw-bold" style="background-color: #00c0ef;">
-                        PENILAIAN HASIL cs
+                        PENILAIAN SALES
                     </div>
                     <div class="card-body p-0">
                         <table class="table table-bordered mb-0 text-center align-middle">
@@ -481,35 +473,26 @@
                                 <tr>
                                     <td>1</td>
                                     <td class="text-start">Penjualan & Omset</td>
-                                    <td class="text-start">Target Rp 100 juta/bulan</td>
-                                    <td>40%</td>
+                                    <td class="text-start">Target Rp 1 Miliar/bulan</td>
+                                    <td>60%</td>
                                     <td>Rp {{ number_format($totalOmset ?? 0, 0, ',', '.') }}</td>
                                     <td>{{ $nilaiOmset ?? 0 }}</td>
                                 </tr>
-                                {{-- 2. Closing Paket --}}
+                                {{-- 2. Database Baru --}}
                                 <tr>
                                     <td>2</td>
-                                    <td class="text-start">Closing Paket</td>
-                                    <td class="text-start">Target 1 closing paket per bulan</td>
-                                    <td>20%</td>
-                                    <td>{{ $closingPaket ?? 0 }} peserta</td>
-                                    <td>{{ $nilaiClosingPaket ?? 0 }}</td>
-                                </tr>
-                                {{-- 3. Database Baru --}}
-                                <tr>
-                                    <td>3</td>
                                     <td class="text-start">Database Baru</td>
                                     <td class="text-start">Target 100 database baru</td>
                                     <td>20%</td>
                                     <td>{{ $databaseBaru ?? 0 }}</td>
                                     <td>{{ $nilaiDatabaseBaru ?? 0 }}</td>
                                 </tr>
-                                {{-- 4. Penilaian Atasan --}}
+                                {{-- 3. Penilaian Atasan --}}
                                 @php
                                     $manualSum = isset($manual) ? ($manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi) : 0;
                                 @endphp
                                 <tr>
-                                    <td>4</td>
+                                    <td>3</td>
                                     <td class="text-start">Penilaian Atasan</td>
                                     <td class="text-start">Total Skor Kualitatif (Max 500)</td>
                                     <td>20%</td>

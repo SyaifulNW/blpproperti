@@ -31,13 +31,60 @@
             $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
         @endphp
 
+        @if($isCs)
+        {{-- RANGKUMAN INTAKE ACTIVITY --}}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white fw-bold">
+                D. RANGKUMAN INTAKE ACTIVITY (UNTUK SISTEM WEB)
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0 table-sm align-middle">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th>Aktivitas</th>
+                            <th>Target Bulanan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-3">Database baru</td>
+                            <td class="text-center">100</td>
+                            <td class="text-center text-danger fw-bold">Wajib</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">Follow-up aktif</td>
+                            <td class="text-center">80–120</td>
+                            <td class="text-center text-danger fw-bold">Wajib</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">Presentasi</td>
+                            <td class="text-center">8–12</td>
+                            <td class="text-center text-danger fw-bold">Wajib</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">Visit lokasi</td>
+                            <td class="text-center">10</td>
+                            <td class="text-center text-danger fw-bold">Wajib</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">Closing</td>
+                            <td class="text-center">1–2</td>
+                            <td class="text-center text-success fw-bold">Target hasil</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+
         @foreach($activities as $kategoriId => $list)
             @php
                 $kategoriNama = $list->first()->kategori->nama ?? 'Tanpa Kategori';
             @endphp
             <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <span>{{ $isCs ? 'RANGKUMAN INTAKE ACTIVITY' : $kategoriNama }}</span>
+                <span>{{ $kategoriNama }}</span>
 
                 @if($kategoriNama === 'Aktivitas Merawat Customer')
                 <small class="fst-italic">
@@ -50,15 +97,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width:5%">No</th>
-                                <th style="width:40%">Aktivitas</th>
-                                @if(!$isCs)
-                                    <th style="width:10%">Target Daily</th>
-                                @endif
-                                <th style="width:{{ $isCs ? '25%' : '10%' }}">Target Bulan</th>
-                                @if(!$isCs)
-                                    <th style="width:10%">Bobot</th>
-                                @endif
-                                <th style="width:{{ $isCs ? '30%' : '15%' }}">Realisasi</th>
+                                <th style="width:35%">Aktivitas</th>
+                                <th style="width:10%">Target Daily</th>
+                                <th style="width:10%">Target Bulan</th>
+                                <th style="width:10%">Bobot</th>
+                                <th style="width:15%">Realisasi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -75,14 +118,9 @@
                                             @endif
                                         @endif
                                     </td>
-                                    @if(!$isCs)
-                                        <td class="text-center">{{ number_format($act->target_daily, 0) }}</td>
-                                    @endif
+                                    <td class="text-center">{{ number_format($act->target_daily, 0) }}</td>
                                     <td class="text-center">{{ number_format($act->target_bulanan, 0) }}</td>
-
-                                    @if(!$isCs)
-                                        <td class="text-center">{{ $act->bobot }}</td>
-                                    @endif
+                                    <td class="text-center">{{ $act->bobot }}</td>
                                     <td>
                                         <input type="number" 
                                                name="realisasi[{{ $act->id }}]" 

@@ -40,7 +40,7 @@
                 <option value="">- Pilih -</option>
                 <option value="Marketing" {{ $item->leads == 'Marketing' ? 'selected' : '' }}>Marketing</option>
                 <option value="Iklan" {{ $item->leads == 'Iklan' ? 'selected' : '' }}>Iklan</option>
-                <option value="Alumni" {{ $item->leads == 'Alumni' ? 'selected' : '' }}>Alumni</option>
+                <option value="Alumni" {{ $item->leads == 'Alumni' ? 'selected' : '' }}>Referal</option>
                 <option value="Mandiri" {{ $item->leads == 'Mandiri' ? 'selected' : '' }}>Mandiri</option>
             </select>
         </td>
@@ -67,7 +67,7 @@
                 <option value="">- Pilih Sumber Leads -</option>
                 <option value="Marketing" {{ $item->leads == 'Marketing' ? 'selected' : '' }}>Marketing</option>
                 <option value="Iklan" {{ $item->leads == 'Iklan' ? 'selected' : '' }}>Iklan</option>
-                <option value="Alumni" {{ $item->leads == 'Alumni' ? 'selected' : '' }}>Alumni</option>
+                <option value="Alumni" {{ $item->leads == 'Alumni' ? 'selected' : '' }}>Referal</option>
                 <option value="Mandiri" {{ $item->leads == 'Mandiri' ? 'selected' : '' }}>Mandiri</option>
             </select>
         </td>
@@ -93,7 +93,7 @@
     @if(strtolower(auth()->user()->role) !== 'marketing')
     <td>
         <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="kelas_id">
-            <option value="">- Pilih Kelas -</option>
+            <option value="">- Pilih Produk -</option>
             @foreach($kelas as $k)
             <option value="{{ $k->id }}" {{ $item->kelas_id == $k->id ? 'selected' : '' }}>
                 {{ $k->nama_kelas }}
@@ -102,22 +102,14 @@
         </select>
     </td>
 
-    {{-- Berhasil Spin --}}
-    <td>
-        <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="berhasil_spin">
-            <option value="">- Pilih -</option>
-            <option value="Ya" {{ $item->berhasil_spin == 'Ya' ? 'selected' : '' }}>Ya</option>
-            <option value="Tidak" {{ $item->berhasil_spin == 'Tidak' ? 'selected' : '' }}>Tidak</option>
-        </select>
-    </td>
-
-    {{-- Ikut Zoom --}}
-    <td>
-        <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="ikut_zoom">
-            <option value="">- Pilih -</option>
-            <option value="Ya" {{ $item->ikut_zoom == 'Ya' ? 'selected' : '' }}>Ya</option>
-            <option value="Tidak" {{ $item->ikut_zoom == 'Tidak' ? 'selected' : '' }}>Tidak</option>
-        </select>
+    {{-- Survei Lokasi --}}
+    <td class="text-center">
+        <input type="checkbox" 
+               class="checkbox-inline" 
+               data-id="{{ $item->id }}" 
+               data-field="survei_lokasi"
+               {{ $item->survei_lokasi == 'Ya' ? 'checked' : '' }}
+               style="transform: scale(1.5); cursor: pointer;">
     </td>
     @endif
     
