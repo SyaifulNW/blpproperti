@@ -1,208 +1,177 @@
 @extends('layouts.masteradmin')
 
 @section('content')
-<div class="container my-4">
-    <h4 class="mb-3 text-center text-primary">📅 DAILY ACTIVITY</h4>
-
-    <form id="daily-activity-form" action="{{ route('admin.daily-activity.store') }}" method="POST">
-        @csrf
-
-   <div class="mb-3">
-    <label class="form-label fw-bold">Tanggal:</label>
-    <div style="max-width: 250px;">
-        <input type="date" name="tanggal" class="form-control" 
-               value="{{ $tanggal }}"
-               onchange="window.location='?tanggal=' + this.value">
-    </div>
-      <!-- Export PDF -->
-        <div class="mb-3 text-end">
-            <a href="{{ route('admin.daily-activity.exportPdf', ['bulan' => \Carbon\Carbon::parse($tanggal)->format('Y-m')]) }}" class="btn btn-danger" target="_blank">
-                <i class="fas fa-file-pdf"></i> Export PDF
+<div class="container-fluid py-4">
+    {{-- Header Section --}}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">📅 Daily Activity</h3>
+            <p class="text-muted small mb-0">Monitor and track your daily intake performance</p>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-white p-2 rounded shadow-sm border d-flex align-items-center">
+                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                <input type="date" name="tanggal" class="form-control form-control-sm border-0 bg-transparent fw-bold" 
+                       value="{{ $tanggal }}"
+                       onchange="window.location='?tanggal=' + this.value">
+            </div>
+            <a href="{{ route('admin.daily-activity.exportPdf', ['bulan' => \Carbon\Carbon::parse($tanggal)->format('Y-m')]) }}" 
+               class="btn btn-primary shadow-sm hover-lift" target="_blank">
+                <i class="fas fa-file-pdf me-2"></i> Export PDF
             </a>
         </div>
-    
-    
-</div>
+    </div>
 
-
-
+    {{-- Stats Overview --}}
+    <div class="row mb-4">
         @php
-            $userRole = strtolower(auth()->user()->role);
-            $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
+            $intakeActivities = collect();
+            foreach($activities as $list) {
+                if($list->first() && $list->first()->kategori->nama === 'Intake Activity') {
+                    $intakeActivities = $list;
+                    break;
+                }
+            }
         @endphp
-
-        @if($isCs)
-        {{-- RANGKUMAN INTAKE ACTIVITY --}}
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-dark text-white fw-bold">
-                D. RANGKUMAN INTAKE ACTIVITY (UNTUK SISTEM WEB)
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-bordered mb-0 table-sm align-middle">
-                    <thead class="table-light">
-                        <tr class="text-center">
-                            <th>Aktivitas</th>
-                            <th>Target Bulanan</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="ps-3">Database baru</td>
-                            <td class="text-center">100</td>
-                            <td class="text-center text-danger fw-bold">Wajib</td>
-                        </tr>
-                        <tr>
-                            <td class="ps-3">Follow-up aktif</td>
-                            <td class="text-center">80–120</td>
-                            <td class="text-center text-danger fw-bold">Wajib</td>
-                        </tr>
-                        <tr>
-                            <td class="ps-3">Presentasi</td>
-                            <td class="text-center">8–12</td>
-                            <td class="text-center text-danger fw-bold">Wajib</td>
-                        </tr>
-                        <tr>
-                            <td class="ps-3">Visit lokasi</td>
-                            <td class="text-center">10</td>
-                            <td class="text-center text-danger fw-bold">Wajib</td>
-                        </tr>
-                        <tr>
-                            <td class="ps-3">Closing</td>
-                            <td class="text-center">1–2</td>
-                            <td class="text-center text-success fw-bold">Target hasil</td>
-                        </tr>
-                    </tbody>
-                </table>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 rounded-lg">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Activities</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $intakeActivities->count() }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        @endif
 
-        @foreach($activities as $kategoriId => $list)
-            @php
-                $kategoriNama = $list->first()->kategori->nama ?? 'Tanpa Kategori';
-            @endphp
-            <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <span>{{ $kategoriNama }}</span>
-
-                @if($kategoriNama === 'Aktivitas Merawat Customer')
-                <small class="fst-italic">
-                    🌟 Aktivitas ini fleksibel, tidak harus diinput setiap hari, yang penting target bulanan tercapai
-                </small>
-                @endif
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 rounded-lg">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Working Month</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ \Carbon\Carbon::parse($tanggal)->format('F Y') }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-                <div class="card-body p-0">
-                    <table class="table table-bordered mb-0 table-sm align-middle">
-                        <thead class="table-light">
+        </div>
+    </div>
+
+    {{-- Main Activity Form --}}
+    <form id="daily-activity-form" action="{{ route('admin.daily-activity.store') }}" method="POST">
+        @csrf
+        <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+
+        <div class="card shadow border-0 overflow-hidden rounded-xl">
+            <div class="card-header bg-gradient-primary py-3 d-flex align-items-center justify-content-between border-0">
+                <h6 class="m-0 font-weight-bold text-white">
+                    <i class="fas fa-chart-line me-2"></i> Rangkuman Intake Activity
+                </h6>
+                <span class="badge badge-light text-primary py-2 px-3 rounded-pill fw-bold">Manual Input Mode</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-dark text-uppercase small fw-bold">
                             <tr>
-                                <th style="width:5%">No</th>
-                                <th style="width:35%">Aktivitas</th>
-                                <th style="width:10%">Target Daily</th>
-                                <th style="width:10%">Target Bulan</th>
-                                <th style="width:10%">Bobot</th>
-                                <th style="width:15%">Realisasi</th>
+                                <th class="px-4 py-3 border-0">Aktivitas</th>
+                                <th class="text-center py-3 border-0">Target Bulanan</th>
+                                <th class="text-center py-3 border-0" style="width: 250px;">Realisasi Hari Ini</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($list as $i => $act)
-                                <tr>
-                                    <td class="text-center">{{ $i+1 }}</td>
-                                    <td>
-                                        {{ $act->nama }}
-                                        @if($isCs && $act->kategori->nama === 'Intake Activity')
-                                            @if($act->nama === 'Follow-up aktif') <span class="badge bg-light text-dark border">80-120</span>
-                                            @elseif($act->nama === 'Presentasi') <span class="badge bg-light text-dark border">8-12</span>
-                                            @elseif($act->nama === 'Closing') <span class="badge bg-light text-dark border">1-2 (Target hasil)</span>
-                                            @else <span class="badge bg-light text-dark border">Wajib</span>
-                                            @endif
-                                        @endif
+                        <tbody class="border-top-0">
+                            @forelse($intakeActivities as $act)
+                                <tr class="transition-all">
+                                    <td class="px-4 py-3 font-weight-bold text-dark">
+                                        <div class="d-flex align-items-center">
+                                            <div class="activity-icon-sm bg-primary-soft text-primary rounded me-3 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-check-circle small"></i>
+                                            </div>
+                                            {{ $act->nama }}
+                                        </div>
                                     </td>
-                                    <td class="text-center">{{ number_format($act->target_daily, 0) }}</td>
-                                    <td class="text-center">{{ number_format($act->target_bulanan, 0) }}</td>
-                                    <td class="text-center">{{ $act->bobot }}</td>
-                                    <td>
-                                        <input type="number" 
-                                               name="realisasi[{{ $act->id }}]" 
-                                               class="form-control form-control-sm"
-                                               min="0"
-                                               value="{{ $daily[$act->id] ?? 0 }}">
+                                    <td class="text-center py-3">
+                                        <span class="badge border bg-white text-muted px-3 py-2 rounded-pill fw-bold">
+                                            @if($act->nama === 'Database baru') 100
+                                            @elseif($act->nama === 'Follow-up aktif') 80–120
+                                            @elseif($act->nama === 'Presentasi') 8–12
+                                            @elseif($act->nama === 'Visit lokasi') 10
+                                            @elseif($act->nama === 'Closing') 1–2
+                                            @else {{ number_format($act->target_bulanan, 0) }}
+                                            @endif
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" 
+                                                   name="realisasi[{{ $act->id }}]" 
+                                                   class="form-control text-center fw-bold border-soft shadow-none focus-primary"
+                                                   min="0"
+                                                   placeholder="Input hasil..."
+                                                   value="{{ $daily[$act->id] ?? 0 }}">
+                                            <!-- <span class="input-group-text bg-white border-soft text-muted px-3">
+                                                Units
+                                            </span> -->
+                                        </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted fst-italic">
+                                        <img src="https://img.icons8.com/isometric/100/null/empty-box.png" class="mb-3 d-block mx-auto opacity-50" style="width: 60px;">
+                                        Belum ada data Intake Activity untuk tanggal ini.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-        @endforeach
-
-        <button type="submit" class="btn btn-success">
-            💾 Simpan Aktivitas
-        </button>
+            
+            @if($intakeActivities->count() > 0)
+            <div class="card-footer bg-white py-4 px-4 text-end border-0">
+                <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm hover-lift fw-bold">
+                    <i class="fas fa-save me-2"></i> Simpan Aktivitas
+                </button>
+            </div>
+            @endif
+        </div>
     </form>
-<!--{{-- ================= KPI BULANAN ================= --}}-->
-<!--<div class="card shadow-lg border-0 mt-5">-->
-<!--    <div class="card-header bg-gradient bg-primary text-white text-center fw-bold fs-5">-->
-<!--        📊 KEY PERFORMANCE INDEX (KPI) - CS MBC-->
-<!--    </div>-->
-<!--    <div class="card-body p-0">-->
-<!--        <table class="table table-striped table-hover mb-0 text-center align-middle">-->
-<!--            <thead class="table-dark">-->
-<!--                <tr>-->
-<!--                    <th style="width:5%">No</th>-->
-<!--                    <th style="width:30%">Aktivitas</th>-->
-<!--                    <th style="width:15%">🎯 Target</th>-->
-<!--                    <th style="width:15%">⚖️ Bobot</th>-->
-<!--                    <th style="width:15%">📈 Presentase</th>-->
-<!--                    <th style="width:20%">⭐ Nilai</th>-->
-<!--                </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--                @foreach($kpiData as $i => $row)-->
-<!--                    <tr>-->
-<!--                        <td>{{ $i+1 }}</td>-->
-<!--                        <td class="text-start fw-semibold">{{ $row['nama'] }}</td>-->
-<!--                        <td>-->
-<!--                            <span class="badge bg-info text-dark px-3 py-2">-->
-<!--                                {{ $row['target'] }}%-->
-<!--                            </span>-->
-<!--                        </td>-->
-<!--                        <td>-->
-<!--                            <span class="badge bg-warning text-dark px-3 py-2">-->
-<!--                                {{ $row['bobot'] }}-->
-<!--                            </span>-->
-<!--                        </td>-->
-<!--                        <td>-->
-<!--                            <span class="badge bg-success px-3 py-2">-->
-<!--                                {{ $row['persentase'] }}%-->
-<!--                            </span>-->
-<!--                        </td>-->
-<!--                        <td>-->
-<!--                            <span class="badge bg-primary px-3 py-2">-->
-<!--                                {{ number_format($row['nilai'],2) }}-->
-<!--                            </span>-->
-<!--                        </td>-->
-<!--                    </tr>-->
-<!--                @endforeach-->
-<!--                <tr class="table-success fw-bold">-->
-<!--                    <td colspan="3" class="text-center">TOTAL</td>-->
-<!--                    <td>-->
-<!--                        <span class="badge bg-dark px-3 py-2">{{ $totalBobot }}</span>-->
-<!--                    </td>-->
-<!--                    <td>—</td>-->
-<!--                    <td>-->
-<!--                        <span class="badge bg-danger px-3 py-2">{{ number_format($totalNilai,2) }}</span>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--    </div>-->
-<!--</div>-->
-<!--{{-- ==================================================== --}}-->
-
 </div>
 
-
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    }
+    .rounded-xl { border-radius: 1.25rem !important; }
+    .rounded-lg { border-radius: 0.85rem !important; }
+    .bg-primary-soft { background-color: rgba(78, 115, 223, 0.1); }
+    .border-soft { border-color: #e3e6f0; }
+    .activity-icon-sm { width: 32px; height: 32px; flex-shrink: 0; }
+    .hover-lift { transition: transform 0.2s; }
+    .hover-lift:hover { transform: translateY(-3px); }
+    .transition-all { transition: all 0.2s ease; }
+    .table-hover tbody tr:hover { background-color: rgba(78, 115, 223, 0.03); }
+    .focus-primary:focus {
+        border-color: #bac8f3 !important;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1) !important;
+    }
+    .btn-lg { font-size: 0.95rem; }
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .text-xs { font-size: .7rem; }
+</style>
 @endsection
 
 @push('scripts')

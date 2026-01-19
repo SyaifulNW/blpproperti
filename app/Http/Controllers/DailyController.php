@@ -98,6 +98,8 @@ class DailyController extends Controller
                 'target'      => '100%',
                 'bobot'       => $bobotKategori,
                 'persentase'  => round($skorKategori, 2),   // tampilkan sebagai % (mis. 86.00)
+                'nilai'       => round($nilaiKategori, 2),
+            ];
             $totalKpi += $nilaiKategori;
             $totalBobot += $bobotKategori;
         }
