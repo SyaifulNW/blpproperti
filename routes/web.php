@@ -10,6 +10,16 @@ use App\Http\Controllers\SalesPlanController;
 use App\Http\Controllers\DailyController;
 use App\Http\Controllers\KoordinasiController;
 use App\Http\Controllers\GanttChartController;
+use App\Http\Controllers\PenilaianCsController;
+use App\Http\Controllers\Admin\PenilaianController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\AdminActivityController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProgramKerjaController;
+use App\Http\Controllers\Marketing\PenilaianController as MarketingPenilaianController;
 
 
 
@@ -73,7 +83,7 @@ Route::get('/manager/penilaian-cs', [App\Http\Controllers\PenilaianCsController:
 
 
 
-use App\Http\Controllers\PenilaianCsController;
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('penilaian-cs', [PenilaianCsController::class, 'index'])
@@ -95,7 +105,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
 // routes/web.php
 
-use App\Http\Controllers\Admin\PenilaianController;
+
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::get('penilaian', [PenilaianController::class, 'index'])->name('penilaian.index');
@@ -241,11 +251,11 @@ Route::get('/admin/daily-activity/export-pdf/{bulan}', [DailyController::class, 
     ->name('admin.daily-activity.exportPdf');
 
 
-use App\Http\Controllers\AdminController;
+
 
 Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
 
-use App\Http\Controllers\DashboardController;
+
 Route::get('/admin/operasional', [DashboardController::class, 'operasional'])->name('admin.operasional')->middleware('auth');
 Route::get('/admin/keuangan', [DashboardController::class, 'keuangan'])->name('admin.keuangan')->middleware('auth');
 
@@ -271,7 +281,7 @@ Route::middleware(['auth', 'role:administrator'])->group(function () {
     // Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
 
 // Manajemen kelas
-use App\Http\Controllers\KelasController;
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/kelas', [KelasController::class, 'index'])->name('kelas.index');
@@ -294,7 +304,7 @@ Route::post('/koordinasi/komentar', [KoordinasiController::class, 'kirimKomentar
     ->name('komentar.store');
     
     // routes/web.php notifikasi
-use App\Http\Controllers\NotifikasiController;
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
@@ -302,7 +312,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Hanya untuk administrator
-use App\Http\Controllers\AdminActivityController;
+
 
 Route::prefix('admin')->middleware(['auth','role:administrator'])->group(function () {
     // --- SETTINGS ---
@@ -327,7 +337,7 @@ Route::get('/chat/{id}', [App\Http\Controllers\ChatController::class, 'show'])->
 Route::post('/chat/{id}', [App\Http\Controllers\ChatController::class, 'store'])->name('chat.store');
 
 
-use App\Http\Controllers\MessageController;
+
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
@@ -340,7 +350,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 Route::get('/admin/database/statistik', [DataController::class, 'getStatistik'])
     ->name('admin.database.statistik');
 
-use App\Http\Controllers\ProgramKerjaController;
+
 
 Route::get('/programkerja', [ProgramKerjaController::class, 'index'])->name('programkerja.index');
 Route::post('/programkerja', [ProgramKerjaController::class, 'store'])->name('programkerja.store');
@@ -375,7 +385,7 @@ Route::get('/pembelajaran-siswa', [App\Http\Controllers\PembelajaranSiswaControl
     ->name('pembelajaran.index')
     ->middleware('auth');
 
-use App\Http\Controllers\Marketing\PenilaianController as MarketingPenilaianController;
+
 
 Route::prefix('marketing')->name('marketing.')->middleware(['auth'])->group(function () {
     Route::get('penilaian', [MarketingPenilaianController::class, 'index'])->name('penilaian.index');

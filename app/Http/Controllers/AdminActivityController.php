@@ -203,13 +203,82 @@ class AdminActivityController extends Controller
             }
         }
 
+        // Prepare date variables for view
+        $tahun = $carbonBulan->year;
+        $bulan_int = $carbonBulan->month;
+
+        // Calculate hari kerja (excluding Sundays) for KPI
+        $hariKerja = 0;
+        for ($d = 1; $d <= $jumlahHari; $d++) {
+            $day = Carbon::create($tahun, $bulan_int, $d);
+            if ($day->dayOfWeek != Carbon::SUNDAY) {
+                $hariKerja++;
+            }
+        }
+
+        // Bobot KPI per kategori
+        $categoryKpiWeights = [
+            'Aktivitas Mencari Leads' => 25,
+            'Aktivitas Memprospek' => 25,
+            'Aktivitas Closing' => 25,
+            'Aktivitas Merawat Customer' => 25,
+        ];
+
+        $kpiData = [];
+        $totalKpi = 0;
+        $totalBobotSum = 0;
+
+        // Group activities for KPI calculation
+        $groupedActivities = Activity::orderBy('categories_id')->get()->groupBy('categories_id');
+
+        foreach ($groupedActivities as $kategoriId => $list) {
+            $categoryName = $list->first()->kategori->nama ?? ("Kategori " . $kategoriId);
+            $activityPercents = [];
+
+            foreach ($list as $act) {
+                $tDaily = (float) ($act->target_daily ?? 0);
+                $tBulanan = $tDaily * $hariKerja;
+                $tRealisasi = (float) DailyActiviti::where('user_id', $csId)
+                    ->where('activity_id', $act->id)
+                    ->whereMonth('tanggal', $bulan_int)
+                    ->whereYear('tanggal', $tahun)
+                    ->sum('realisasi');
+
+                $percent = 0;
+                if ($tBulanan > 0) {
+                    $percent = ($tRealisasi / $tBulanan) * 100;
+                    if ($percent > 100) $percent = 100;
+                }
+                $activityPercents[] = $percent;
+            }
+
+            $skorKategori = count($activityPercents) ? (array_sum($activityPercents) / count($activityPercents)) : 0;
+            $bobotKategori = $categoryKpiWeights[$categoryName] ?? 0;
+            $nilaiKategori = ($skorKategori / 100) * $bobotKategori;
+
+            $kpiData[] = [
+                'nama'       => $categoryName,
+                'target'     => '100%',
+                'bobot'      => $bobotKategori,
+                'persentase' => round($skorKategori, 2),
+                'nilai'      => round($nilaiKategori, 2),
+            ];
+            $totalKpi += $nilaiKategori;
+            $totalBobotSum += $bobotKategori;
+        }
+
         $pdf = Pdf::loadView('admin.dailyactivity.pdf', [
             'categories' => $categories,
             'total' => $total,
             'jumlahHari' => $jumlahHari,
+            'tahun' => $tahun,
+            'bulan_int' => $bulan_int,
             'bulan' => $carbonBulan->translatedFormat('F Y'),
             'csName' => $cs->name,
-            'downloadDate' => now()->translatedFormat('d F Y H:i')
+            'downloadDate' => now()->translatedFormat('d F Y H:i'),
+            'kpiData' => $kpiData,
+            'totalNilai' => $totalKpi,
+            'totalBobot' => $totalBobotSum
         ])->setPaper('F4', 'landscape');
 
         // Stream PDF agar langsung tampil di browser
