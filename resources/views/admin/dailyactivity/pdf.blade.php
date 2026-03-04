@@ -2,197 +2,275 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Daily Activity Report - {{ $bulan }}</title>
+    <title>Laporan Daily Activity - {{ $bulan }}</title>
     <style>
         @page {
-            margin: 0.5cm;
+            margin: 0.7cm;
+            size: F4 landscape;
         }
         body { 
-            font-family: 'DejaVu Sans', sans-serif; 
-            font-size: 9px; 
-            color: #333;
+            font-family: DejaVu Sans, sans-serif; 
+            font-size: 6.8px; 
             margin: 0;
             padding: 0;
+            color: #333;
         }
-        .header {
-            background-color: #4e73df;
-            padding: 20px;
-            color: white;
-            margin-bottom: 20px;
-            border-radius: 0 0 10px 10px;
+        .text-center { text-align: center; }
+        .text-left { text-align: left; padding-left: 2px; }
+        .font-bold { font-weight: bold; }
+        
+        .header-section {
+            text-align: center;
+            margin-bottom: 5px;
         }
-        .header h1 {
-            margin: 0;
-            font-size: 18px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .header p {
-            margin: 5px 0 0 0;
-            opacity: 0.8;
+        .header-title {
             font-size: 10px;
-        }
-        .info-section {
-            padding: 0 20px;
-            margin-bottom: 20px;
-        }
-        .info-box {
-            width: 100%;
-            border-bottom: 2px solid #e3e6f0;
-            padding-bottom: 10px;
-        }
-        .info-box td {
-            border: none;
-            padding: 2px 0;
-            font-size: 10px;
-        }
-        .label {
             font-weight: bold;
-            color: #4e73df;
-            width: 100px;
+            display: block;
         }
+        .header-subtitle {
+            font-size: 8px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .info-container {
+            width: 100%;
+            margin-bottom: 3px;
+            font-size: 7.5px;
+            font-weight: bold;
+        }
+        .info-left {
+            float: left;
+            width: 50%;
+        }
+        .info-right {
+            float: right;
+            width: 50%;
+            text-align: right;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin: 10px 0 20px 0;
-            page-break-inside: avoid;
+            margin-bottom: 8px; 
+            table-layout: fixed;
+        }
+        th, td { 
+            border: 0.5px solid #000; 
+            padding: 1.5px 0.5px; 
+            text-align: center; 
+            vertical-align: middle;
+            word-wrap: break-word;
         }
         th { 
-            background-color: #4e73df;
-            color: white;
+            background-color: #d9edf7; 
             font-weight: bold; 
-            text-align: center;
-            padding: 8px 5px;
-            text-transform: uppercase;
-            font-size: 8px;
-            border: 1px solid #2e59d9;
+            font-size: 6.5px;
         }
-        td { 
-            border: 1px solid #e3e6f0; 
-            padding: 6px 5px; 
-            text-align: center; 
-        }
-        tr:nth-child(even) {
-            background-color: #f8f9fc;
-        }
-        .text-left { text-align: left; padding-left: 10px; }
-        .category-header {
-            background-color: #f1f3f9;
+        .category-row {
+            background-color: #d9edf7;
+            text-align: left !important;
             font-weight: bold;
-            color: #2e59d9;
-            text-align: left;
-            padding: 8px 10px;
-            font-size: 10px;
-            border-left: 4px solid #4e73df;
+            padding-left: 5px;
+            font-size: 7.5px;
         }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 7px;
-            color: #999;
-            padding: 10px 0;
-        }
-        .badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 7px;
+        .total-row {
+            background-color: #e6ffe6;
             font-weight: bold;
-            display: inline-block;
         }
-        .badge-target {
-            background-color: #eaecf4;
-            color: #5a5c69;
-        }
+        
+        /* Optimized Column Widths */
+        .col-no { width: 15px; }
+        .col-act { width: 310px; }
+        .col-tgt-h { width: 35px; }
+        .col-tgt-b { width: 35px; }
+        .col-bbt { width: 22px; }
+        .col-real { width: 35px; }
+        .col-nilai { width: 30px; }
+        .col-day { width: 10.5px; }
+
+        .bg-red { background-color: #ff4d4d !important; color: #ffffff; }
+        .bg-yellow { background-color: #ffff99 !important; color: #333; }
+        .bg-white { background-color: #ffffff !important; }
+
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>DAILY ACTIVITY REPORT</h1>
-        <p>Performance tracking and activity summary for BLP Properti</p>
+    <div class="header-section">
+        <span class="header-title">Laporan Daily Activity</span>
+        <span class="header-subtitle">Bulan: {{ $bulan }}</span>
     </div>
 
-    <div class="info-section">
-        <table class="info-box">
+    <div class="info-container clearfix">
+        <div class="info-left">
+            Nama Karyawan: {{ $csName }}
+        </div>
+        <div class="info-right">
+            Diunduh pada: {{ $downloadDate }}
+        </div>
+    </div>
+
+    @foreach($categories as $kategori => $aktivitasList)
+    @php
+        $pageBreak = '';
+        if ($kategori === 'Aktivitas Merawat Customer') {
+            $pageBreak = 'page-break-before: always; margin-top: 10px;';
+        }
+    @endphp
+    <div style="{{ $pageBreak }}">
+    <table>
+        <thead>
             <tr>
-                <td class="label">Customer Service:</td>
-                <td>{{ $csName }}</td>
-                <td class="label" style="text-align: right;">Report Month:</td>
-                <td style="text-align: right;">{{ $bulan }}</td>
+                <th class="col-no">No</th>
+                <th class="col-act">Aktivitas</th>
+                <th class="col-tgt-h">Target/Hari</th>
+                <th class="col-tgt-b">Target/Bula<br>n</th>
+                <th class="col-bbt">Bobot</th>
+                <th class="col-real">Realisasi</th>
+                <th class="col-nilai">Nilai</th>
+                @for($d=1; $d<=$jumlahHari; $d++)
+                    <th class="col-day">{{ $d }}</th>
+                @endfor
             </tr>
+        </thead>
+        <tbody>
             <tr>
-                <td class="label">Generated On:</td>
-                <td>{{ $downloadDate }}</td>
-                <td colspan="2" style="text-align: right; color: #999; font-style: italic;">
-                    BLP Properti Management System
+                <td colspan="{{ 7 + $jumlahHari }}" class="category-row">{{ strtoupper($kategori) }}</td>
+            </tr>
+
+            @foreach($aktivitasList as $i => $act)
+            <tr>
+                <td>{{ $i+1 }}</td>
+                <td class="text-left font-bold" style="white-space: normal;">{{ $act['nama'] }}</td>
+                <td>
+                    @if($act['nama'] === 'Transfer Masuk') 40.000.000
+                    @else {{ number_format($act['target_daily'], 0, ',', '.') }} @endif
                 </td>
+                <td>
+                    @if($act['nama'] === 'Transfer Masuk') 1.000.000.000
+                    @else {{ number_format($act['target_bulanan'], 0, ',', '.') }} @endif
+                </td>
+                <td>{{ (int)$act['bobot'] }}</td>
+                <td>{{ number_format($act['real'], 0, ',', '.') }}</td>
+                <td>{{ number_format($act['nilai'], 2, ',', '.') }}</td>
+                @for($d=1; $d<=$jumlahHari; $d++)
+                    @php
+                        $realDaily = $act['harian'][$d] ?? 0;
+                        $targetDaily = (float)$act['target_daily'];
+                        
+                        $dateObj = \Carbon\Carbon::create($tahun, $bulan_int, $d)->startOfDay();
+                        $isSunday = $dateObj->isSunday();
+                        $isPast = $dateObj->isPast() && !$dateObj->isToday();
+
+                        $cellClass = 'bg-white';
+                        if ($realDaily > 0) {
+                            if ($realDaily < $targetDaily) {
+                                $cellClass = 'bg-yellow';
+                            }
+                        } else {
+                            if ($isPast && !$isSunday && strpos(strtolower($kategori), 'bulanan') === false) {
+                                $cellClass = 'bg-red';
+                            }
+                        }
+                    @endphp
+                    <td class="{{ $cellClass }}" style="font-size: 6.5px;">{{ $realDaily ?: '' }}</td>
+                @endfor
             </tr>
+            @endforeach
+
+            <tr class="total-row">
+                <td colspan="2" style="text-align: center;">TOTAL</td>
+                <td>{{ number_format($total[$kategori]['target_daily'], 0, ',', '.') }}</td>
+                <td>{{ number_format($total[$kategori]['target_bulanan'], 0, ',', '.') }}</td>
+                <td>{{ (int)$total[$kategori]['bobot'] }}</td>
+                <td>{{ number_format($total[$kategori]['real'], 0, ',', '.') }}</td>
+                <td>{{ number_format($total[$kategori]['nilai'], 2, ',', '.') }}</td>
+                @for($d=1; $d<=$jumlahHari; $d++)
+                    @php
+                        $totalRealDaily = $total[$kategori]['harian'][$d] ?? 0;
+                        $totalTargetDaily = $total[$kategori]['target_daily'];
+                        
+                        $dateObj = \Carbon\Carbon::create($tahun, $bulan_int, $d)->startOfDay();
+                        $isSunday = $dateObj->isSunday();
+                        $isPast = $dateObj->isPast() && !$dateObj->isToday();
+
+                        $totalCellClass = 'bg-white';
+                        if ($totalRealDaily > 0) {
+                            if ($totalRealDaily < $totalTargetDaily) {
+                                $totalCellClass = 'bg-yellow';
+                            }
+                        } else {
+                            if ($isPast && !$isSunday && strpos(strtolower($kategori), 'bulanan') === false) {
+                                $totalCellClass = 'bg-red';
+                            }
+                        }
+                    @endphp
+                    <td class="{{ $totalCellClass }}" style="font-size: 6.5px;">{{ $totalRealDaily ?: '' }}</td>
+                @endfor
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    @endforeach
+
+    {{-- REKAP KPI --}}
+    <div style="margin-top: 20px; page-break-inside: avoid;">
+        <h3 style="text-align: left; margin-bottom: 5px; border-bottom: 1.5px solid #333; padding-bottom: 2px; font-size: 10px; text-transform: uppercase; font-weight: bold;">
+            REKAPITULASI PERFORMANCE / KPI
+        </h3>
+        <table style="width: 60%; font-size: 8px;">
+            <thead>
+                <tr>
+                    <th style="width:30px">No</th>
+                    <th style="width:200px; text-align: left; padding-left: 5px;">Dimensi Aktivitas</th>
+                    <th style="width:60px">Target</th>
+                    <th style="width:60px">Bobot</th>
+                    <th style="width:80px">Pencapaian (%)</th>
+                    <th style="width:80px">Skor Akhir</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($kpiData as $i => $row)
+                <tr>
+                    <td>{{ $i+1 }}</td>
+                    <td class="text-left font-bold" style="padding-left: 5px;">{{ $row['nama'] }}</td>
+                    <td>{{ $row['target'] }}</td>
+                    <td>{{ $row['bobot'] }}</td>
+                    <td>{{ $row['persentase'] }}%</td>
+                    <td style="font-weight: bold;">{{ number_format($row['nilai'], 2, ',', '.') }}</td>
+                </tr>
+                @endforeach
+                <tr style="background-color: #f2f2f2; font-weight: bold; font-size: 9px;">
+                    <td colspan="3" style="text-align: right; padding: 5px;">OVERALL PERFORMANCE SCORE</td>
+                    <td>{{ $totalBobot }}</td>
+                    <td>—</td>
+                    <td style="background-color: #333; color: #fff; font-size: 11px;">{{ number_format($totalNilai, 2, ',', '.') }}</td>
+                </tr>
+            </tbody>
         </table>
     </div>
 
-    <div style="padding: 0 20px;">
-        @php
-            // Filter only Intake Activity as requested by user
-            $intakeCategory = $categories['Intake Activity'] ?? null;
-        @endphp
-
-        @if($intakeCategory)
-            <div class="category-header">
-                RANGKUMAN INTAKE ACTIVITY
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 5%;">No</th>
-                        <th style="width: 35%;">Aktivitas</th>
-                        <th style="width: 15%;">Target Bulanan</th>
-                        <th style="width: 15%;">Realisasi / Hasil</th>
-                        <th style="width: 15%;">Pencapaian</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($intakeCategory as $i => $act)
-                        <tr>
-                            <td>{{ $i+1 }}</td>
-                            <td class="text-left font-weight-bold" style="color: #333;">{{ $act['nama'] }}</td>
-                            <td>
-                                <span class="badge badge-target">
-                                    @if($act['nama'] === 'Database baru') 100
-                                    @elseif($act['nama'] === 'Follow-up aktif') 80–120
-                                    @elseif($act['nama'] === 'Presentasi') 8–12
-                                    @elseif($act['nama'] === 'Visit lokasi') 10
-                                    @elseif($act['nama'] === 'Closing') 1–2
-                                    @else {{ $act['target_bulanan'] }}
-                                    @endif
-                                </span>
-                            </td>
-                            <td style="font-weight: bold; color: #1cc88a;">
-                                {{ number_format($act['real'], 0) }}
-                            </td>
-                            <td>
-                                @php
-                                    $target = $act['target_bulanan'] > 0 ? $act['target_bulanan'] : 1;
-                                    $percent = ($act['real'] / $target) * 100;
-                                    if($percent > 100) $percent = 100;
-                                @endphp
-                                <span style="font-weight: bold; color: {{ $percent >= 100 ? '#1cc88a' : ($percent >= 50 ? '#f6c23e' : '#e74a3b') }}">
-                                    {{ number_format($percent, 0) }}%
-                                </span>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <div style="text-align: center; color: #999; margin-top: 50px;">
-                Belum ada data Intake Activity untuk periode ini.
-            </div>
-        @endif
-    </div>
-
-    <div class="footer">
-        &copy; {{ date('Y') }} BLP Properti. This report is automatically generated and contains confidential performance data.
+    {{-- LEGENDA WARNA --}}
+    <div style="margin-top: 20px; font-size: 8px;">
+        <p style="margin-bottom: 5px; font-weight: bold;">Keterangan Warna:</p>
+        <div style="margin-bottom: 4px;">
+            <div style="display: inline-block; width: 15px; height: 10px; background-color: #ff4d4d; border: 0.5px solid #000; vertical-align: middle;"></div>
+            <span style="vertical-align: middle; margin-left: 10px;">Merah: Tidak ada aktivitas (pada hari kerja yang sudah terlewat)</span>
+        </div>
+        <div style="margin-bottom: 4px;">
+            <div style="display: inline-block; width: 15px; height: 10px; background-color: #ffff99; border: 0.5px solid #000; vertical-align: middle;"></div>
+            <span style="vertical-align: middle; margin-left: 10px;">Kuning: Dilakukan, namun tidak mencapai target harian</span>
+        </div>
+        <div style="margin-bottom: 4px;">
+            <div style="display: inline-block; width: 15px; height: 10px; background-color: #ffffff; border: 0.5px solid #000; vertical-align: middle;"></div>
+            <span style="vertical-align: middle; margin-left: 10px;">Putih: Mencapai target, hari libur (Minggu), atau hari yang belum dijalani</span>
+        </div>
     </div>
 </body>
 </html>

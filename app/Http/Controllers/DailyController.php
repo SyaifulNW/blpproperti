@@ -43,14 +43,12 @@ class DailyController extends Controller
         
         
 
-        // Bobot KPI per kategori (sesuaikan nama kategori sesuai seeder)
+        // Bobot KPI per kategori (disesuaikan dengan spreadsheet baru)
         $categoryKpiWeights = [
-            'Aktivitas Pribadi' => 10,
-            'Aktivitas Mencari Leads' => 20,
-            'Aktivitas Memprospek' => 20,
-            'Aktivitas Closing' => 40,
-            'Aktivitas Merawat Customer' => 10,
-            'Intake Activity' => 100,
+            'Aktivitas Mencari Leads' => 25,
+            'Aktivitas Merawat Customer' => 25,
+            'Aktivitas Closing' => 25,
+            'Intake Activity' => 25, // Fallback atau jika ada kategori ini
         ];
 
         // Hitung rekap KPI per kategori (kpiData) dan total KPI akhir
@@ -107,12 +105,20 @@ class DailyController extends Controller
         // Hitung Total Nilai Akhir
         $totalNilai = $totalKpi;
 
-        // Kirim ke view: activities, daily (harian), tanggal, dan kpiData + totals
-      $totalNilai = $totalKpi; // alias biar nyambung dengan blade
-return view('admin.dailyactivity.index', compact(
-    'activities', 'daily', 'tanggal',
-    'kpiData', 'totalNilai', 'totalBobot'
-));
+        // Ambil rekap bulanan per aktivitas (cumulative)
+        $monthlyTotals = DailyActiviti::where('user_id', $userId)
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->groupBy('activity_id')
+            ->select('activity_id', \DB::raw('SUM(realisasi) as total'))
+            ->pluck('total', 'activity_id');
+
+        // Kirim ke view: activities, daily (harian), monthlyTotals, tanggal, dan kpiData + totals
+        $totalNilai = $totalKpi; // alias biar nyambung dengan blade
+        return view('admin.dailyactivity.index', compact(
+            'activities', 'daily', 'monthlyTotals', 'tanggal',
+            'kpiData', 'totalNilai', 'totalBobot'
+        ));
     }
 
     public function store(Request $request)
