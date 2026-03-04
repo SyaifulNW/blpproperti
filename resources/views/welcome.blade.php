@@ -360,37 +360,19 @@
 
 
 
-        <!-- Layout Sejajar Pusat: Cards - Owner - Cards -->
+        <!-- Layout Sejajar Pusat: Single Login Card -->
         <div class="login-row">
             
-
-
-
-            <!-- GROUP PUSAT (2 Kartu) -->
+            <!-- GROUP PUSAT (1 Kartu) -->
             <div class="card-group center">
                 <div class="feature-card common-card">
                     <div class="logo-wrapper">
                         <img src="{{ asset('backend/blp_logo.png') }}" alt="Logo BLP Properti">
                     </div>
-                    <h3>Login Administrator</h3>
-                    <a href="{{ route('home') }}" class="card-button">Masuk</a>
-                </div>
-
-                <div class="feature-card common-card">
-                    <div class="logo-wrapper">
-                        <img src="{{ asset('backend/blp_logo.png') }}" alt="Logo CS BLP">
-                    </div>
-                    <h3>Login Sales</h3>
-                    <a href="{{ route('home') }}" class="card-button">Masuk</a>
+                    <h3>Login BLP Property</h3>
+                    <a href="{{ route('login') }}" class="card-button">Masuk</a>
                 </div>
             </div>
-
-    
-            
-            <!-- GROUP KANAN (3 Kartu Inactive - Commented Out by User) -->
-            <!-- <div class="card-group right">
-                ... 
-            </div> -->
             
         </div>
 

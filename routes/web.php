@@ -28,17 +28,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
-Route::get('/login-marketing', function () {
-    return view('auth.login-marketing');
-})->name('login.marketing');
-
-
-Route::get('/login-smi', function () {
-    return view('auth.login-SMI');
-})->name('login.smi');
-
-
 // ✅ Halaman untuk Administrator
 Route::get('/administrator', [App\Http\Controllers\AdministratorController::class, 'index'])
     ->middleware('auth')

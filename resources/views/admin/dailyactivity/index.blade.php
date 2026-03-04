@@ -1,69 +1,29 @@
 @extends('layouts.masteradmin')
 
 @section('content')
-<div class="container-fluid py-4">
-    {{-- Header Section --}}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
-        <div>
-            <h3 class="fw-bold text-dark mb-1">📅 Daily Activity</h3>
-            <p class="text-muted small mb-0">Monitor and track your daily intake performance</p>
-        </div>
-        
-        <div class="d-flex align-items-center gap-2">
-            <div class="bg-white p-2 rounded shadow-sm border d-flex align-items-center">
-                <i class="fas fa-calendar-alt text-primary me-2"></i>
-                <input type="date" name="tanggal" class="form-control form-control-sm border-0 bg-transparent fw-bold" 
-                       value="{{ $tanggal }}"
-                       onchange="window.location='?tanggal=' + this.value">
-            </div>
-            <a href="{{ route('admin.daily-activity.exportPdf', ['bulan' => \Carbon\Carbon::parse($tanggal)->format('Y-m')]) }}" 
-               class="btn btn-primary shadow-sm hover-lift" target="_blank">
-                <i class="fas fa-file-pdf me-2"></i> Export PDF
-            </a>
-        </div>
+<div class="container-fluid py-4" style="background: #fdfdfd; min-height: 100vh;">
+    {{-- Header Section MBC Style --}}
+    <div class="text-center mb-4">
+        <h3 class="fw-light text-primary d-inline-block" style="border-bottom: 2px solid #007bff; padding-bottom: 5px;">
+            📋 DAILY ACTIVITY
+        </h3>
     </div>
 
-    {{-- Stats Overview --}}
-    <div class="row mb-4">
-        @php
-            $intakeActivities = collect();
-            foreach($activities as $list) {
-                if($list->first() && $list->first()->kategori->nama === 'Intake Activity') {
-                    $intakeActivities = $list;
-                    break;
-                }
-            }
-        @endphp
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2 rounded-lg">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Activities</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $intakeActivities->count() }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
-                        </div>
+    <div class="card border-0 bg-transparent mb-4">
+        <div class="card-body p-0">
+            <div class="d-flex flex-column flex-md-row justify-content-start align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="mb-0 text-muted small">Tanggal:</label>
+                    <div class="bg-white p-2 rounded shadow-sm border d-flex align-items-center" style="width: 250px;">
+                        <input type="date" name="tanggal" class="form-control form-control-sm border-0 bg-transparent fw-bold" 
+                               value="{{ $tanggal }}"
+                               onchange="window.location='?tanggal=' + this.value">
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2 rounded-lg">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Working Month</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ \Carbon\Carbon::parse($tanggal)->format('F Y') }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+                <a href="{{ route('admin.daily-activity.exportPdf', ['bulan' => \Carbon\Carbon::parse($tanggal)->format('Y-m')]) }}" 
+                   class="btn btn-danger btn-sm shadow-sm px-4" target="_blank">
+                    <i class="fas fa-file-pdf me-2"></i> Export PDF
+                </a>
             </div>
         </div>
     </div>
@@ -73,104 +33,87 @@
         @csrf
         <input type="hidden" name="tanggal" value="{{ $tanggal }}">
 
-        <div class="card shadow border-0 overflow-hidden rounded-xl">
-            <div class="card-header bg-gradient-primary py-3 d-flex align-items-center justify-content-between border-0">
-                <h6 class="m-0 font-weight-bold text-white">
-                    <i class="fas fa-chart-line me-2"></i> Rangkuman Intake Activity
-                </h6>
-                <span class="badge badge-light text-primary py-2 px-3 rounded-pill fw-bold">Manual Input Mode</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-dark text-uppercase small fw-bold">
-                            <tr>
-                                <th class="px-4 py-3 border-0">Aktivitas</th>
-                                <th class="text-center py-3 border-0">Target Bulanan</th>
-                                <th class="text-center py-3 border-0" style="width: 250px;">Realisasi Hari Ini</th>
-                            </tr>
-                        </thead>
-                        <tbody class="border-top-0">
-                            @forelse($intakeActivities as $act)
-                                <tr class="transition-all">
-                                    <td class="px-4 py-3 font-weight-bold text-dark">
-                                        <div class="d-flex align-items-center">
-                                            <div class="activity-icon-sm bg-primary-soft text-primary rounded me-3 d-flex align-items-center justify-content-center">
-                                                <i class="fas fa-check-circle small"></i>
-                                            </div>
-                                            {{ $act->nama }}
-                                        </div>
-                                    </td>
-                                    <td class="text-center py-3">
-                                        <span class="badge border bg-white text-muted px-3 py-2 rounded-pill fw-bold">
-                                            @if($act->nama === 'Database baru') 100
-                                            @elseif($act->nama === 'Follow-up aktif') 80–120
-                                            @elseif($act->nama === 'Presentasi') 8–12
-                                            @elseif($act->nama === 'Visit lokasi') 10
-                                            @elseif($act->nama === 'Closing') 1–2
-                                            @else {{ number_format($act->target_bulanan, 0) }}
-                                            @endif
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <div class="input-group input-group-sm">
+        @foreach($activities as $kategoriId => $list)
+            @php $categoryName = $list->first()->kategori->nama ?? ("Kategori " . $kategoriId); @endphp
+            <div class="card shadow-sm border-0 overflow-hidden mb-4" style="border-radius: 8px;">
+                <div class="card-header bg-primary py-2 px-3 border-0">
+                    <h6 class="m-0 font-weight-bold text-white small">{{ $categoryName }}</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                            <thead class="bg-light text-muted">
+                                <tr>
+                                    <th class="text-center py-2" style="width: 50px;">No</th>
+                                    <th class="py-2 px-3">Aktivitas</th>
+                                    <th class="text-center py-2" style="width: 120px;">Target Harian</th>
+                                    <th class="text-center py-2" style="width: 120px;">Target Bulan</th>
+                                    <th class="text-center py-2" style="width: 120px;">Bobot</th>
+                                    <th class="text-center py-2" style="width: 150px;">Realisasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($list as $index => $act)
+                                    <tr>
+                                        <td class="text-center text-muted">{{ $loop->iteration }}</td>
+                                        <td class="px-3 text-dark">{{ $act->nama }}</td>
+                                        <td class="text-center text-muted">
+                                             @if($act->nama === 'Transfer Masuk') 2.000.000
+                                             @else {{ number_format($act->target_daily, 0, ',', '.') }}
+                                             @endif
+                                        </td>
+                                        <td class="text-center text-muted">
+                                             @if($act->nama === 'Transfer Masuk') 50.000.000
+                                             @else {{ number_format($act->target_bulanan, 0, ',', '.') }}
+                                             @endif
+                                        </td>
+                                        <td class="text-center text-muted">{{ (int)$act->bobot }}</td>
+                                        <td class="p-1 px-3">
                                             <input type="number" 
                                                    name="realisasi[{{ $act->id }}]" 
-                                                   class="form-control text-center fw-bold border-soft shadow-none focus-primary"
+                                                   class="form-control form-control-sm text-center border-soft shadow-none"
                                                    min="0"
-                                                   placeholder="Input hasil..."
+                                                   step="0.01"
                                                    value="{{ $daily[$act->id] ?? 0 }}">
-                                            <!-- <span class="input-group-text bg-white border-soft text-muted px-3">
-                                                Units
-                                            </span> -->
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="text-center py-5 text-muted fst-italic">
-                                        <img src="https://img.icons8.com/isometric/100/null/empty-box.png" class="mb-3 d-block mx-auto opacity-50" style="width: 60px;">
-                                        Belum ada data Intake Activity untuk tanggal ini.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                            
+                                            @php
+                                                $isAuto = in_array($act->nama, ['Database baru', 'Telepon Database Prospek', 'Edukasi & Membangun Hubungan (WA)', 'List Building / Database']);
+                                            @endphp
+                                            @if($isAuto)
+                                                <div class="text-center" style="margin-top: 2px;">
+                                                    <a href="#" class="text-primary" style="font-size: 0.65rem; text-decoration: none;">
+                                                        <i class="fas fa-magic me-1"></i> Otomatis dari Database
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            
-            @if($intakeActivities->count() > 0)
-            <div class="card-footer bg-white py-4 px-4 text-end border-0">
-                <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm hover-lift fw-bold">
-                    <i class="fas fa-save me-2"></i> Simpan Aktivitas
-                </button>
-            </div>
-            @endif
+        @endforeach
+
+        <div class="mb-5 mt-4">
+            <button type="submit" class="btn btn-success px-4 shadow-sm fw-bold">
+                <i class="fas fa-save me-2"></i> Simpan Aktivitas
+            </button>
         </div>
     </form>
 </div>
 
 <style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    .bg-primary { background-color: #4e73df !important; }
+    .table-bordered th, .table-bordered td { border-color: #e3e6f0 !important; }
+    .border-soft { border-color: #d1d3e2; }
+    .card { box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1) !important; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
     }
-    .rounded-xl { border-radius: 1.25rem !important; }
-    .rounded-lg { border-radius: 0.85rem !important; }
-    .bg-primary-soft { background-color: rgba(78, 115, 223, 0.1); }
-    .border-soft { border-color: #e3e6f0; }
-    .activity-icon-sm { width: 32px; height: 32px; flex-shrink: 0; }
-    .hover-lift { transition: transform 0.2s; }
-    .hover-lift:hover { transform: translateY(-3px); }
-    .transition-all { transition: all 0.2s ease; }
-    .table-hover tbody tr:hover { background-color: rgba(78, 115, 223, 0.03); }
-    .focus-primary:focus {
-        border-color: #bac8f3 !important;
-        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1) !important;
-    }
-    .btn-lg { font-size: 0.95rem; }
-    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
-    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
-    .text-xs { font-size: .7rem; }
 </style>
 @endsection
 

@@ -130,8 +130,8 @@
     <div class="login-card">
         <div class="login-header">
             <img src="{{ asset('backend/blp_logo.png') }}" alt="Logo BLP" style="width: 80px; margin-bottom: 15px;">
-            <h2>BLP PROPERTI</h2>
-            <p style="opacity: 0.8;">Silakan Login Terlebih Dahulu</p>
+            <h2>Login BLP Property</h2>
+            <p style="opacity: 0.8;">Sales & Management Portal</p>
         </div>
 
         <div class="login-body">
