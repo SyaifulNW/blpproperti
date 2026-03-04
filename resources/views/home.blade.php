@@ -234,89 +234,6 @@
         <!-- ================== TAB 1: DASHBOARD ================== -->
         <div class="tab-pane fade show active" id="dashboard-tab" role="tabpanel" aria-labelledby="dashboard-tab-link">
             
-            {{-- ================== OMSET PER KELAS ================== --}}
-            <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-header bg-success text-white fw-bold">
-                    OMSET Sales ({{ strtoupper($namaBulan) }} {{ $tahun }})
-                </div>
-                <div class="card-body table-responsive">
-                    <table class="table table-bordered table-hover text-center align-middle">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>Nama Produk</th>
-                                <th>Omset</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($kelasOmsetFiltered as $k)
-                                @php
-                                    $komisiSementara = $k['omset'] * 0.01;
-                                    $komisiTotal = $k['omset'] >= $k['target'] ? $komisiSementara + 300000 : $komisiSementara;
-                                    $persen = $k['target'] > 0 ? round(($k['omset'] / $k['target']) * 100, 2) : 0;
-                                @endphp
-                                <tr>
-                                    <td class="fw-semibold">{{ $k['nama_kelas'] }}</td>
-                                    <td class="text-success fw-bold">
-                                        Rp {{ number_format($k['omset'], 0, ',', '.') }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-muted fst-italic">Tidak ada data untuk bulan ini</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-            
-                        @php
-                        $totalOmset = $kelasOmsetFiltered->sum('omset');
-                        $targetBulanan = 1000000000;
-                        $persenTercapai = $targetBulanan > 0 ? round(($totalOmset / $targetBulanan) * 100, 2) : 0;
-
-                        // 🔹 Logika Reward Bulanan (nilai numerik + teks)
-                        if ($persenTercapai >= 100) {
-                            $rewardBulanan = 600000;
-                            $reward = "Rp " . number_format($rewardBulanan, 0, ',', '.');
-                            $keterangan = "🏆 Luar biasa! Anda mencapai 100%! Terus pertahankan performa hebat ini!";
-                        } elseif ($persenTercapai >= 90) {
-                            $rewardBulanan = 500000;
-                            $reward = "Rp " . number_format($rewardBulanan, 0, ',', '.');
-                            $keterangan = "🔥 Hampir sempurna! Tingkatkan performa sedikit lagi untuk mencapai 100%!";
-                        } elseif ($persenTercapai >= 50) {
-                            $rewardBulanan = 300000;
-                            $reward = "Rp " . number_format($rewardBulanan, 0, ',', '.');
-                            $keterangan = "💪 Performa Anda bagus! Ayo semangat, masih bisa ditingkatkan!";
-                        } else {
-                            $rewardBulanan = 0;
-                            $reward = "-";
-                            $keterangan = "😔 Mohon maaf, Anda belum mendapat reward. Tetap semangat untuk bulan depan!";
-                        }
-                        @endphp
-
-                        <tfoot>
-                             <tr class="bg-light fw-bold">
-                                <td colspan="1" class="text-end text-dark">Total Omset</td>
-                                <td colspan="1" class="text-start text-success">
-                                    Rp {{ number_format($totalOmset, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                            <tr class="bg-light fw-bold">
-                                <td colspan="1" class="text-end text-dark">Target Omset Bulanan</td>
-                                <td colspan="1" class="text-start text-dark">
-                                    Rp {{ number_format($targetBulanan, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                            <tr class="bg-light fw-bold">
-                                <td colspan="1" class="text-end text-dark">Persentase Tercapai</td>
-                                <td colspan="1" class="text-start {{ $persenTercapai >= 100 ? 'text-success' : ($persenTercapai >= 75 ? 'text-warning' : 'text-danger') }}">
-                                    {{ $persenTercapai }}%
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-
-            {{-- ================== CARD DATABASE & KOMISI ================== --}}
             @php
                 $namaUserData = isset($user) && $readonly ? $user->name : auth()->user()->name;
 
@@ -340,42 +257,117 @@
                 $values = array_values($sumberDatabase);
 
                 $totalKomisi = collect($kelasOmsetFiltered)->sum(function($k) {
-                    $komisiSementara = $k['omset'] * 0.01;
-                    return $k['omset'] >= $k['target'] ? $komisiSementara + 300000 : $komisiSementara;
+                    // Update: Komisi 0.5% dari Omset
+                    return $k['omset'] * 0.005;
                 });
+
+                // OMSET CALCULATION
+                $totalOmset = $kelasOmsetFiltered->sum('omset');
+                $targetBulanan = 1000000000;
+                $persenTercapai = $targetBulanan > 0 ? round(($totalOmset / $targetBulanan) * 100, 2) : 0;
             @endphp
 
             <div class="row g-4 mb-4">
-                {{-- Card Database --}}
-                <div class="col-12 col-md-6">
-                    <div class="card shadow-lg border-0 h-100">
-                        <div class="card-header bg-info text-white fw-bold py-2">
-                            <i class="fas fa-database me-2"></i> JUMLAH DATABASE
+                {{-- Kolom 1: OMSET PER KELAS --}}
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-success text-white fw-bold">
+                            <i class="fas fa-coins me-2"></i> OMSET ({{ strtoupper($namaBulan) }})
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover mb-0 align-middle" style="font-size: 1rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Produk</th>
+                                        <th class="text-end">Omset</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($kelasOmsetFiltered as $k)
+                                        <tr>
+                                            <td class="fw-semibold">{{ $k['nama_kelas'] }}</td>
+                                            <td class="text-end text-success fw-bold">
+                                                Rp{{ number_format($k['omset'], 0, ',', '.') }}
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="2" class="text-muted fst-italic text-center">No data</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                                <tfoot class="bg-light">
+                                    <tr class="fw-bold">
+                                        <td>Total Omset</td>
+                                        <td class="text-end text-success">Rp{{ number_format($totalOmset, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="small text-muted">
+                                        <td>Target Bulanan</td>
+                                        <td class="text-end">Rp{{ number_format($targetBulanan, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="fw-bold">
+                                        <td>Persentase</td>
+                                        <td class="text-end {{ $persenTercapai >= 100 ? 'text-success' : ($persenTercapai >= 75 ? 'text-warning' : 'text-danger') }}">
+                                            {{ $persenTercapai }}%
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Kolom 2: DATABASE & KOMISI --}}
+                <div class="col-12 col-md-4 d-flex flex-column">
+                    {{-- Card Database --}}
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div class="card-header bg-info text-white fw-bold py-2 text-center">
+                            <i class="fas fa-database me-2"></i> DATABASE ({{ strtoupper($namaBulan) }})
                         </div>
                         <div class="card-body text-center">
-                            <h2 class="fw-bold text-dark mb-2" style="font-size: 2.5rem;">{{ $databaseBaru }}</h2>
-                            <p class="text-muted mb-3">Periode: {{ $bulanParse->translatedFormat('F') }} {{ $bulanParse->year }}</p>
-                            <div class="progress mb-3" style="height: 18px; border-radius: 10px;">
-                                <div class="progress-bar bg-success fw-bold text-white" role="progressbar" style="width: {{ min(($databaseBaru / $target) * 100, 100) }}%">
+                            <h2 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">{{ $databaseBaru }}</h2>
+                            <p class="text-muted small mb-3">Database Baru</p>
+                            
+                            <div class="progress mb-3" style="height: 12px; border-radius: 10px;">
+                                <div class="progress-bar bg-success fw-bold" role="progressbar" style="width: {{ min(($databaseBaru / $target) * 100, 100) }}%">
                                     {{ number_format(($databaseBaru / $target) * 100, 0) }}%
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="badge bg-primary text-white px-3 py-2">Target: {{ $target }}</span>
-                                <span class="badge bg-secondary text-white px-3 py-2">Total: {{ $totalDatabase }}</span>
+                            
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Target: {{ $target }}</span>
+                                <span>Total: {{ $totalDatabase }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Card Komisi --}}
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div class="card-header bg-warning text-dark fw-bold py-2 text-center">
+                            <i class="fas fa-hand-holding-usd me-2"></i> KOMISI SEMENTARA
+                        </div>
+                        <div class="card-body text-center">
+                            <h2 class="fw-bold text-success mb-0" style="font-size: 2.2rem;">
+                                Rp{{ number_format($totalKomisi, 0, ',', '.') }}
+                            </h2>
+                            <p class="text-muted small">Estimasi Komisi 0,5%</p>
+                            <hr class="my-2">
+                            <div class="text-start small">
+                                <i class="fas fa-info-circle me-1 text-info"></i> 
+                                <span class="text-muted">Rumus: <strong>0,5% dari Omset</strong>. <br> (Contoh: Rp 400jt &times; 0,5% = Rp 2jt)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Card Pie Chart --}}
-                <div class="col-12 col-md-6">
-                    <div class="card shadow-lg border-0 h-100">
-                        <div class="card-header bg-primary text-white fw-bold py-2">
+                {{-- Kolom 3: SUMBER LEADS --}}
+                <div class="col-12 col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-primary text-white fw-bold py-2 text-center">
                             <i class="fas fa-chart-pie me-2"></i> SUMBER LEADS
                         </div>
-                        <div class="card-body d-flex justify-content-center align-items-center">
-                            <canvas id="pieSumberDbSmall" width="200" height="200"></canvas>
+                        <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 250px;">
+                            <canvas id="pieSumberDbSmall"></canvas>
                         </div>
                     </div>
                 </div>
