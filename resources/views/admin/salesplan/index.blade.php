@@ -601,6 +601,22 @@
 
         <form method="GET" class="d-flex gap-2">
             
+            {{-- Filter Sales (Hanya untuk Admin/Manager) --}}
+            @if(auth()->user()->role === 'administrator' || auth()->user()->role === 'manager')
+            <select name="created_by" id="cs_filter"
+                class="form-select filter-select"
+                onchange="this.form.submit()">
+                <option value="">👤 Semua Sales</option>
+                @foreach($csList as $cs)
+                    <option value="{{ $cs->id }}" {{ request('created_by') == $cs->id ? 'selected' : '' }}>
+                        {{ $cs->name }}
+                    </option>
+                @endforeach
+            </select>
+            @elseif(request('created_by'))
+            <input type="hidden" name="created_by" value="{{ request('created_by') }}">
+            @endif
+
             <select name="kelas" id="kelas_filter_cs"
                 class="form-select filter-select"
                 onchange="this.form.submit()">
@@ -611,10 +627,6 @@
                     </option>
                 @endforeach
             </select>
-
-            @if(request('created_by'))
-            <input type="hidden" name="created_by" value="{{ request('created_by') }}">
-            @endif
 
             <select name="bulan" id="bulan_filter_cs"
                 class="form-select filter-select"

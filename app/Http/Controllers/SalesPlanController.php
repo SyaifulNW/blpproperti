@@ -52,9 +52,10 @@ class SalesPlanController extends Controller
     $kelasList = Kelas::all();
     $csList    = User::orderBy('name', 'asc')->get();
     
-   // Filter CS List for Admin Dropdown (Specific Request)
-    if (in_array(auth()->id(), [1, 2])) {
-         $csList = User::whereIn('name', ['Yasmin', 'Linda', 'Arifa', 'Putri', 'Puput', 'Gunawan'])
+    // Filter CS List for Admin Dropdown (Specific Request)
+    if (auth()->user()->role === 'administrator' || auth()->user()->role === 'manager') {
+         $csList = User::where('role', 'sales')
+                       ->orWhereIn('name', ['Yasmin', 'Linda', 'Arifa', 'Putri', 'Puput', 'Gunawan'])
                        ->orderBy('name', 'asc')
                        ->get();
     } else {
