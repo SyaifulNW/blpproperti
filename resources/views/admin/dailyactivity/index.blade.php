@@ -101,8 +101,8 @@
                                                name="realisasi[{{ $act->id }}]" 
                                                class="form-control form-control-sm text-center border-secondary-subtle mx-auto"
                                                min="0"
-                                               step="0.01"
-                                               value="{{ $realisasiHariIni }}"
+                                               step="1"
+                                               value="{{ (int)$realisasiHariIni }}"
                                                style="font-size: 0.9rem; border-radius: 4px; width: 100px;">
                                         
                                         @php
