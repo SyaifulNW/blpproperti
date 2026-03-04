@@ -15,9 +15,6 @@ class SalesPlanController extends Controller
     {
         $kelasFilter  = $request->input('kelas');
         $csFilter     = $request->input('created_by');
-        if (auth()->user()->name == 'Agus Setyo') {
-            $kelasFilter = 'Start-Up Muslim Indonesia';
-        }
 
               $restrictedView = $request->input('restricted_view', false);
         // if (auth()->user()->name == 'Linda' && !empty($kelasFilter)) {
@@ -66,27 +63,9 @@ class SalesPlanController extends Controller
 
 
     // =====================================================
-    // 🔥 JIKA ADMIN BELUM MEMFILTER → JANGAN TAMPILKAN DATA
+    // 🔥 UNIFIED VIEW BY DEFAULT
     // =====================================================
     $isAdmin = in_array($userId, [1]);
-    $noFilter = empty($kelasFilter) && empty($csFilter) && empty($statusFilter) && empty($bulanFilter);
-
-    if ($isAdmin && $noFilter) {
-
-        return view('admin.salesplan.index', [
-            'salesplans'      => collect(),  // kosongkan
-            'pesertaTransfer' => collect(),  // kosongkan
-            'kelasList'       => $kelasList,
-            'csList'          => $csList,
-            'kelasFilter'     => $kelasFilter,
-            'csFilter'        => $csFilter,
-            'statusFilter'    => $statusFilter,
-            'bulanFilter'     => $bulanFilter,
-            'salesplansByCS'  => collect(),  // kosongkan
-            'message'         => "Silakan pilih filter untuk menampilkan data.",
-                 'isRestrictedView' => $restrictedView
-        ]);
-    }
 
 
     // ======================================
@@ -309,7 +288,7 @@ class SalesPlanController extends Controller
             'fu3_hasil','fu3_tindak_lanjut',
             'fu4_hasil','fu4_tindak_lanjut',
             'fu5_hasil','fu5_tindak_lanjut',
-            'nominal','keterangan', 'komentar_atasan', 'kebutuhan'
+            'nominal','keterangan', 'komentar_atasan', 'kebutuhan', 'kelas_id'
         ];
 
         if (!in_array($request->field, $allowedFields)) {

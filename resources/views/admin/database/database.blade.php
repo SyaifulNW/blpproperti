@@ -384,21 +384,8 @@
                                 @endif
 
                                 
-
                                 {{-- Hanya tampil jika bukan marketing --}}
                                 @if(strtolower(auth()->user()->role) !== 'marketing')
-                                    <th>
-                                        Potensi Produk Pertama
-                                        <div style="min-width: 200px;">
-                                            <select id="filterKelas" class="form-control-sm">
-                                                <option value="">-- Semua Potensi  --</option>
-                                                @foreach($kelas as $k)
-                                                    <option value="{{ $k->nama_kelas }}">{{ $k->nama_kelas }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </th>
-
                                     {{-- Survei Lokasi Header --}}
                                     <th>
                                         Survei Lokasi

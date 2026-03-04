@@ -242,62 +242,7 @@
         }
     }
 </style>
-@if(auth()->id() == 1 || auth()->id() == 13 || auth()->user()->name == 'Linda')
 <form method="GET" action="{{ route('admin.salesplan.index') }}" class="filter-container">
-{{-- ✅ Filter CS --}}
-<div class="filter-group">
-    <label for="cs_filter" class="filter-label"><i class="fas fa-user-tie text-primary"></i> Nama Tim:</label>
-    <select name="created_by" id="cs_filter" class="form-select filter-select" onchange="this.form.submit()">
-        <option value="">-- Semua Tim --</option>
-        @foreach($csList as $cs)
-            @if(
-                (auth()->id() == 1 && !in_array($cs->name, ['Latifah', 'Tursia'])) ||
-                 (auth()->id() == 13 && in_array($cs->name, ['Latifah', 'Tursia', 'Gunawan', 'Puput'])) ||
-                (auth()->user()->name == 'Linda')
-            )
-                <option value="{{ $cs->id }}" {{ request('created_by') == $cs->id ? 'selected' : '' }}>
-                    {{ $cs->name }}
-                </option>
-            @endif
-        @endforeach
-    </select>
-</div>
-
-@if(auth()->id() != 13)
-{{-- ✅ Filter Kelas --}}
-<div class="filter-group">
-    <label for="kelas_filter" class="filter-label"><i class="fas fa-chalkboard-teacher text-success"></i> Kelas:</label>
-    <select name="kelas" id="kelas_filter" class="form-select filter-select" onchange="this.form.submit()">
-        <option value="">-- Semua Kelas --</option>
-        @foreach($kelasList as $kelas)
-            @if(
-                (auth()->id() == 1 && !in_array($kelas->nama_kelas, ['Start-Up Muda Indonesia', 'Sekolah Kaya'])) ||
-                         (auth()->id() == 13 && $kelas->nama_kelas == 'Start-Up Muda Indonesia') ||
-                (auth()->user()->name == 'Linda')
-            )
-                <option value="{{ $kelas->nama_kelas }}" {{ request('kelas') == $kelas->nama_kelas ? 'selected' : '' }}>
-                    {{ $kelas->nama_kelas }}
-                </option>
-            @endif
-        @endforeach
-    </select>
-</div>
-@endif
-@endif
-
-{{-- ✅ Filter Status --}}
-<div class="filter-group">
-    <label for="status_filter" class="filter-label"><i class="fas fa-filter text-warning"></i> Status:</label>
-    <select name="status" id="status_filter" class="form-select filter-select" onchange="this.form.submit()">
-        <option value="">-- Semua Status --</option>
-        <option value="cold" {{ request('status') == 'cold' ? 'selected' : '' }}>⚪ Cold</option>
-        <option value="tertarik" {{ request('status') == 'tertarik' ? 'selected' : '' }}>🟡 Tertarik</option>
-        <option value="mau_transfer" {{ request('status') == 'mau_transfer' ? 'selected' : '' }}>🟢 Mau Transfer</option>
-        <option value="sudah_transfer" {{ request('status') == 'sudah_transfer' ? 'selected' : '' }}>🔵 Sudah Transfer</option>
-        <option value="no" {{ request('status') == 'no' ? 'selected' : '' }}>🔴 No</option>
-    </select>
-</div>
-
     <div class="filter-group">
         <label for="bulan_filter" class="filter-label">
             <i class="fas fa-calendar-alt text-info"></i> Bulan:
@@ -325,7 +270,7 @@
         </select>
     </div>
 
-       <div class="filter-group">
+    <div class="filter-group">
         <label for="tahun_filter" class="filter-label">
             <i class="fas fa-calendar text-secondary"></i> Tahun:
         </label>
@@ -339,27 +284,11 @@
             @endfor
         </select>
     </div>
-
-
-
-
-    {{-- 🔄 Tombol Reset --}}
-    @if(request('kelas') || request('created_by') || request('status'))
-    <div>
-        <a href="{{ route('admin.salesplan.index') }}" class="btn btn-outline-secondary btn-reset">
-            <i class="fas fa-undo-alt"></i> Reset
-        </a>
-    </div>
-    @endif
 </form>
 @endif
 
 
-@if(!$kelasFilter && !$csFilter && !$statusFilter)
-    <div class="alert alert-info text-center mt-3">
-        Silakan pilih filter untuk menampilkan data.
-    </div>
-@endif
+
 
 
 
@@ -377,6 +306,7 @@
     $totalTargetSemua = 0;
     $totalSeluruhCS   = 0;
 @endphp
+
 
 <h4 class="mt-5 mb-4 fw-bold text-center text-dark">🎯 Pencapaian Target Per CS</h4>
 
@@ -434,18 +364,8 @@
             $totalNominal = $items->sum('nominal');
         }
 
-        // Tentukan Target Omset
-        if ($isSmiClass) {
-            // Default 50 juta untuk SMI jika tidak ada setting
-            $targetOmset = isset($targetOmsetSmi) && $targetOmsetSmi > 0 ? $targetOmsetSmi : 1000000000;
-    } elseif (empty(request('kelas')) && !empty(request('bulan'))) {
-             // Jika Filter Bulan dipilih & Kelas "Semua Kelas", Target = 1 Miliar
-            $targetOmset = 1000000000;
-            
-        } else {
-            // Default 1 Miliar untuk lainnya (Filter Per Kelas atau Default)
-            $targetOmset = isset($targetOmsetGlobal) && $targetOmsetGlobal > 0 ? $targetOmsetGlobal : 1000000000;
-        }
+        // Tentukan Target Omset: 1 Miliar per bulan
+        $targetOmset = 1000000000;
         $selisih = max(0, $targetOmset - $totalNominal);
         $tercapai = $totalNominal >= $targetOmset;
         $persentase = $targetOmset > 0 ? round(($totalNominal / $targetOmset) * 100, 1) : 0;
@@ -864,7 +784,7 @@ $(document).ready(function() {
                     <tbody>
                         @php $currentMonth = null; @endphp
                         @forelse ($salesplans as $plan)
-                        @if($kelasFilter == 'Start-Up Muda Indonesia' && $plan->created_at)
+                        @if($plan->created_at)
                             @php
                                 $planMonth = \Carbon\Carbon::parse($plan->created_at)->locale('id')->isoFormat('MMMM Y');
                             @endphp
@@ -1375,13 +1295,7 @@ $(document).on('change', '.status-dropdown', function() {
             <tr style="background: #d1e7dd; font-weight: bold; color: #0f5132;">
                 <td colspan="2" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Target Omset</td>
                 <td style="padding: 10px; border: 1px solid #ccc;">
-                    @php
-                        if ($kelasFilter == 'Start-Up Muda Indonesia' || $kelasFilter == 'Start-Up Muslim Indonesia') {
-                            $targetOmsetVal = isset($targetOmsetSmi) && $targetOmsetSmi > 0 ? $targetOmsetSmi : 50000000;
-                        } else {
-                            $targetOmsetVal = isset($targetOmsetGlobal) && $targetOmsetGlobal > 0 ? $targetOmsetGlobal : 25000000;
-                        }
-                    @endphp
+                    @php $targetOmsetVal = 1000000000; @endphp
                     Rp {{ number_format($targetOmsetVal, 0, ',', '.') }}
                 </td>
                            <td style="padding: 10px; border: 1px solid #ccc;"></td>

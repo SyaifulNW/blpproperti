@@ -396,66 +396,12 @@
             @endphp
             @if(!in_array($userRole, ['marketing', 'hrd', 'advertising']))
                 @if(\App\Models\Menu::isActive('sales_plan'))
-                {{-- Jika user adalah Fitra Jaya Saleh atau Agus Setyo --}}
-                @if($userName == 'Linda')
-                    <li class="nav-item {{ request()->routeIs('admin.salesplan.index') && !request('kelas') ? 'active' : '' }}">
+                    <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
-                            <i class="fas fa-fw fa-users"></i>
-                            <span><strong>SALES PLAN ALL</strong></span>
-                        </a>
-                    </li>
-                @endif
-                
-                @if($userName == 'Fitra Jaya Saleh' || $userName == 'Agus Setyo')
-                    <li class="nav-item {{ request()->routeIs('admin.salesplan.index') && request('kelas') == 'Start-Up Muslim Indonesia' ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.salesplan.index', ['kelas' => 'Start-Up Muslim Indonesia']) }}">
-                            <i class="fas fa-fw fa-users"></i>
+                            <i class="fas fa-fw fa-chart-line"></i>
                             <span><strong>SALES PLAN</strong></span>
                         </a>
                     </li>
-
-
-                @else
-                    <li class="nav-item">
-                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                            aria-expanded="true" aria-controls="collapseUtilities">
-                            <i class="fas fa-fw fa-users"></i>
-                            <span><strong>SALES PLAN</strong></span>
-                        </a>
-                        <div id="collapseUtilities" class="collapse {{ request()->has('kelas') ? 'show' : '' }}"
-                            aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                            <div class="bg-white py-2 collapse-inner rounded">
-                                <h6 class="collapse-header">Daftar Kelas MBC:</h6>
-
-                                {{-- Jika Nisa atau Muthia, hanya bisa lihat Sekolah Kaya --}}
-                                @if(in_array($userName, ['Muthia']))
-                                    <a class="collapse-item {{ request('kelas') == 'Sekolah Kaya' ? 'active' : '' }}"
-                                       href="{{ route('admin.salesplan.index', ['kelas' => 'Sekolah Kaya']) }}">
-                                       Sekolah Kaya
-                                    </a>
-
-                                {{-- Jika Tursia atau Latifah, hanya bisa Start-Up --}}
-                        @elseif(auth()->user()->role === 'cs-smi')
-    <a class="collapse-item {{ request('kelas') == 'Start-Up Muslim Indonesia' ? 'active' : '' }}"
-       href="{{ route('admin.salesplan.index', ['kelas' => 'Start-Up Muslim Indonesia']) }}">
-        Start-Up Muda Indonesia
-    </a>
-
-                                {{-- Selain itu, tampilkan semua kelas kecuali Sekolah Kaya & Start-Up --}}
-                                @else
-                                    @foreach ($kelas as $item)
-                                        @if($item->nama_kelas != 'Sekolah Kaya' )
-                                            <a class="collapse-item {{ request('kelas') == $item->nama_kelas ? 'active' : '' }}"
-                                               href="{{ route('admin.salesplan.index', ['kelas' => $item->nama_kelas]) }}">
-                                               {{ $item->nama_kelas }}
-                                            </a>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            </div>
-                        </div>
-                    </li>
-                @endif
                 @endif
             @endif
 

@@ -527,10 +527,6 @@ private function filterKelasByUser($user)
         // Ambil data peserta dari tabel data
         $data = Data::findOrFail($id);
 
-        // Validasi: Harus pilih produk (kelas_id)
-        if (empty($data->kelas_id)) {
-            return redirect()->back()->with('error', 'Gagal: Silakan pilih produk terlebih dahulu sebelum pindah ke Sales Plan.');
-        }
 
         $salesPlan = new SalesPlan();
         $salesPlan->nama = $data->nama;          // dari tabel peserta

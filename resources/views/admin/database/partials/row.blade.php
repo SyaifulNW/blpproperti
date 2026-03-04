@@ -91,16 +91,6 @@
     
 
     @if(strtolower(auth()->user()->role) !== 'marketing')
-    <td>
-        <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="kelas_id">
-            <option value="">- Pilih Produk -</option>
-            @foreach($kelas as $k)
-            <option value="{{ $k->id }}" {{ $item->kelas_id == $k->id ? 'selected' : '' }}>
-                {{ $k->nama_kelas }}
-            </option>
-            @endforeach
-        </select>
-    </td>
 
     {{-- Survei Lokasi --}}
     <td class="text-center">
