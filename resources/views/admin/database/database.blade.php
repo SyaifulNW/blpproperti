@@ -778,7 +778,9 @@
                     <h5 class="modal-title fw-bold" id="moveSalesPlanModalLabel">
                         <i class="fas fa-arrow-right me-2"></i> Masukkan ke Sales Plan
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <form id="moveSalesPlanForm" method="POST">
                     @csrf
@@ -800,7 +802,7 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light border-0">
-                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary px-4 fw-bold">Masukkan ke Salesplan</button>
                     </div>
                 </form>

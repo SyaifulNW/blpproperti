@@ -93,8 +93,8 @@ public function index(Request $request)
         $sortByParam = 'created_at';
     }
     
-    // Base Query: Only show "Calon Peserta" (Peserta Baru)
-    $query = \App\Models\Data::where('status_peserta', 'peserta_baru');
+    // Base Query: Show both new leads and those already in Sales Plan
+    $query = \App\Models\Data::whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
 
     // Filter Search
     if (!empty($searchFilter)) {
@@ -538,15 +538,22 @@ private function filterKelasByUser($user)
         }
 
         foreach ($kelasIds as $kelasId) {
-            $salesPlan = new SalesPlan();
-            $salesPlan->nama = $data->nama;
-            $salesPlan->situasi_bisnis = $data->situasi_bisnis;
-            $salesPlan->kendala = $data->kendala;
-            $salesPlan->kelas_id = $kelasId;
-            $salesPlan->data_id = $data->id;
-            $salesPlan->created_by = auth()->id();
-            $salesPlan->status = 'cold';
-            $salesPlan->save();
+            // Cek apakah sudah ada di Sales Plan untuk produk ini agar tidak duplikat
+            $exists = SalesPlan::where('data_id', $data->id)
+                               ->where('kelas_id', $kelasId)
+                               ->exists();
+            
+            if (!$exists) {
+                $salesPlan = new SalesPlan();
+                $salesPlan->nama = $data->nama;
+                $salesPlan->situasi_bisnis = $data->situasi_bisnis;
+                $salesPlan->kendala = $data->kendala;
+                $salesPlan->kelas_id = $kelasId;
+                $salesPlan->data_id = $data->id;
+                $salesPlan->created_by = auth()->id();
+                $salesPlan->status = 'cold';
+                $salesPlan->save();
+            }
         }
 
         // Update status_peserta agar hilang dari view Database

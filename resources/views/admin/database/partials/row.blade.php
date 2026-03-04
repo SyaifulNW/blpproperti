@@ -15,7 +15,12 @@
     {{-- Merged: Nama + WA + CTA --}}
     <td>
         <div class="d-flex flex-column">
-            <div contenteditable="true" class="editable fw-bold text-dark mb-1" data-field="nama" style="font-size: 0.95rem;">{{ $item->nama }}</div>
+            <div class="d-flex align-items-center mb-1">
+                <div contenteditable="true" class="editable fw-bold text-dark me-2" data-field="nama" style="font-size: 0.95rem;">{{ $item->nama }}</div>
+                @if($item->status_peserta === 'sales_plan')
+                    <span class="badge bg-info text-white" style="font-size: 0.65rem; border-radius: 50px; padding: 2px 8px;">In Sales Plan</span>
+                @endif
+            </div>
             
             <div class="d-flex align-items-center mt-1">
                 <span contenteditable="true" 
