@@ -243,6 +243,23 @@
     }
 </style>
 <form method="GET" action="{{ route('admin.salesplan.index') }}" class="filter-container">
+    {{-- Filter Sales (Hanya untuk Admin/Manager/Linda) --}}
+    @if(auth()->user()->role === 'administrator' || auth()->user()->role === 'manager' || auth()->user()->name === 'Linda')
+    <div class="filter-group">
+        <label for="cs_filter_top" class="filter-label">
+            <i class="fas fa-user-tie text-primary"></i> Sales:
+        </label>
+        <select name="created_by" id="cs_filter_top" class="form-select filter-select" onchange="this.form.submit()">
+            <option value="">👤 Semua Sales</option>
+            @foreach($csList as $cs)
+                <option value="{{ $cs->id }}" {{ request('created_by') == $cs->id ? 'selected' : '' }}>
+                    {{ $cs->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    @endif
+
     <div class="filter-group">
         <label for="bulan_filter" class="filter-label">
             <i class="fas fa-calendar-alt text-info"></i> Bulan:
@@ -601,19 +618,7 @@
 
         <form method="GET" class="d-flex gap-2">
             
-            {{-- Filter Sales (Hanya untuk Admin/Manager) --}}
-            @if(auth()->user()->role === 'administrator' || auth()->user()->role === 'manager')
-            <select name="created_by" id="cs_filter"
-                class="form-select filter-select"
-                onchange="this.form.submit()">
-                <option value="">👤 Semua Sales</option>
-                @foreach($csList as $cs)
-                    <option value="{{ $cs->id }}" {{ request('created_by') == $cs->id ? 'selected' : '' }}>
-                        {{ $cs->name }}
-                    </option>
-                @endforeach
-            </select>
-            @elseif(request('created_by'))
+            @if(request('created_by') && (auth()->user()->role !== 'administrator' && auth()->user()->role !== 'manager' && auth()->user()->name !== 'Linda'))
             <input type="hidden" name="created_by" value="{{ request('created_by') }}">
             @endif
 
