@@ -770,7 +770,77 @@
         // We explicitly attach applyTableFilters to the new inputs.
     });
     </script>
+    <!-- Modal Pindah Sales Plan -->
+    <div class="modal fade" id="moveSalesPlanModal" tabindex="-1" aria-labelledby="moveSalesPlanModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                    <h5 class="modal-title fw-bold" id="moveSalesPlanModalLabel">
+                        <i class="fas fa-arrow-right me-2"></i> Masukkan ke Sales Plan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="moveSalesPlanForm" method="POST">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <p class="text-muted mb-4">
+                            Anda akan memindahkan <strong id="move_nama_peserta"></strong> ke Sales Plan. 
+                            Silakan pilih Potensi Kelas :
+                        </p>
+                        
+                        <div class="product-list-container border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                            @foreach($kelas as $k)
+                                <div class="form-check mb-2 p-2 border-bottom hover-bg-white transition-all rounded">
+                                    <input class="form-check-input" type="checkbox" name="kelas_ids[]" value="{{ $k->id }}" id="kelas_{{ $k->id }}" style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
+                                    <label class="form-check-label ms-2 fw-medium" for="kelas_{{ $k->id }}" style="cursor: pointer; display: block; width: 100%;">
+                                        {{ $k->nama_kelas }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Masukkan ke Salesplan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hover-bg-white:hover { background-color: white !important; transform: translateX(5px); }
+        .transition-all { transition: all 0.2s ease; }
+    </style>
+
+    <script>
+        $(document).on('click', '.btn-move-salesplan', function() {
+            let id = $(this).data('id');
+            let nama = $(this).data('nama');
+            
+            $('#move_nama_peserta').text(nama);
+            $('#moveSalesPlanForm').attr('action', `/data/${id}/pindah-ke-salesplan`);
+            
+            // Clear checked items
+            $('#moveSalesPlanForm input[name="kelas_ids[]"]').prop('checked', false);
+            
+            $('#moveSalesPlanModal').modal('show');
+        });
+
+        $('#moveSalesPlanForm').on('submit', function(e) {
+            let checked = $(this).find('input[name="kelas_ids[]"]:checked').length;
+            if (checked === 0) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Produk',
+                    text: 'Silakan pilih minimal satu produk.'
+                });
+            }
+        });
+    </script>
     @endsection
+
     <!-- Modal Create -->
 
 

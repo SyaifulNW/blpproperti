@@ -83,10 +83,13 @@
     
     @if(strtolower(auth()->user()->role) !== 'administrator'  && Auth::user()->role !== 'marketing')
     <td>
-        <form action="{{ route('data.pindahKeSalesPlan', $item->id) }}" method="POST" style="display:inline;">
-            @csrf
-            <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-arrow-right"></i></button>
-        </form>
+        <button type="button" 
+                class="btn btn-sm btn-primary btn-move-salesplan" 
+                data-id="{{ $item->id }}" 
+                data-nama="{{ $item->nama }}"
+                title="Pindahkan ke Sales Plan">
+            <i class="fa fa-arrow-right"></i>
+        </button>
     </td>
     @endif
 

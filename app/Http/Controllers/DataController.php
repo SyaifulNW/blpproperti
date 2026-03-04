@@ -528,30 +528,32 @@ private function filterKelasByUser($user)
     return Kelas::whereNotIn('nama_kelas', ['Sekolah Kaya', 'Start-Up Muda Indonesia'])->get();
 }
 
-    public function pindahkesalesplan($id)
+    public function pindahkesalesplan(Request $request, $id)
     {
-        // Ambil data peserta dari tabel data
         $data = Data::findOrFail($id);
+        $kelasIds = $request->input('kelas_ids', []);
 
+        if (empty($kelasIds)) {
+            return redirect()->back()->with('error', 'Silakan pilih minimal satu produk.');
+        }
 
-        $salesPlan = new SalesPlan();
-        $salesPlan->nama = $data->nama;          // dari tabel peserta
-        $salesPlan->situasi_bisnis      = $data->situasi_bisnis; // dari tabel peserta
-        $salesPlan->kendala      = $data->kendala;       // dari tabel peserta
-        $salesPlan->kelas_id     = $data->kelas_id;
-        $salesPlan->data_id      = $data->id; // Link ke data asli 
-        $salesPlan->created_by   = auth()->id();
-        $salesPlan->status       = 'cold'; // default awal
-
-        // Kolom tambahan biarkan kosong dulu, admin yang isi nanti
-        $salesPlan->save();
+        foreach ($kelasIds as $kelasId) {
+            $salesPlan = new SalesPlan();
+            $salesPlan->nama = $data->nama;
+            $salesPlan->situasi_bisnis = $data->situasi_bisnis;
+            $salesPlan->kendala = $data->kendala;
+            $salesPlan->kelas_id = $kelasId;
+            $salesPlan->data_id = $data->id;
+            $salesPlan->created_by = auth()->id();
+            $salesPlan->status = 'cold';
+            $salesPlan->save();
+        }
 
         // Update status_peserta agar hilang dari view Database
         $data->status_peserta = 'sales_plan';
         $data->save();
 
-        return redirect()->back()
-            ->with('success', 'Peserta berhasil dipindahkan ke Sales Plan.');
+        return redirect()->back()->with('success', 'Peserta berhasil dipindahkan ke Sales Plan.');
     }
     public function getStatistik(Request $request)
     {

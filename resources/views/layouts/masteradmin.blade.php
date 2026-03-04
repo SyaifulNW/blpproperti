@@ -396,11 +396,28 @@
             @endphp
             @if(!in_array($userRole, ['marketing', 'hrd', 'advertising']))
                 @if(\App\Models\Menu::isActive('sales_plan'))
+                    {{-- SALES PLAN Dropdown --}}
                     <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.salesplan.index') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseSalesPlan"
+                            aria-expanded="{{ request()->routeIs('admin.salesplan.index') ? 'true' : 'false' }}" aria-controls="collapseSalesPlan">
                             <i class="fas fa-fw fa-chart-line"></i>
                             <span><strong>SALES PLAN</strong></span>
                         </a>
+                        <div id="collapseSalesPlan" class="collapse {{ request()->routeIs('admin.salesplan.index') ? 'show' : '' }}" aria-labelledby="headingSalesPlan" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Pilih Produk:</h6>
+                                {{-- Link ke hlm Index (Semua Produk) --}}
+                                <a class="collapse-item {{ !request('kelas') ? 'active' : '' }}" href="{{ route('admin.salesplan.index') }}">
+                                    Semua Produk
+                                </a>
+                                {{-- Daftar Produk dari DB --}}
+                                @foreach(\App\Models\Kelas::orderBy('nama_kelas', 'asc')->get() as $targetProduct)
+                                <a class="collapse-item {{ request('kelas') == $targetProduct->nama_kelas ? 'active' : '' }}" href="{{ route('admin.salesplan.index', ['kelas' => $targetProduct->nama_kelas]) }}">
+                                    {{ $targetProduct->nama_kelas }}
+                                </a>
+                                @endforeach
+                            </div>
+                        </div>
                     </li>
                 @endif
             @endif
