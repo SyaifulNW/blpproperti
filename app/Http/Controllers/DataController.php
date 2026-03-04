@@ -94,7 +94,7 @@ public function index(Request $request)
     }
     
     // Base Query: Show both new leads and those already in Sales Plan
-    $query = \App\Models\Data::whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
+    $query = \App\Models\Data::with('salesplan')->whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
 
     // Filter Search
     if (!empty($searchFilter)) {

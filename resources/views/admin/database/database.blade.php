@@ -819,12 +819,20 @@
         $(document).on('click', '.btn-move-salesplan', function() {
             let id = $(this).data('id');
             let nama = $(this).data('nama');
+            let existingKelas = $(this).data('existing-kelas') || []; // Array of IDs
             
             $('#move_nama_peserta').text(nama);
             $('#moveSalesPlanForm').attr('action', `/data/${id}/pindah-ke-salesplan`);
             
-            // Clear checked items
+            // Reset checklist first
             $('#moveSalesPlanForm input[name="kelas_ids[]"]').prop('checked', false);
+            
+            // Check products already in salesplan
+            if (Array.isArray(existingKelas)) {
+                existingKelas.forEach(kelasId => {
+                    $(`#kelas_${kelasId}`).prop('checked', true);
+                });
+            }
             
             $('#moveSalesPlanModal').modal('show');
         });

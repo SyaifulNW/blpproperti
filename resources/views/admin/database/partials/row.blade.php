@@ -92,6 +92,7 @@
                 class="btn btn-sm btn-primary btn-move-salesplan" 
                 data-id="{{ $item->id }}" 
                 data-nama="{{ $item->nama }}"
+                data-existing-kelas="{{ $item->salesplan->pluck('kelas_id')->toJson() }}"
                 title="Pindahkan ke Sales Plan">
             <i class="fa fa-arrow-right"></i>
         </button>
