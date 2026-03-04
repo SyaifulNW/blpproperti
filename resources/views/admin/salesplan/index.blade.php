@@ -308,13 +308,13 @@
 @endphp
 
 
-<h4 class="mt-5 mb-4 fw-bold text-center text-dark">🎯 Pencapaian Target Per CS</h4>
+<h4 class="mt-5 mb-4 fw-bold text-center text-dark">🎯 Pencapaian Target Per Sales</h4>
 
 <div class="table-responsive">
     <table class="table table-hover table-striped align-middle shadow-sm">
         <thead class="table-primary text-center">
             <tr>
-                <th>Nama CS</th>
+                <th>Nama Sales</th>
                 <th>Target Omset</th>
                 <th>Tercapai</th>
                 <th>Kekurangan</th>
@@ -601,7 +601,17 @@
 
         <form method="GET" class="d-flex gap-2">
             
-            <input type="hidden" name="kelas" value="{{ request('kelas') }}">
+            <select name="kelas" id="kelas_filter_cs"
+                class="form-select filter-select"
+                onchange="this.form.submit()">
+                <option value="">🏠 Semua Produk</option>
+                @foreach($kelasList as $kelas)
+                    <option value="{{ $kelas->nama_kelas }}" {{ request('kelas') == $kelas->nama_kelas ? 'selected' : '' }}>
+                        {{ $kelas->nama_kelas }}
+                    </option>
+                @endforeach
+            </select>
+
             @if(request('created_by'))
             <input type="hidden" name="created_by" value="{{ request('created_by') }}">
             @endif
