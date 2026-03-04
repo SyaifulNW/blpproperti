@@ -361,16 +361,11 @@
                                     $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
                                 @endphp
 
-                                @if($userRole === 'administrator')
-                                    {{-- === LAYOUT ADMINISTRATOR === --}}
-                                    <th style="min-width: 250px;">Nama Calon Pelanggan</th> {{-- Merged Name+WA+CTA --}}
-                                    <th>Sumber Leads</th> {{-- Filter at top --}}
-                                    <!--<th>Kota</th>         {{-- Filter at top --}}-->
-                                @else
-                                    {{-- === LAYOUT NON-ADMIN (CS, Manager, Marketing, etc) === --}}
-                                    <th>Nama Calon Pelanggan</th>
-                                    <th>
-                                        Sumber Leads <br>
+                                <th style="min-width: 250px;">Nama Calon Pelanggan</th> {{-- Merged Name+WA+CTA --}}
+                                <th>
+                                    Sumber Leads
+                                    @if($userRole !== 'administrator' && auth()->user()->name !== 'Linda')
+                                        <br>
                                         <select id="filterSumber" class="form-control form-control-sm">
                                             <option value="">-- Semua Sumber --</option>
                                             <option value="Marketing">Marketing</option>
@@ -378,10 +373,8 @@
                                             <option value="Alumni">Referal</option>
                                             <option value="Mandiri">Mandiri</option>
                                         </select>
-                                    </th>
-                                    <th>No.WA</th>
-                                    <th>CTA</th>
-                                @endif
+                                    @endif
+                                </th>
 
                                 
                                 {{-- Hanya tampil jika bukan marketing --}}
@@ -399,7 +392,13 @@
                                     </th>
                                 @endif
 
-                                @if(Auth::user()->email !== "mbchamasah@gmail.com"  && Auth::user()->role !== 'marketing')    
+                                {{-- SPIN / BAT Columns --}}
+                                <th class="text-center" style="width: 40px;">B</th>
+                                <th class="text-center" style="width: 40px;">A</th>
+                                <th class="text-center" style="width: 40px;">T</th>
+
+
+                                @if(strtolower(auth()->user()->role) !== 'administrator' && auth()->user()->role !== 'marketing')    
                                 <th>Sales Plan</th>
                                 @endif
                                 
@@ -571,6 +570,14 @@
 
                         .status-error {
                             color: red;
+                        }
+
+                        /* Placeholder for empty contenteditable */
+                        [contenteditable]:empty:before {
+                            content: attr(placeholder);
+                            color: #adb5bd;
+                            pointer-events: none;
+                            display: block;
                         }
                     </style>
                     <script>

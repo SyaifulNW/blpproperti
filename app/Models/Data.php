@@ -25,6 +25,11 @@ class Data extends Model
         'kelas_id', 'created_by', 'created_by_role',
         'ikut_kelas',
         'survei_lokasi',
+        'spin',
+        'spin_b',
+        'spin_a',
+        'spin_t',
+        'spin_updated_at',
     ];
     public function kelas()
     {

@@ -159,7 +159,7 @@ public function index(Request $request)
     // Filter Spin
     $spinFilter = $request->input('spin');
     if ($spinFilter !== null && $spinFilter !== '') {
-        $query->where('berhasil_spin', $spinFilter);
+        $query->where('spin', $spinFilter);
     }
 
     // Filter Zoom
@@ -295,6 +295,12 @@ public function index(Request $request)
         $data = Data::findOrFail($request->id);
         $field = $request->field;
         $data->$field = $request->value;
+
+        // Auto update spin_updated_at if SPIN/BAT fields change
+        if (in_array($field, ['spin', 'spin_b', 'spin_a', 'spin_t'])) {
+            $data->spin_updated_at = now();
+        }
+
         $data->save();
 
         return response()->json(['success' => true]);
