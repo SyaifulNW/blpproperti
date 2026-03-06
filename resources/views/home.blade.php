@@ -256,9 +256,9 @@
                 $labels = array_keys($sumberDatabase);
                 $values = array_values($sumberDatabase);
 
-                $totalKomisi = collect($kelasOmsetFiltered)->sum(function($k) {
-                    // Update: Komisi 0.5% dari Omset
-                    return $k['omset'] * 0.005;
+                $totalKomisi = collect($kelasOmsetFiltered)->sum(function($k) use ($commissionRate) {
+                    // Update: Komisi dinamis (0.5% atau 0.75%)
+                    return $k['omset'] * ($commissionRate ?? 0.005);
                 });
 
                 // OMSET CALCULATION
@@ -350,11 +350,11 @@
                             <h2 class="fw-bold text-success mb-0" style="font-size: 2.2rem;">
                                 Rp{{ number_format($totalKomisi, 0, ',', '.') }}
                             </h2>
-                            <p class="text-muted small">Estimasi Komisi 0,5%</p>
+                            <p class="text-muted small">Estimasi Komisi <strong>{{ ($commissionRate ?? 0.005) * 100 }}%</strong></p>
                             <hr class="my-2">
                             <div class="text-start small">
                                 <i class="fas fa-info-circle me-1 text-info"></i> 
-                                <span class="text-muted">Rumus: <strong>0,5% dari Omset</strong>. <br> (Contoh: Rp 400jt &times; 0,5% = Rp 2jt)</span>
+                                <span class="text-muted">Rumus: <strong>{{ ($commissionRate ?? 0.005) * 100 }}% dari Omset</strong>. <br> (Contoh: Rp 400jt &times; {{ ($commissionRate ?? 0.005) * 100 }}% = Rp {{ number_format(400000000 * ($commissionRate ?? 0.005), 0, ',', '.') }})</span>
                             </div>
                         </div>
                     </div>
@@ -559,6 +559,12 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- NOTE KOMISI --}}
+                    <div class="mt-4 p-3 rounded text-center" style="background-color: #f1f4f9; border-left: 5px solid #007bff;">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        <span class="fw-bold text-dark">"Jika omset tercapai dalam 3 bulan maka komisinya naik menjadi 0,75%"</span>
                     </div>
                 </div>
 

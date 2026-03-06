@@ -227,6 +227,29 @@ class HomeController extends Controller
         $nilaiManualPart = round(($sum / 500) * $bobotManual);
     }
 
+    // ====================== COMMISSION RATE CALCULATION (3 MOS TARGET) ======================
+    $consecutiveMonths = 0;
+    for ($i = 0; $i < 3; $i++) {
+        $checkDate = $carbonBulan->copy()->subMonths($i);
+        $mCheck = $checkDate->month;
+        $yCheck = $checkDate->year;
+
+        $omsetBulanIni = \App\Models\SalesPlan::where('created_by', $csId)
+            ->whereYear('updated_at', $yCheck)
+            ->whereMonth('updated_at', $mCheck)
+            ->where('status', 'sudah_transfer')
+            ->sum('nominal');
+
+        if ($omsetBulanIni >= 1000000000) {
+            $consecutiveMonths++;
+        } else {
+            break;
+        }
+    }
+
+    $isEligibleCommission075 = ($consecutiveMonths >= 3);
+    $commissionRate = $isEligibleCommission075 ? 0.0075 : 0.005;
+
     // ====================== TOTAL NILAI HASIL ======================
     // Note: $nilaiOmset, $nilaiClosingPaket, $nilaiDatabaseBaru are already calculated above.
     $totalNilaiHasil = $nilaiOmset + $nilaiClosingPaket + $nilaiDatabaseBaru + $nilaiManualPart;
@@ -282,7 +305,9 @@ class HomeController extends Controller
 
     
         'notifikasi',
-        'notifCount'
+        'notifCount',
+        'isEligibleCommission075',
+        'commissionRate'
     ));
 }
 
