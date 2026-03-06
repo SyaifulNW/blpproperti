@@ -288,28 +288,23 @@ class HomeController extends Controller
 
 private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $role)
 {
-    // OMSET (40%)
+    // OMSET - Ambil semua produk dan filter berdasarkan role (seperti di index)
+    $allProducts = \App\Models\Kelas::all();
     if ($role === 'cs-smi') {
-        $kelasOmset = Kelas::where('nama_kelas', 'like', '%Start-Up Muda Indonesia%')
-            ->with(['salesplans' => function ($q) use ($csId, $tahun, $bulan) {
-                $q->where('created_by', $csId)
-                    ->whereYear('updated_at', $tahun)
-                    ->whereMonth('updated_at', $bulan)
-                    ->where('status', 'sudah_transfer');
-            }])
-            ->get();
-    } else {
-        $kelasOmset = Kelas::whereYear('tanggal_mulai', $tahun)
-            ->whereMonth('tanggal_mulai', $bulan)
-            ->with(['salesplans' => function ($q) use ($csId, $tahun, $bulan) {
-                $q->where('created_by', $csId)
-                    ->whereYear('updated_at', $tahun)
-                    ->whereMonth('updated_at', $bulan);
-            }])
-            ->get();
+        $allProducts = $allProducts->filter(function($q) {
+            return \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muda Indonesia') || \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muslim Indonesia');
+        });
     }
 
-    $totalOmset = $kelasOmset->sum(fn ($k) => $k->salesplans->sum('nominal'));
+    $totalOmset = 0;
+    foreach ($allProducts as $kelas) {
+        $totalOmset += $kelas->salesplans()
+            ->where('created_by', $csId)
+            ->whereYear('updated_at', $tahun)
+            ->whereMonth('updated_at', $bulan)
+            ->where('status', 'sudah_transfer')
+            ->sum('nominal');
+    }
     $targetGlobal = 1000000000;
     
     // Nilai Omset (0-100) -> Bobot 60%
@@ -321,7 +316,7 @@ private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $ro
     $nilaiClosing = 0;
 
     // DATABASE BARU (20%)
-    $dbBaru = Data::where('created_by', $csId)
+    $dbBaru = Data::where('created_by', $namaUserData) // Gunakan NAMA, bukan ID
         ->whereYear('created_at', $tahun)
         ->whereMonth('created_at', $bulan)
         ->count();

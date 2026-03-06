@@ -75,16 +75,21 @@
 
     {{-- ================== PROGRESS BAR TOTAL ================== --}}
     @php
-        // Gunakan variable totalNilai dari controller
-        $persen = ($totalNilai / 100) * 100;
-        $warna = $totalNilai >= 80 ? 'bg-success' : ($totalNilai >= 60 ? 'bg-warning' : 'bg-danger');
+        // Warna bar menyesuaikan skala nilai
+        $warnaBar = '#e53935'; // < 40 Underperformance
+        if($totalNilai >= 100) $warnaBar = '#009300';
+        elseif($totalNilai >= 80) $warnaBar = '#22b122';
+        elseif($totalNilai >= 60) $warnaBar = '#ffe75c';
+        elseif($totalNilai >= 40) $warnaBar = '#ff9933';
     @endphp
 
     <div class="card border-0 shadow-sm p-3 mb-4">
         <h5 class="fw-bold mb-2">Total Pencapaian: {{ $totalNilai }}/100</h5>
 
-        <div class="progress">
-            <div class="progress-bar {{ $warna }}" style="width: {{ $totalNilai }}%;">
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar" role="progressbar" 
+                 style="width: {{ $totalNilai }}%; background-color: {{ $warnaBar }}; color: {{ ($totalNilai >= 60 && $totalNilai < 80) ? '#333' : '#fff' }};" 
+                 aria-valuenow="{{ $totalNilai }}" aria-valuemin="0" aria-valuemax="100">
                 {{ $totalNilai }}%
             </div>
         </div>

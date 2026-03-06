@@ -157,7 +157,7 @@ class PenilaianController extends Controller
             ->where('leads', 'like', '%Marketing%')
             ->whereIn('created_by', $csMBC)
             ->count();
-        $targetLeadsMBC = 150;
+        $targetLeadsMBC = 75; // Samakan dengan target di index (75)
         $persenLeadsMBC = $targetLeadsMBC > 0 ? min(($leadsMBC / $targetLeadsMBC) * 100, 100) : 0;
         $nilaiLeadsMBC = round(($persenLeadsMBC / 100) * 45, 2);
 
@@ -167,7 +167,7 @@ class PenilaianController extends Controller
             ->where('leads', 'like', '%Marketing%')
             ->whereIn('created_by', $csSMI)
             ->count();
-        $targetLeadsSMI = 100;
+        $targetLeadsSMI = 50; // Samakan dengan target di index (50)
         $persenLeadsSMI = $targetLeadsSMI > 0 ? min(($leadsSMI / $targetLeadsSMI) * 100, 100) : 0;
         $nilaiLeadsSMI = round(($persenLeadsSMI / 100) * 45, 2);
 

@@ -16,7 +16,7 @@ class PenilaianController extends Controller
     {
         $user = auth()->user();
         $csId = $user->id;
-        $namaUserData = $user->name;
+        $namaUserData = trim($user->name);
 
         // ============================
         // FILTER BULAN & TAHUN
@@ -210,15 +210,19 @@ class PenilaianController extends Controller
                 ->get();
         }
 
-        $totalOmset = $kelasOmset->sum(fn ($k) => $k->salesplans->sum('nominal'));
+        $totalOmset = 0;
+        foreach ($kelasOmset as $kelas) {
+            $totalOmset += $kelas->salesplans->sum('nominal');
+        }
+
         $targetGlobal = 1000000000;
-        $nilaiOmset = $targetGlobal > 0 ? min(60, intval($totalOmset / $targetGlobal * 60)) : 0;
+        $nilaiOmset = $targetGlobal > 0 ? min(60, floor($totalOmset / $targetGlobal * 60)) : 0;
 
         // CLOSING PAKET (REMOVED)
         $nilaiClosing = 0;
 
         // DATABASE BARU (20% or 30%)
-        $dbBaru = Data::where('created_by', $namaUserData)
+        $dbBaru = \App\Models\Data::where('created_by', trim($namaUserData))
             ->whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->count();

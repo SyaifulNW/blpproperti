@@ -430,12 +430,20 @@
                 </form>
 
                 {{-- PROGRESS BAR TOTAL PENCAPAIAN --}}
+                @php
+                    $hValTotal = $totalNilaiHasil ?? 0;
+                    if($hValTotal > 100) $cBarTotal = '#008000';
+                    elseif($hValTotal >= 80) $cBarTotal = '#00ca00';
+                    elseif($hValTotal >= 60) $cBarTotal = '#ffe600';
+                    elseif($hValTotal >= 40) $cBarTotal = '#ff9900';
+                    else $cBarTotal = '#dc3545';
+                @endphp
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
                         <h5 class="fw-bold text-secondary mb-2">Total Pencapaian: {{ $totalNilaiHasil ?? 0 }}/100</h5>
                         <div class="progress" style="height: 25px; background-color: #e9ecef; border-radius: 5px;">
                             <div class="progress-bar fw-bold" role="progressbar" 
-                                style="width: {{ $totalNilaiHasil ?? 0 }}%; background-color: #dc3545; font-size: 14px;" 
+                                style="width: {{ $totalNilaiHasil ?? 0 }}%; background-color: {{ $cBarTotal }}; color: {{ ($hValTotal >= 60 && $hValTotal < 80) ? '#333' : '#fff' }}; font-size: 14px;" 
                                 aria-valuenow="{{ $totalNilaiHasil ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
                                 {{ $totalNilaiHasil ?? 0 }}%
                             </div>
@@ -507,8 +515,8 @@
                     
                     {{-- Dinamic Status Box --}}
                     <div id="statusBoxContainer" class="p-3 text-center text-white fw-bold fs-4 mb-3" 
-                         style="border-radius: 5px; background-color: #dc3545;">
-                         Underperformance ({{ $totalNilaiHasil ?? 0 }})
+                         style="border-radius: 5px; background-color: {{ $cBarTotal }}; color: {{ ($hValTotal >= 60 && $hValTotal < 80) ? '#333' : '#fff' }};">
+                         @if($hValTotal > 100) Sangat Baik @elseif($hValTotal >= 80) Baik @elseif($hValTotal >= 60) Cukup @elseif($hValTotal >= 40) Pembinaan @else Underperformance @endif ({{ $hValTotal }})
                     </div>
 
                     {{-- Motivasi Text --}}
