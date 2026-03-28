@@ -51,10 +51,28 @@ class AdminActivityController extends Controller
 
         // Ambil realisasi user untuk TANGGAL yang dipilih
         $daily = [];
+        $selectedCs = null;
         if ($csId) {
+            $selectedCs = User::find($csId);
             $daily = DailyActiviti::where('user_id', $csId)
                 ->whereDate('tanggal', $tanggal)
                 ->pluck('realisasi', 'activity_id');
+            
+            // 🔥 AUTO-OVERRIDE for Database Baru (Daily)
+            $dbBaruAct = Activity::where('nama', 'Database Baru')->first();
+            if ($dbBaruAct && $selectedCs) {
+                $daily[$dbBaruAct->id] = \App\Models\Data::where('created_by', $selectedCs->name)
+                    ->whereDate('created_at', $tanggal)
+                    ->count();
+            }
+
+            // 🔥 AUTO-OVERRIDE for Edukasi WA (Daily)
+            $edukasiWaAct = Activity::where('nama', 'Edukasi & Membangun Hubungan (WA)')->first();
+            if ($edukasiWaAct && $selectedCs) {
+                $daily[$edukasiWaAct->id] = \App\Models\SpinInteraction::whereHas('data', function($q) use ($selectedCs) {
+                    $q->where('created_by', $selectedCs->name);
+                })->where('wa', 1)->whereDate('created_at', $tanggal)->count();
+            }
         }
 
         // ==============================
@@ -68,7 +86,7 @@ class AdminActivityController extends Controller
         $totalNilai = 0;
         $totalBobot = 0;
 
-        if ($csId) {
+        if ($csId && $selectedCs) {
              // Hari kerja
             $daysInMonth = $carbon->daysInMonth;
             $hariKerja = 0;
@@ -100,6 +118,14 @@ class AdminActivityController extends Controller
                         ->whereMonth('tanggal', $bulan)
                         ->whereYear('tanggal', $tahun)
                         ->sum('realisasi');
+                    
+                    // 🔥 AUTO-OVERRIDE for Database Baru (Monthly KPI)
+                    if ($act->nama === 'Database Baru') {
+                        $totalRealisasi = \App\Models\Data::where('created_by', $selectedCs->name)
+                            ->whereMonth('created_at', $bulan)
+                            ->whereYear('created_at', $tahun)
+                            ->count();
+                    }
 
                     $percent = 0;
                     if ($targetBulanan > 0) {
@@ -136,7 +162,6 @@ class AdminActivityController extends Controller
 
     public function viewPdfBulanan(Request $request)
     {
-        // dd('Reached Controller: ' . auth()->user()->name);
         $bulan = $request->input('bulan');
         $csId = $request->input('cs_id');
         $carbonBulan = Carbon::createFromFormat('Y-m', $bulan);
@@ -170,8 +195,26 @@ class AdminActivityController extends Controller
             }
 
             $totalRealisasi = $activities->where('activity_id', $act->id)->sum('realisasi');
-            $persentase = $act->target_bulanan > 0
-                ? min(100, ($totalRealisasi / $act->target_bulanan) * 100)
+            
+            // 🔥 AUTO-OVERRIDE for Database Baru (Total Monthly)
+            if ($act->nama === 'Database Baru') {
+                $totalRealisasi = \App\Models\Data::where('created_by', $cs->name)
+                    ->whereMonth('created_at', $carbonBulan->month)
+                    ->whereYear('created_at', $carbonBulan->year)
+                    ->count();
+            }
+
+            // Target calculation (need hariKerja)
+            $hariKerjaTemp = 0;
+            for ($dTemp = 1; $dTemp <= $jumlahHari; $dTemp++) {
+                $dayTemp = Carbon::create($carbonBulan->year, $carbonBulan->month, $dTemp);
+                if ($dayTemp->dayOfWeek != Carbon::SUNDAY) $hariKerjaTemp++;
+            }
+            $targetBulananReal = $act->target_daily * $hariKerjaTemp;
+            if ($act->nama === 'Transfer Masuk') $targetBulananReal = 1250000000;
+
+            $persentase = $targetBulananReal > 0
+                ? min(100, ($totalRealisasi / $targetBulananReal) * 100)
                 : 0;
             $nilai = ($persentase / 100) * $act->bobot;
 
@@ -181,12 +224,28 @@ class AdminActivityController extends Controller
                     ->where('activity_id', $act->id)
                     ->where('tanggal', $carbonBulan->format("Y-m-") . str_pad($d, 2, '0', STR_PAD_LEFT))
                     ->sum('realisasi');
+                
+                // Override daily if Database Baru
+                if ($act->nama === 'Database Baru') {
+                    $harian[$d] = \App\Models\Data::where('created_by', $cs->name)
+                        ->whereDate('created_at', $carbonBulan->format("Y-m-") . str_pad($d, 2, '0', STR_PAD_LEFT))
+                        ->count();
+                }
+
+                // Override daily if Edukasi WA
+                if ($act->nama === 'Edukasi & Membangun Hubungan (WA)') {
+                    $harian[$d] = \App\Models\SpinInteraction::whereHas('data', function($q) use ($cs) {
+                        $q->where('created_by', $cs->name);
+                    })->where('wa', 1)
+                    ->whereDate('created_at', $carbonBulan->format("Y-m-") . str_pad($d, 2, '0', STR_PAD_LEFT))
+                    ->count();
+                }
             }
 
             $categories[$kategori][] = [
                 'nama' => $act->nama,
                 'target_daily' => $act->target_daily,
-                'target_bulanan' => $act->target_bulanan,
+                'target_bulanan' => $targetBulananReal,
                 'bobot' => $act->bobot,
                 'real' => $totalRealisasi,
                 'nilai' => round($nilai, 2),
@@ -194,7 +253,7 @@ class AdminActivityController extends Controller
             ];
 
             $total[$kategori]['target_daily'] += $act->target_daily;
-            $total[$kategori]['target_bulanan'] += $act->target_bulanan;
+            $total[$kategori]['target_bulanan'] += $targetBulananReal;
             $total[$kategori]['bobot'] += $act->bobot;
             $total[$kategori]['real'] += $totalRealisasi;
             $total[$kategori]['nilai'] += $nilai;
@@ -238,11 +297,34 @@ class AdminActivityController extends Controller
             foreach ($list as $act) {
                 $tDaily = (float) ($act->target_daily ?? 0);
                 $tBulanan = $tDaily * $hariKerja;
+                if ($act->nama === 'Transfer Masuk') {
+                    $tDaily = 0;
+                    $tBulanan = 1250000000;
+                }
+
                 $tRealisasi = (float) DailyActiviti::where('user_id', $csId)
                     ->where('activity_id', $act->id)
                     ->whereMonth('tanggal', $bulan_int)
                     ->whereYear('tanggal', $tahun)
                     ->sum('realisasi');
+                
+                // 🔥 AUTO-OVERRIDE for KPI in PDF
+                if ($act->nama === 'Database Baru') {
+                    $tRealisasi = \App\Models\Data::where('created_by', $cs->name)
+                        ->whereMonth('created_at', $bulan_int)
+                        ->whereYear('created_at', $tahun)
+                        ->count();
+                }
+
+                // 🔥 AUTO-OVERRIDE for Edukasi WA (KPI PDF)
+                if ($act->nama === 'Edukasi & Membangun Hubungan (WA)') {
+                    $tRealisasi = \App\Models\SpinInteraction::whereHas('data', function($q) use ($cs) {
+                        $q->where('created_by', $cs->name);
+                    })->where('wa', 1)
+                    ->whereMonth('created_at', $bulan_int)
+                    ->whereYear('created_at', $tahun)
+                    ->count();
+                }
 
                 $percent = 0;
                 if ($tBulanan > 0) {

@@ -398,6 +398,7 @@
                                 <th class="text-center" style="width: 40px;">T</th>
 
 
+
                                 @if(strtolower(auth()->user()->role) !== 'administrator' && auth()->user()->role !== 'marketing')    
                                 <th>Sales Plan</th>
                                 @endif
@@ -452,13 +453,36 @@
                     <!-- Script JQuery -->
                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                     <script>
+                        // Helper functions
+                        function showStatusIcon($element, success) {
+                            let iconHtml = success ?
+                                '<i class="fa fa-check status-success"></i>' :
+                                '<i class="fa fa-times status-error"></i>';
+
+                            let iconSpan = $('<span class="status-icon">' + iconHtml + '</span>');
+                            $element.after(iconSpan);
+
+                            setTimeout(() => {
+                                iconSpan.fadeOut(300, function() {
+                                    $(this).remove();
+                                });
+                            }, 2000);
+                        }
+
                         $(document).ready(function() {
 
                             // Untuk kolom text
+                            $(document).on('focus', '.editable', function() {
+                                $(this).addClass('editing');
+                            });
+
                             $(document).on('blur', '.editable', function() {
-                                let value = $(this).text();
-                                let field = $(this).data('field');
-                                let id = $(this).closest('tr').data('id');
+                                let $this = $(this);
+                                let value = $this.val();
+                                let field = $this.data('field');
+                                let id = $this.closest('tr').data('id');
+
+                                $this.removeClass('editing');
 
                                 $.ajax({
                                     url: '/admin/database/update-inline',
@@ -471,10 +495,11 @@
                                     },
                                     success: function(res) {
                                         console.log('Updated:', field);
+                                        showStatusIcon($this, true);
                                     },
-                                    // error: function() {
-                                    //     alert('Gagal update data');
-                                    // }
+                                    error: function() {
+                                        showStatusIcon($this, false);
+                                    }
                                 });
                             });
 
@@ -583,53 +608,6 @@
                     <script>
                         $(document).ready(function() {
 
-                            // Untuk kolom text
-                            $('.editable').on('focus', function() {
-                                $(this).addClass('editing');
-                            });
-
-                            $('.editable').on('blur', function() {
-                                let $this = $(this);
-                                let value = $this.text();
-                                let field = $this.data('field');
-                                let id = $this.closest('tr').data('id');
-
-                                $this.removeClass('editing');
-
-                                $.ajax({
-                                    url: '/admin/database/update-inline',
-                                    method: 'POST',
-                                    data: {
-                                        _token: '{{ csrf_token() }}',
-                                        id: id,
-                                        field: field,
-                                        value: value
-                                    },
-                                    success: function() {
-                                        showStatusIcon($this, true);
-                                    },
-                                    error: function() {
-                                        showStatusIcon($this, false);
-                                    }
-                                });
-                            });
-
-                            // Fungsi tampil icon centang atau silang
-                            function showStatusIcon($element, success) {
-                                let iconHtml = success ?
-                                    '<i class="fa fa-check status-success"></i>' :
-                                    '<i class="fa fa-times status-error"></i>';
-
-                                let iconSpan = $('<span class="status-icon">' + iconHtml + '</span>');
-                                $element.after(iconSpan);
-
-                                setTimeout(() => {
-                                    iconSpan.fadeOut(300, function() {
-                                        $(this).remove();
-                                    });
-                                }, 2000);
-                            }
-
                             // Untuk Select Inline Update (Sumber Leads, Produk)
                             $(document).on('change', '.select-inline', function() {
                                 let $this = $(this);
@@ -655,12 +633,137 @@
                                 });
                             });
 
+                            // Tombol Riwayat SPIN
+                            $(document).on('click', '.btn-spin-history', function() {
+                                let id = $(this).data('id');
+                                let nama = $(this).data('nama');
+                                $('#spin_nama_peserta').text(nama);
+                                $('#modalRiwayatSpin').data('data-id', id);
+                                
+                                loadSpinInteractions(id);
+                                $('#modalRiwayatSpin').modal('show');
+                            });
+
+                            function loadSpinInteractions(id) {
+                                let $container = $('#spinCardsContainer');
+                                $container.html('<div class="p-4 text-center"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+
+                                $.get(`/admin/database/${id}/spin-interactions`, function(res) {
+                                    if (res.success) {
+                                        renderSpinCards(res.interactions);
+                                    }
+                                });
+                            }
+
+                            function renderSpinCards(interactions) {
+                                let $container = $('#spinCardsContainer');
+                                $container.empty();
+
+                                interactions.forEach((spin, index) => {
+                                    $container.append(createSpinCardHtml(spin, index + 1));
+                                });
+
+                                // Add the "Tambah" card
+                                $container.append(`
+                                    <div class="add-spin-card ms-2" onclick="addNewSpinCard()">
+                                        <div class="text-center">
+                                            <i class="fas fa-plus-circle fa-3x text-primary shadow-sm rounded-circle"></i>
+                                            <div class="mt-2 fw-bold text-primary">Tambah SPIN</div>
+                                        </div>
+                                    </div>
+                                `);
+                            }
+
+                            function createSpinCardHtml(spin, num) {
+                                let dateStr = spin.created_at ? new Date(spin.created_at).toLocaleString('id-ID', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+                                return `
+                                    <div class="spin-card" data-id="${spin.id || ''}">
+                                        <div class="spin-card-header">
+                                            <span>SPIN ${num}</span>
+                                            <span class="text-muted small">${dateStr}</span>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="row g-0 border rounded mb-3 overflow-hidden" style="font-size: 0.75rem;">
+                                                <div class="col-6 text-center border-end p-2 bg-light">
+                                                    <div class="text-muted fw-bold mb-1">WA</div>
+                                                    <input type="checkbox" class="spin-wa" ${spin.wa ? 'checked' : ''}>
+                                                </div>
+                                                <div class="col-6 text-center p-2 bg-light">
+                                                    <div class="text-muted fw-bold mb-1">TELP</div>
+                                                    <input type="checkbox" class="spin-telp" ${spin.telp ? 'checked' : ''}>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="fw-bold small text-muted text-uppercase d-block mb-1">HASIL FU</label>
+                                                <textarea class="form-control form-control-sm spin-hasil" rows="3" placeholder="Hasil follow up...">${spin.hasil_fu || ''}</textarea>
+                                            </div>
+                                            
+                                            <div class="mb-0">
+                                                <label class="fw-bold small text-muted text-uppercase d-block mb-1">TINDAK LANJUT</label>
+                                                <textarea class="form-control form-control-sm spin-tindak" rows="3" placeholder="Langkah selanjutnya...">${spin.tindak_lanjut || ''}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
+                            window.addNewSpinCard = function() {
+                                let $container = $('#spinCardsContainer');
+                                let count = $container.find('.spin-card').length;
+                                // Insert before the add card
+                                $('.add-spin-card').before(createSpinCardHtml({wa:0, telp:0, hasil_fu:'', tindak_lanjut:''}, count + 1));
+                                // Scroll right
+                                let containerDom = $container[0];
+                                containerDom.scrollLeft = containerDom.scrollWidth;
+                            };
+
+                            $('#btnSaveSpinInteractions').on('click', function() {
+                                let id = $('#modalRiwayatSpin').data('data-id');
+                                let interactions = [];
+
+                                $('#spinCardsContainer .spin-card').each(function() {
+                                    interactions.push({
+                                        id: $(this).data('id'),
+                                        wa: $(this).find('.spin-wa').is(':checked'),
+                                        telp: $(this).find('.spin-telp').is(':checked'),
+                                        hasil_fu: $(this).find('.spin-hasil').val(),
+                                        tindak_lanjut: $(this).find('.spin-tindak').val()
+                                    });
+                                });
+
+                                let $btn = $(this);
+                                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
+
+                                $.ajax({
+                                    url: `/admin/database/${id}/save-spin-interactions`,
+                                    method: 'POST',
+                                    data: {
+                                        _token: '{{ csrf_token() }}',
+                                        interactions: interactions
+                                    },
+                                    success: function(res) {
+                                        if(res.success) {
+                                            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Riwayat SPIN disimpan!', timer: 1500, showConfirmButton: false });
+                                            $('#modalRiwayatSpin').modal('hide');
+                                        }
+                                    },
+                                    error: function() {
+                                        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menyimpan riwayat SPIN.' });
+                                    },
+                                    complete: function() {
+                                        $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan');
+                                    }
+                                });
+                            });
+
                             // Untuk checkbox Inline Update (Berhasil Spin & Ikut Zoom)
                             $(document).on('change', '.checkbox-inline', function() {
                                 let $this = $(this);
                                 let id = $this.data('id');
                                 let field = $this.data('field');
                                 let value = $this.is(':checked') ? 'Ya' : 'Tidak';
+                                let $tr = $this.closest('tr');
 
                                 $.ajax({
                                     url: '/admin/database/update-inline',
@@ -673,6 +776,19 @@
                                     },
                                     success: function() {
                                         showStatusIcon($this, true);
+                                        
+                                        // Cek status B, A, T untuk memunculkan tombol Sales Plan
+                                        if (['spin_b', 'spin_a', 'spin_t'].includes(field)) {
+                                            let bChecked = $tr.find('input[data-field="spin_b"]').is(':checked');
+                                            let aChecked = $tr.find('input[data-field="spin_a"]').is(':checked');
+                                            let tChecked = $tr.find('input[data-field="spin_t"]').is(':checked');
+                                            
+                                            if (bChecked && aChecked && tChecked) {
+                                                $tr.find('.btn-move-salesplan').removeClass('d-none');
+                                            } else {
+                                                $tr.find('.btn-move-salesplan').addClass('d-none');
+                                            }
+                                        }
                                     },
                                     error: function() {
                                         showStatusIcon($this, false);
@@ -770,6 +886,33 @@
         // We explicitly attach applyTableFilters to the new inputs.
     });
     </script>
+    <!-- Modal Riwayat SPIN -->
+    <div class="modal fade" id="modalRiwayatSpin" tabindex="-1" aria-labelledby="modalRiwayatSpinLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                    <h5 class="modal-title fw-bold" id="modalRiwayatSpinLabel">
+                        <i class="fas fa-history me-2"></i> Riwayat SPIN - <span id="spin_nama_peserta"></span>
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div id="spinCardsContainer" class="d-flex overflow-auto pb-3" style="min-height: 400px; -webkit-overflow-scrolling: touch;">
+                        {{-- Cards will be injected here --}}
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary px-4 fw-bold" id="btnSaveSpinInteractions">
+                        <i class="fas fa-save me-1"></i> Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Pindah Sales Plan -->
     <div class="modal fade" id="moveSalesPlanModal" tabindex="-1" aria-labelledby="moveSalesPlanModalLabel" aria-hidden="true" style="z-index: 9999;">
         <div class="modal-dialog modal-dialog-centered">
@@ -787,14 +930,15 @@
                     <div class="modal-body p-4">
                         <p class="text-muted mb-4">
                             Anda akan memindahkan <strong id="move_nama_peserta"></strong> ke Sales Plan. 
-                            Silakan pilih Potensi Kelas :
+                            silakan pilih potensi produk :
                         </p>
                         
                         <div class="product-list-container border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
                             @foreach($kelas as $k)
-                                <div class="form-check mb-2 p-2 border-bottom hover-bg-white transition-all rounded">
-                                    <input class="form-check-input" type="checkbox" name="kelas_ids[]" value="{{ $k->id }}" id="kelas_{{ $k->id }}" style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
-                                    <label class="form-check-label ms-2 fw-medium" for="kelas_{{ $k->id }}" style="cursor: pointer; display: block; width: 100%;">
+                                <div class="mb-2 p-2 border-bottom hover-bg-white transition-all rounded d-flex align-items-center" style="cursor: pointer;">
+                                    <input type="checkbox" name="kelas_ids[]" value="{{ $k->id }}" id="kelas_{{ $k->id }}" 
+                                           style="cursor: pointer; width: 1.4rem; height: 1.4rem; margin: 0; margin-right: 12px; flex-shrink: 0;">
+                                    <label class="fw-bold text-dark mb-0" for="kelas_{{ $k->id }}" style="cursor: pointer; flex: 1; font-size: 1.05rem;">
                                         {{ $k->nama_kelas }}
                                     </label>
                                 </div>
@@ -813,6 +957,49 @@
     <style>
         .hover-bg-white:hover { background-color: white !important; transform: translateX(5px); }
         .transition-all { transition: all 0.2s ease; }
+        .cursor-pointer { cursor: pointer; }
+        
+        .spin-card {
+            min-width: 280px;
+            max-width: 280px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fff;
+            margin-right: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .spin-card:hover { transform: translateY(-5px); }
+        .spin-card-header {
+            background: #ffca2c;
+            color: #212529;
+            padding: 8px 15px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+        .add-spin-card {
+            min-width: 200px;
+            border: 3px dashed #4e73df;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+        .add-spin-card:hover { background: #eaecf4; border-color: #224abe; }
+        .spin-hasil, .spin-tindak {
+            font-size: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #d1d3e2;
+        }
     </style>
 
     <script>

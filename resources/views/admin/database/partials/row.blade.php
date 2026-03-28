@@ -14,29 +14,45 @@
 
     {{-- Merged: Nama + WA + CTA --}}
     <td>
-        <div class="d-flex flex-column">
-            <div class="d-flex align-items-center mb-1">
-                <div contenteditable="true" class="editable fw-bold text-dark me-2" data-field="nama" style="font-size: 0.95rem;">{{ $item->nama }}</div>
+        <div class="d-flex flex-column gap-2">
+            <div class="d-flex align-items-center">
+                <input type="text" 
+                       class="form-control form-control-sm editable fw-bold text-dark me-2" 
+                       data-field="nama" 
+                       value="{{ $item->nama }}" 
+                       placeholder="(silakan isi nama)"
+                       style="font-size: 0.95rem; border-radius: 6px; border: 1px solid #ced4da;">
                 @if($item->status_peserta === 'sales_plan')
-                    <span class="badge bg-info text-white" style="font-size: 0.65rem; border-radius: 50px; padding: 2px 8px;">In Sales Plan</span>
+                    <span class="badge bg-info text-white" style="font-size: 0.65rem; border-radius: 50px; padding: 2px 8px; white-space: nowrap;">In Sales Plan</span>
                 @endif
             </div>
             
-            <div class="d-flex align-items-center mt-1">
-                <span contenteditable="true" 
-                      class="editable border-bottom" 
-                      data-field="no_wa" 
-                      style="font-size: 0.85rem; min-width: 100px; display: inline-block; color: #6c757d;" 
-                      placeholder="Masukkan No WA">{{ $item->no_wa }}</span>
-                
-                @php $waNumber = preg_replace('/^0/', '62', $item->no_wa); @endphp
-                <a href="{{ $item->no_wa ? 'https://wa.me/'.$waNumber : '#' }}" 
-                   target="{{ $item->no_wa ? '_blank' : '' }}" 
-                   class="btn btn-success btn-sm wa-button ms-2 {{ !$item->no_wa ? 'disabled opacity-50' : '' }}" 
-                   style="padding: 0px 6px; line-height: 1.2; border-radius: 4px;" 
-                   title="{{ $item->no_wa ? 'Chat WhatsApp' : 'No WA Belum Diisi' }}">
-                    <i class="fa-brands fa-whatsapp" style="color:#fff; font-size: 0.9rem; vertical-align: middle;"></i>
-                </a>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="width: 180px;">
+                    <input type="text" 
+                           class="form-control editable text-muted" 
+                           data-field="no_wa" 
+                           value="{{ $item->no_wa }}" 
+                           placeholder="No WhatsApp"
+                           style="font-size: 0.85rem; border-radius: 6px 0 0 6px; border: 1px solid #ced4da;">
+                    
+                    @php $waNumber = preg_replace('/^0/', '62', $item->no_wa); @endphp
+                    <a href="{{ $item->no_wa ? 'https://wa.me/'.$waNumber : '#' }}" 
+                       target="{{ $item->no_wa ? '_blank' : '' }}" 
+                       class="input-group-text btn btn-success wa-button {{ !$item->no_wa ? 'disabled opacity-50' : '' }}" 
+                       style="border-radius: 0 6px 6px 0; border: 1px solid #28a745; background-color: #28a745;" 
+                       title="{{ $item->no_wa ? 'Chat WhatsApp' : 'No WA Belum Diisi' }}">
+                        <i class="fa-brands fa-whatsapp" style="color:#fff; font-size: 1rem;"></i>
+                    </a>
+                </div>
+                {{-- Tombol Interaksi Riwayat SPIN --}}
+                <button type="button" 
+                        class="btn btn-primary btn-sm btn-spin-history border-0 d-flex align-items-center px-3" 
+                        data-id="{{ $item->id }}" 
+                        data-nama="{{ $item->nama }}"
+                        style="border-radius: 50px; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); font-size: 0.75rem; font-weight: 600; height: 31px;">
+                    <i class="fa-solid fa-comments me-1"></i> Interaksi
+                </button>
             </div>
         </div>
     </td>
@@ -87,9 +103,12 @@
 
     
     @if(strtolower(auth()->user()->role) !== 'administrator'  && Auth::user()->role !== 'marketing')
+    @php
+        $showMoveBtn = ($item->spin_b == 'Ya' && $item->spin_a == 'Ya' && $item->spin_t == 'Ya');
+    @endphp
     <td>
         <button type="button" 
-                class="btn btn-sm btn-primary btn-move-salesplan" 
+                class="btn btn-sm btn-primary btn-move-salesplan {{ $showMoveBtn ? '' : 'd-none' }}" 
                 data-id="{{ $item->id }}" 
                 data-nama="{{ $item->nama }}"
                 data-existing-kelas="{{ $item->salesplan->pluck('kelas_id')->toJson() }}"

@@ -134,8 +134,8 @@ class ActivitySeeder extends Seeder
         Activity::create([
             'categories_id' => $closing->id,
             'nama' => 'Transfer Masuk',
-            'target_daily' => 2500000,
-            'target_bulanan' => 5000000,
+            'target_daily' => 0,
+            'target_bulanan' => 1250000000,
             'bobot' => 40,
         ]);
 

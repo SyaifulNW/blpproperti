@@ -7,6 +7,7 @@ use App\Models\Kelas; // Ensure you import the Kelas model
 use App\Models\Data;
 use App\Models\Alumni; // Ensure you import the Alumni model
 use App\Models\SalesPlan; // Ensure you import the Salesplan model
+use App\Models\SpinInteraction;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -608,5 +609,43 @@ private function filterKelasByUser($user)
             'target' => $target,
             'kurang' => $kurang
         ]);
+    }
+
+    public function getSpinInteractions($id)
+    {
+        $data = Data::with('spinInteractions')->findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'interactions' => $data->spinInteractions
+        ]);
+    }
+
+    public function saveSpinInteractions(Request $request, $id)
+    {
+        $data = Data::findOrFail($id);
+        $interactions = $request->input('interactions', []);
+
+        // We can use sync-like logic or just delete and recreate if we don't care about exact row IDs.
+        // To preserve created_at for old ones, we should find and update.
+        
+        $collectedIds = [];
+        foreach ($interactions as $index => $item) {
+            $spin = $data->spinInteractions()->updateOrCreate(
+                ['id' => $item['id'] ?? null],
+                [
+                    'spin_number' => $index + 1,
+                    'wa' => (isset($item['wa']) && $item['wa']) ? 1 : 0,
+                    'telp' => (isset($item['telp']) && $item['telp']) ? 1 : 0,
+                    'hasil_fu' => $item['hasil_fu'] ?? '',
+                    'tindak_lanjut' => $item['tindak_lanjut'] ?? '',
+                ]
+            );
+            $collectedIds[] = $spin->id;
+        }
+
+        // Cleanup deleted ones? In the UI we might not have a delete button yet but good to have.
+        // $data->spinInteractions()->whereNotIn('id', $collectedIds)->delete();
+
+        return response()->json(['success' => true]);
     }
 }

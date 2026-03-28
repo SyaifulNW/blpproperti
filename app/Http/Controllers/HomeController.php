@@ -171,7 +171,12 @@ class HomeController extends Controller
         $totalNilai = round($totalKpi, 2);
 
         // ====================== DATABASE PERSEN ======================
-        $databaseTotal = Data::where('created_by', $csId)->count();
+        $databaseTotal = Data::where('created_by', $csName)->count();
+        $databaseBaru = Data::where('created_by', $csName)
+            ->whereYear('created_at', $tahun)
+            ->whereMonth('created_at', $bulanNum)
+            ->count();
+            
         $persentaseDatabaseBaru = $databaseTotal > 0 ? round(($databaseBaru / $databaseTotal) * 100, 2) : 0;
         $persentaseDatabaseLama = 100 - $persentaseDatabaseBaru;
 
@@ -200,11 +205,7 @@ class HomeController extends Controller
     $nilaiClosingPaket = 0;
     
     
-    // ============ Database Baru ============
-    $databaseBaru = Data::where('created_by', $csId)
-        ->whereYear('created_at', $tahun)
-        ->whereMonth('created_at', $bulanNum)
-        ->count();
+    // ============ Database Baru (Sudah Dihitung Diatas) ============
     
     // 🔥 Pencapaian Database Baru untuk tabel
     $pencapaianDatabaseBaru = $databaseBaru;

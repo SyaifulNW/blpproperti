@@ -30,6 +30,11 @@ class Data extends Model
         'spin_a',
         'spin_t',
         'spin_updated_at',
+        'spin1_wa', 'spin1_telp',
+        'spin2_wa', 'spin2_telp',
+        'spin3_wa', 'spin3_telp',
+        'spin4_wa', 'spin4_telp',
+        'spin5_wa', 'spin5_telp',
     ];
     public function kelas()
     {
@@ -63,5 +68,10 @@ class Data extends Model
 {
     return $this->belongsTo(User::class, 'created_by');
 }
+
+    public function spinInteractions()
+    {
+        return $this->hasMany(SpinInteraction::class, 'data_id')->orderBy('spin_number', 'asc');
+    }
 }
 

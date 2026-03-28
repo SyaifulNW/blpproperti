@@ -67,14 +67,21 @@
                         <tbody class="bg-white">
                             @foreach($list as $index => $act)
                                 @php
+                                    $targetDaily = (float)$act->target_daily;
+                                    $targetBulanan = (float)$act->target_bulanan;
+                                    if ($act->nama === 'Transfer Masuk') {
+                                        $targetDaily = 0;
+                                        $targetBulanan = 1250000000;
+                                    }
+
                                     $realisasiHariIni = $daily[$act->id] ?? 0;
                                     $realisasiBulanIni = $monthlyTotals[$act->id] ?? 0;
                                     
-                                    $nilai = ($act->target_bulanan > 0) ? ($realisasiBulanIni / $act->target_bulanan) * $act->bobot : 0;
+                                    $nilai = ($targetBulanan > 0) ? ($realisasiBulanIni / $targetBulanan) * $act->bobot : 0;
                                     if($nilai > $act->bobot) $nilai = $act->bobot;
 
-                                    $totalTargetHari += (float)$act->target_daily;
-                                    $totalTargetBulan += (float)$act->target_bulanan;
+                                    $totalTargetHari += $targetDaily;
+                                    $totalTargetBulan += $targetBulanan;
                                     $totalBobot += (float)$act->bobot;
                                     $totalRealisasiBulan += (float)$realisasiBulanIni;
                                     $totalNilai += $nilai;
@@ -85,15 +92,10 @@
                                         <div class="text-dark" style="font-size: 0.95rem;">{{ $act->nama }}</div>
                                     </td>
                                     <td class="text-center text-muted">
-                                         @if($act->nama === 'Transfer Masuk') 40.000.000
-
-                                         @else {{ number_format($act->target_daily, 0, ',', '.') }}
-                                         @endif
+                                         {{ number_format($targetDaily, 0, ',', '.') }}
                                     </td>
                                     <td class="text-center text-muted">
-                                         @if($act->nama === 'Transfer Masuk') 1.000.000.000
-                                         @else {{ number_format($act->target_bulanan, 0, ',', '.') }}
-                                         @endif
+                                         {{ number_format($targetBulanan, 0, ',', '.') }}
                                     </td>
                                     <td class="text-center text-muted">{{ (int)$act->bobot }}</td>
                                     <td class="p-2">
@@ -128,14 +130,14 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot class="bg-light">
-                            <tr class="fw-bold text-dark" style="border-top: 2px solid #e2e8f0;">
+                        <tfoot style="background-color: #e8f1ff;">
+                            <tr class="fw-bold text-dark" style="border-top: 2px solid #e2e8f0; background-color: #e8f1ff;">
                                 <td class="text-center border-0"></td>
                                 <td class="px-3 border-0">Total {{ $categoryName }}</td>
                                 <td class="text-center border-0 font-small">{{ number_format($totalTargetHari, 0, ',', '.') }}</td>
                                 <td class="text-center border-0 font-small">{{ number_format($totalTargetBulan, 0, ',', '.') }}</td>
                                 <td class="text-center border-0 font-small">{{ (int)$totalBobot }}</td>
-                                <td class="text-center border-0 font-small text-primary">{{ number_format($totalRealisasiBulan, 0, ',', '.') }}</td>
+                                <td class="text-center border-0 font-small text-primary"></td>
                                 <td class="text-center border-0">
                                     <span class="text-success">{{ number_format($totalNilai, 2, ',', '.') }}</span>
                                 </td>

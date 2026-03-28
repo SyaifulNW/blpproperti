@@ -81,7 +81,7 @@
             font-size: 7.5px;
         }
         .total-row {
-            background-color: #e6ffe6;
+            background-color: #e8f1ff;
             font-weight: bold;
         }
         
@@ -148,14 +148,8 @@
             <tr>
                 <td>{{ $i+1 }}</td>
                 <td class="text-left font-bold" style="white-space: normal;">{{ $act['nama'] }}</td>
-                <td>
-                    @if($act['nama'] === 'Transfer Masuk') 40.000.000
-                    @else {{ number_format($act['target_daily'], 0, ',', '.') }} @endif
-                </td>
-                <td>
-                    @if($act['nama'] === 'Transfer Masuk') 1.000.000.000
-                    @else {{ number_format($act['target_bulanan'], 0, ',', '.') }} @endif
-                </td>
+                <td>{{ number_format($act['target_daily'], 0, ',', '.') }}</td>
+                <td>{{ number_format($act['target_bulanan'], 0, ',', '.') }}</td>
                 <td>{{ (int)$act['bobot'] }}</td>
                 <td>{{ number_format($act['real'], 0, ',', '.') }}</td>
                 <td>{{ number_format($act['nilai'], 2, ',', '.') }}</td>
@@ -189,7 +183,7 @@
                 <td>{{ number_format($total[$kategori]['target_daily'], 0, ',', '.') }}</td>
                 <td>{{ number_format($total[$kategori]['target_bulanan'], 0, ',', '.') }}</td>
                 <td>{{ (int)$total[$kategori]['bobot'] }}</td>
-                <td>{{ number_format($total[$kategori]['real'], 0, ',', '.') }}</td>
+                <td></td>
                 <td>{{ number_format($total[$kategori]['nilai'], 2, ',', '.') }}</td>
                 @for($d=1; $d<=$jumlahHari; $d++)
                     @php

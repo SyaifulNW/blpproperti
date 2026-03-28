@@ -771,6 +771,8 @@ $(document).ready(function() {
                         <tr>
                             <th rowspan="3">No</th>
                             <th rowspan="3">Nama</th>
+                            <th rowspan="3">Potensi</th>
+                            <th rowspan="3">Status</th>
                             @if(strtolower(auth()->user()->role) !== 'administrator')
                                 <th rowspan="3">Sumber Leads</th>
                             @endif
@@ -782,10 +784,6 @@ $(document).ready(function() {
                             {{-- Header grup untuk FU --}}
                             <th colspan="10" class="text-center">Follow Up</th>
 
-                            <th rowspan="3">Potensi</th>
-                             <th rowspan="3">Keterangan</th>
-                            <th rowspan="5">Status</th>
-                        
                             @if(Auth::user()->email == "mbchamasah@gmail.com")
                             <th rowspan="3">Input Oleh</th>
                             @endif
@@ -840,9 +838,27 @@ $(document).ready(function() {
                             }
                         @endphp
 
-                        <tr class="{{ $rowClass }}">
-                            <td class="text-center">{{ $loop->iteration }}</td>
+                                       <td class="text-center">{{ $loop->iteration }}</td>
                             <td>{{ $plan->nama ?? '-' }}</td>
+                            {{-- Potensi (Nominal) --}}
+                            <td contenteditable="true" class="editable fw-bold text-dark text-bold text-center"
+                                data-id="{{ $plan->id }}"
+                                data-field="nominal">
+                                {{ number_format($plan->nominal, 0, ',', '.') }}
+                            </td>
+                            {{-- Status Dropdown --}}
+                            <td class="text-center">
+                                <select class="form-control form-control-sm status-dropdown 
+                                  status-{{ $plan->status }}"
+                                    data-id="{{ $plan->id }}"
+                                    style="min-width: 160px;">
+                                    <option value="sudah_transfer" {{ $plan->status == 'sudah_transfer' ? 'selected' : '' }}>Sudah Transfer</option>
+                                    <option value="mau_transfer" {{ $plan->status == 'mau_transfer' ? 'selected' : '' }}>Mau Transfer</option>
+                                    <option value="tertarik" {{ $plan->status == 'tertarik' ? 'selected' : '' }}>Tertarik</option>
+                                    <option value="cold" {{ $plan->status == 'cold' ? 'selected' : '' }}>Cold</option>
+                                    <option value="no" {{ $plan->status == 'no' ? 'selected' : '' }}>No</option>
+                                </select>
+                            </td>
                             @if(strtolower(auth()->user()->role) !== 'administrator')
                                 @php
                                 $leadSource = $plan->data->leads ?? ($dataMap[$plan->nama]->leads ?? '-');
@@ -895,97 +911,6 @@ $(document).ready(function() {
                                     {{ $plan->{'fu'.$i.'_tindak_lanjut'} ?? '-' }}
                                 </td>
                                 @endfor
-
-                                <td contenteditable="true" class="editable fw-bold text-dark text-bold"
-                                    data-id="{{ $plan->id }}"
-                                    data-field="nominal">
-                                    {{ number_format($plan->nominal, 0, ',', '.') }}
-                                </td>
-
-                         <td class="text-center">
-    <button class="btn btn-sm btn-checklist"
-        data-id="{{ $plan->id }}"
-        data-field="keterangan"
-        data-value="{{ $plan->keterangan == 'done' ? 'done' : 'pending' }}"
-        style="font-size:18px;">
-        @if($plan->keterangan == 'done')
-            ✔
-        @else
-            ☐
-        @endif
-    </button>
-</td>
-
-<style>
-.btn-checklist {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    font-weight: bold;
-    border: 1px solid #ccc;
-}
-
-.btn-checklist.done {
-    background: #2ecc71;
-    color: white;
-    border-color: #27ae60;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.btn-checklist').forEach(btn => {
-        btn.addEventListener('click', function() {
-
-            let id = this.dataset.id;
-            let field = this.dataset.field;
-            let current = this.dataset.value;
-
-            // Toggle value
-            let newValue = (current === "done") ? "pending" : "done";
-
-            // Update tampilan checklist
-            if (newValue === "done") {
-                this.innerHTML = "✔";
-                this.classList.add("done");
-            } else {
-                this.innerHTML = "☐";
-                this.classList.remove("done");
-            }
-
-            this.dataset.value = newValue;
-
-            // Kirim ke server (controller updateInline)
-           fetch("{{ route('admin.salesplan.inline-update') }}", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-    },
-    body: JSON.stringify({
-        id: id,
-        field: field,
-        value: newValue
-    })
-});
-
-        });
-    });
-});
-</script>
-
-                                <td class="text-center">
-                                    <select class="form-control form-control-sm status-dropdown 
-                                      status-{{ $plan->status }}"
-                                        data-id="{{ $plan->id }}"
-                                        style="min-width: 160px;">
-                                        <option value="sudah_transfer" {{ $plan->status == 'sudah_transfer' ? 'selected' : '' }}>Sudah Transfer</option>
-                                        <option value="mau_transfer" {{ $plan->status == 'mau_transfer' ? 'selected' : '' }}>Mau Transfer</option>
-                                        <option value="tertarik" {{ $plan->status == 'tertarik' ? 'selected' : '' }}>Tertarik</option>
-                                        <option value="cold" {{ $plan->status == 'cold' ? 'selected' : '' }}>Cold</option>
-                                        <option value="no" {{ $plan->status == 'no' ? 'selected' : '' }}>No</option>
-                                    </select>
-                                </td>
 
 
 
