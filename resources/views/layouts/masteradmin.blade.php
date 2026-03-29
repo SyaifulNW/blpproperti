@@ -405,6 +405,14 @@
                 @endif
             @endif
 
+            {{-- DATA KPR --}}
+            <li class="nav-item {{ request()->routeIs('admin.kpr.index') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('admin.kpr.index') }}">
+                    <i class="fas fa-fw fa-university text-warning"></i>
+                    <span><strong>DATA KPR</strong></span>
+                </a>
+            </li>
+
             {{-- Menu Khusus CS MBC & CS SMI --}}
             @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))
             @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))

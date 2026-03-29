@@ -61,7 +61,6 @@
                                 <th class="text-center py-3 fw-bold text-muted border-bottom" style="width: 140px; font-size: 0.85rem;">Target Bulan</th>
                                 <th class="text-center py-3 fw-bold text-muted border-bottom" style="width: 100px; font-size: 0.85rem;">Bobot</th>
                                 <th class="text-center py-3 fw-bold text-muted border-bottom" style="width: 150px; font-size: 0.85rem;">Realisasi</th>
-                                <th class="text-center py-3 fw-bold text-muted border-bottom" style="width: 120px; font-size: 0.85rem;">Nilai</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
@@ -118,14 +117,6 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="text-center">
-                                        @php
-                                            $percent = ($act->target_bulanan > 0) ? ($nilai / $act->bobot) * 100 : 0;
-                                            $statusColor = $percent >= 100 ? '#10b981' : ($percent >= 50 ? '#f59e0b' : '#ef4444');
-                                        @endphp
-                                        <div class="fw-bold" style="color: {{ $statusColor }}; font-size: 0.95rem;">
-                                            {{ number_format($nilai, 2, ',', '.') }}
-                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -138,9 +129,6 @@
                                 <td class="text-center border-0 font-small">{{ number_format($totalTargetBulan, 0, ',', '.') }}</td>
                                 <td class="text-center border-0 font-small">{{ (int)$totalBobot }}</td>
                                 <td class="text-center border-0 font-small text-primary"></td>
-                                <td class="text-center border-0">
-                                    <span class="text-success">{{ number_format($totalNilai, 2, ',', '.') }}</span>
-                                </td>
                             </tr>
                         </tfoot>
                     </table>

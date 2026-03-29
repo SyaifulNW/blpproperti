@@ -20,6 +20,7 @@ use App\Http\Controllers\AdminActivityController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProgramKerjaController;
 use App\Http\Controllers\Marketing\PenilaianController as MarketingPenilaianController;
+use App\Http\Controllers\KprController;
 
 
 
@@ -194,6 +195,13 @@ Route::get('/salesplan/export', [SalesPlanController::class , 'export'])->name('
 Route::get('/admin/dailyactivity/index', [App\Http\Controllers\DailyController::class , 'index'])->name('admin.dailyactivity.index');
 Route::post('/admin/daily-activity', [App\Http\Controllers\DailyController::class , 'store'])->name('admin.daily-activity.store');
 
+
+// KPR Monitoring Routes
+Route::get('/admin/kpr', [KprController::class, 'index'])->name('admin.kpr.index');
+Route::get('/admin/kpr/{id}', [KprController::class, 'show'])->name('admin.kpr.show');
+Route::post('/admin/kpr/update/{id}', [KprController::class, 'update'])->name('admin.kpr.update');
+Route::post('/admin/kpr/move/{id}', [KprController::class, 'moveToKpr'])->name('admin.kpr.move');
+Route::delete('/admin/kpr/{id}', [KprController::class, 'destroy'])->name('admin.kpr.destroy');
 
 // Pindah Salesplan dari Alumni
 Route::post('/admin/alumni/to-salesplan/{id}', [AlumniController::class , 'toSalesplan'])->name('admin.alumni.toSalesplan');
