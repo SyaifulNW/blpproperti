@@ -1,964 +1,62 @@
-    @extends('layouts.masteradmin')
-    @section('content')
+@extends('layouts.masteradmin')
 
+@section('content')
     <style>
-    thead {
+        thead {
             background-color: #25799E;
             color: white;
             position: sticky;
             top: 0;
             z-index: 1;
         }
-        
-    
-    </style>
-    @if(auth()->user()->role !== 'administrator')
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Database Calon Pelanggan</h1>
-        <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                <li class="breadcrumb-item active">Database Calon Pelanggan</li>
-            </ol>
-        </div>
-    </div>
-    @endif
 
-
-
-
-
-            </div>
-        </form>
-
-
-
-
-
-        {{-- ALERT MODE READ ONLY (ADMIN) --}}
-        @if(isset($user) && $readonly)
-            <div class="alert alert-info d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
-                <div>
-                    <strong>Database CS:</strong> <strong>{{ $user->name }} </strong> <br>
-                    <span class="text-muted small">Email: {{ $user->email }} | Role: {{ ucfirst($user->role) }}</span>
-                </div>
-                <div>
-                    <span class="text-white badge bg-primary p-2">Mode Read-Only</span>
-                </div>
-            </div>
-            
-        @if(auth()->user()->name !== 'Agus Setyo')
-            <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-warning text-dark fw-bold">
-            <i class="fas fa-comments me-2"></i> Komentar untuk {{ $user->name }}
-        </div>
-        <div class="card-body">
-            {{-- Form Kirim Komentar --}}
-            <form id="formKomentar" method="POST" action="{{ route('komentar.store') }}">
-                @csrf
-                <input type="hidden" name="user_id" value="{{ $user->id }}">
-                <div class="input-group mb-3">
-                    <input type="text" name="pesan" class="form-control" placeholder="Tulis komentar untuk CS ini..." required>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Kirim
-                    </button>
-                </div>
-            </form>
-        @if(session('success'))
-        <script>
-            Swal.fire({
-                title: 'Berhasil!',
-                text: '{{ session('success') }}',
-                icon: 'success',
-                confirmButtonText: 'OK',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        </script>
-        @endif
-
-        @if(session('error'))
-        <script>
-            Swal.fire({
-                title: 'Gagal!',
-                text: '{{ session('error') }}',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        </script>
-        @endif
-        
-        
-        <button class="btn btn-outline-secondary btn-sm mb-2" data-toggle="modal" data-target="#modalKomentar">
-        <i class="fas fa-history"></i> Lihat Riwayat Komentar
-    </button>
-
-    <div class="modal fade" id="modalKomentar" tabindex="-1" role="dialog" aria-labelledby="modalKomentarLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-        <div class="modal-header bg-warning text-dark">
-            <h5 class="modal-title" id="modalKomentarLabel">
-                <i class="fas fa-comments me-2"></i> Riwayat Komentar
-            </h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            @foreach($komentar as $msg)
-                <div class="alert alert-light border d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <strong>{{ $msg->admin->name ?? 'Admin' }}</strong><br>
-                        <span class="text-dark">{{ $msg->pesan }}</span><br>
-                        <small class="text-muted">{{ $msg->created_at->diffForHumans() }}</small>
-                    </div>
-                    <i class="fas fa-comment-dots text-warning"></i>
-                </div>
-            @endforeach
-        </div>
-        </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    @endif
-    @endif
-
-        
-
-
-
-    <div class="content">
-        <div class="card card-info card-outline">
-    @php
-    use Carbon\Carbon;
-    use App\Models\Data;
-
-    // $currentUser used in logic below
-    $currentUser = auth()->user(); 
-
-    // Ensure variables are defined if not passed (fallback for edge cases)
-    $now = Carbon::now();
-    if(!isset($bulanLabel)) $bulanLabel = $now->isoFormat('MMMM YYYY');
-    if(!isset($databaseBaru)) $databaseBaru = 0;
-    if(!isset($totalDatabase)) $totalDatabase = 0;
-    if(!isset($target)) $target = 100;
-    if(!isset($kurang)) $kurang = 0;
-    if(!isset($data)) $data = collect([]);
-
-    @endphp
-
-
-
-    <div class="card-header">
-        {{-- Stats Cards Section (Moved to Top) --}}
-        <style>
-            .stat-card-group {
-                display: flex;
-                gap: 15px;
-                flex-wrap: wrap;
-            }
-            .g-stat-card {
-                display: flex;
-                align-items: center;
-                padding: 10px 15px;
-                border-radius: 12px;
-                color: white;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                transition: all 0.3s ease;
-                min-width: 140px; /* Slightly reduced */
-                position: relative;
-                overflow: hidden;
-                flex: 1; /* Allow growing */
-            }
-            .g-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.15); }
-            .g-stat-card::after {
-                content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
-                background: linear-gradient(to bottom right, rgba(255,255,255,0.2), transparent); pointer-events: none;
-            }
-            /* Gradients */
-            .g-sc-cyan { background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%); }
-            .g-sc-blue { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
-            .g-sc-yellow { background: linear-gradient(135deg, #ffca2c 0%, #ffc107 100%); color: #212529; }
-            .g-sc-red { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); }
-
-            .g-sc-content { display: flex; flex-direction: column; z-index: 1; }
-            .g-sc-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; font-weight: 700; margin-bottom: 2px; }
-            .g-sc-value { font-size: 1.25rem; font-weight: 800; line-height: 1.1; }
-            .g-sc-sub { font-size: 0.65rem; opacity: 0.9; margin-top: 2px; }
-            .g-sc-icon { margin-left: auto; font-size: 1.8rem; opacity: 0.3; z-index: 1; margin-bottom: -5px; }
-        </style>
-
-        <div class="stat-card-group mb-4">
-            <!-- Database Baru -->
-            <div class="g-stat-card g-sc-cyan">
-                <div class="g-sc-content">
-                    <span class="g-sc-label">Database Baru</span>
-                    <span class="g-sc-value">{{ $databaseBaru }}</span>
-                    <span class="g-sc-sub">{{ $bulanLabel }}</span>
-                </div>
-                <div class="g-sc-icon"><i class="fas fa-database"></i></div>
-            </div>
-
-            <!-- Total Database -->
-            <div class="g-stat-card g-sc-blue">
-                <div class="g-sc-content">
-                    <span class="g-sc-label">Total Database</span>
-                    <span class="g-sc-value">{{ $totalDatabase }}</span>
-                </div>
-                <div class="g-sc-icon"><i class="fas fa-layer-group"></i></div>
-            </div>
-
-            <!-- Target -->
-            <div class="g-stat-card g-sc-yellow">
-                <div class="g-sc-content">
-                    <span class="g-sc-label">Target Bulanan</span>
-                    <span class="g-sc-value">{{ $target }}</span>
-                </div>
-                <div class="g-sc-icon"><i class="fas fa-bullseye"></i></div>
-            </div>
-
-            <!-- Kurang -->
-            <div class="g-stat-card g-sc-red text-white">
-                <div class="g-sc-content">
-                    <span class="g-sc-label text-white">Kurang</span>
-                    <span class="g-sc-value">{{ $kurang }}</span>
-                </div>
-                <div class="g-sc-icon text-white"><i class="fas fa-exclamation-triangle"></i></div>
-            </div>
-        </div>
-
-        {{-- Toolbar Actions Row --}}
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <!-- Kiri: Tombol Tambah -->
-            <div class="d-flex align-items-center">
-                @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) && !(auth()->user()->name === 'Linda' && request('view') !== 'me'))
-                    <a href="#" class="btn btn-success" id="btnAddRow" onclick="createNewRow(event)">
-                        <i class="fa-solid fa-plus"></i> Tambah
-                    </a>
-                @endif
-            </div>
-
-    <!-- Kanan: Toolbar Filter & Search -->
-    <!-- Kanan: Toolbar Filter & Search -->
-    <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1;">
-        <style>
-            .modern-filter-container { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-            .modern-select {
-                border-radius: 50px !important; border: 1px solid #e0e0e0; background-color: #fff;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.03); font-size: 0.85rem; padding: 6px 30px 6px 15px;
-                transition: all 0.2s ease; cursor: pointer; min-height: 34px;
-            }
-            .modern-select:hover { border-color: #b0c4de; box-shadow: 0 4px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
-            .modern-select:focus { border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); outline: 0; }
-            .modern-search-group { box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-radius: 50px; overflow: hidden; display: flex; }
-            .modern-search-input { border: 1px solid #e0e0e0; border-right: none; padding-left: 20px; font-size: 0.9rem; border-top-left-radius: 50px; border-bottom-left-radius: 50px; }
-            .modern-search-input:focus { box-shadow: none; border-color: #e0e0e0; }
-            .modern-search-btn { border-radius: 0 50px 50px 0 !important; padding-left: 20px; padding-right: 20px; font-weight: 600; }
-        </style>
-        <div class="modern-filter-container">
-    @php
-        use App\Models\User;
-
-        $user = auth()->user();
-        $csList = collect();
-
-        // Daftar CS hanya untuk admin/manager
-        if (in_array(strtolower($user->role), ['administrator', 'manager']) || $user->name === 'Agus Setyo' || $user->name === 'Linda') {
-            $csList = User::whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi'])
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->get();
+        th,
+        td {
+            padding: 12px 15px !important;
+            vertical-align: middle !important;
         }
-    @endphp
 
-        {{-- Filter Input Oleh (Admin/Manager) --}}
-        @if((in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) && auth()->user()->name !== 'Agus Setyo') || (auth()->user()->name === 'Linda' && request('view') !== 'me'))
-            <select id="filterUser" class="form-select form-select-sm modern-select" onchange="updateFilter('cs_name', this.value)">
-                <option value="">-- Pilih Sales --</option>
-                @foreach($csList as $cs)
-                    <option value="{{ $cs->name }}" {{ request('cs_name') == $cs->name ? 'selected' : '' }}>{{ $cs->name }}</option>
-                @endforeach
-            </select>
-        @endif
-        &nbsp;
-
-        &nbsp;
-
-        {{-- Filter Sumber & Kota (Only for Administrator & Linda) --}}
-        @if(strtolower(auth()->user()->role) === 'administrator' || auth()->user()->name === 'Linda')
-            {{-- Filter Sumber Leads --}}
-            <select id="filterSumber" class="form-select form-select-sm modern-select" style="min-width: 130px;" onchange="updateFilter('sumber', this.value)">
-                <option value="">-- Semua Sumber --</option>
-                <option value="Marketing" {{ request('sumber') == 'Marketing' ? 'selected' : '' }}>Marketing</option>
-                <option value="Iklan" {{ request('sumber') == 'Iklan' ? 'selected' : '' }}>Iklan</option>
-                <option value="Alumni" {{ request('sumber') == 'Alumni' ? 'selected' : '' }}>Referal</option>
-                <option value="Mandiri" {{ request('sumber') == 'Mandiri' ? 'selected' : '' }}>Mandiri</option>
-            </select>
-        @endif
-        
-        {{-- Filter Bulan (Server Side) --}}
-        <select id="filterBulan" class="form-select form-select-sm modern-select" onchange="updateFilter('bulan', this.value)">
-            <option value="">-- Semua Bulan --</option>
-            @foreach(range(1,12) as $m)
-                <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
-                    {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
-                </option>
-            @endforeach
-        </select>
-
-        {{-- Filter Tahun (Server Side) --}}
-        <select id="filterTahun" class="form-select form-select-sm modern-select" onchange="updateFilter('tahun', this.value)">
-            <option value="">-- Tahun --</option>
-            @foreach(range(date('Y'), 2024) as $y)
-                <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
-            @endforeach
-        </select>
-
-        <script>
-            function updateFilter(key, val) {
-                var url = new URL(window.location.href);
-                if (val) {
-                    url.searchParams.set(key, val);
-                } else {
-                    url.searchParams.delete(key); 
-                }
-                url.searchParams.delete('page'); // Reset pagination
-                window.location.href = url.toString();
-            }
-        </script>
-
-        {{-- Search --}}
-        <div class="input-group input-group-sm modern-search-group" style="width: auto;">
-            <input type="text" id="tableSearch" class="form-control modern-search-input" placeholder="Cari Nama..." value="{{ request('search') }}">
-            <button class="btn btn-primary modern-search-btn" type="button" onclick="updateFilter('search', document.getElementById('tableSearch').value)">
-                <i class="fas fa-search"></i>
-            </button>
-        </div>
-        <script>
-            document.getElementById('tableSearch').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    updateFilter('search', this.value);
-                }
-            });
-        </script>
-    </div>
-    </div>
-    </div>
-    </div>
-
-
-            <div class="card-body">
-                <div style="overflow-x: auto; overflow-y: auto; width: 100%; max-height: 500px;">
-
-                    <table id="myTable" class="table table-bordered table-striped nowrap" style="width: max-content;">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-
-                                @php
-                                    $userRole = strtolower(auth()->user()->role);
-                                    $isCs = in_array($userRole, ['cs', 'cs-mbc', 'cs-smi', 'customer_service']);
-                                @endphp
-
-                                <th style="min-width: 250px;">Nama Calon Pelanggan</th> {{-- Merged Name+WA+CTA --}}
-                                <th>
-                                    Sumber Leads
-                                    @if($userRole !== 'administrator' && auth()->user()->name !== 'Linda')
-                                        <br>
-                                        <select id="filterSumber" class="form-control form-control-sm">
-                                            <option value="">-- Semua Sumber --</option>
-                                            <option value="Marketing">Marketing</option>
-                                            <option value="Iklan">Iklan</option>
-                                            <option value="Alumni">Referal</option>
-                                            <option value="Mandiri">Mandiri</option>
-                                        </select>
-                                    @endif
-                                </th>
-
-                                
-                                {{-- Hanya tampil jika bukan marketing --}}
-                                @if(strtolower(auth()->user()->role) !== 'marketing')
-                                    {{-- Survei Lokasi Header --}}
-                                    <th>
-                                        Survei Lokasi
-                                        <div style="min-width: 120px;">
-                                            <select id="filterSurvei" class="form-control-sm">
-                                                <option value="">-- Semua Survei --</option>
-                                                <option value="Ya">Ya</option>
-                                                <option value="Tidak">Tidak</option>
-                                            </select>
-                                        </div>
-                                    </th>
-                                @endif
-
-                                {{-- SPIN / BAT Columns --}}
-                                <th class="text-center" style="width: 40px;">B</th>
-                                <th class="text-center" style="width: 40px;">A</th>
-                                <th class="text-center" style="width: 40px;">T</th>
-
-
-
-                                @if(strtolower(auth()->user()->role) !== 'administrator' && auth()->user()->role !== 'marketing')    
-                                <th>Sales Plan</th>
-                                @endif
-                                
-                                @if(in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) || auth()->user()->name === 'Agus Setyo')
-                                <th>
-                                    <div class="d-flex flex-column">
-                                        <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'created_by', 'order' => (request('sort_by') == 'created_by' && request('order') == 'asc') ? 'desc' : 'asc']) }}" class="text-white text-decoration-none d-flex align-items-center justify-content-between mb-1">
-                                            <span>Input Oleh</span>
-                                            <span>
-                                                @if(request('sort_by') == 'created_by')
-                                                    <i class="fas fa-sort-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
-                                                @else
-                                                    <i class="fas fa-sort text-white-50"></i>
-                                                @endif
-                                            </span>
-                                        </a>
-                                        <select class="form-control form-control-sm text-dark" onchange="updateFilterUser(this.value)" style="min-width: 100px;">
-                                            <option value="">-- Semua --</option>
-                                            @foreach($csList as $cs)
-                                                <option value="{{ $cs->name }}" {{ request('cs_name') == $cs->name ? 'selected' : '' }}>
-                                                    {{ $cs->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </th>
-                                {{-- Role Column: Removed for Administrator (Rule 5), Shown for Others (if permitted) --}}
-                                @if(strtolower(auth()->user()->role) !== 'administrator')
-                                    <th>Role</th>
-                                @endif
-                                @endif
-                                
-                                @if($userRole !== 'administrator')
-                                    <th>Action</th>
-                                @endif
-                            </tr>
-
-                        </thead>
-                        <tbody>
-
-                            @foreach($data as $item)
-                                @include('admin.database.partials.row', ['item' => $item, 'loop' => $loop, 'kelas' => $kelas])
-                            @endforeach
-
-
-                        </tbody>
-                    </table>
-                    
-
-
-                    <!-- Script JQuery -->
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script>
-                        // Helper functions
-                        function showStatusIcon($element, success) {
-                            let iconHtml = success ?
-                                '<i class="fa fa-check status-success"></i>' :
-                                '<i class="fa fa-times status-error"></i>';
-
-                            let iconSpan = $('<span class="status-icon">' + iconHtml + '</span>');
-                            $element.after(iconSpan);
-
-                            setTimeout(() => {
-                                iconSpan.fadeOut(300, function() {
-                                    $(this).remove();
-                                });
-                            }, 2000);
-                        }
-
-                        $(document).ready(function() {
-
-                            // Untuk kolom text
-                            $(document).on('focus', '.editable', function() {
-                                $(this).addClass('editing');
-                            });
-
-                            $(document).on('blur', '.editable', function() {
-                                let $this = $(this);
-                                let value = $this.val();
-                                let field = $this.data('field');
-                                let id = $this.closest('tr').data('id');
-
-                                $this.removeClass('editing');
-
-                                $.ajax({
-                                    url: '/admin/database/update-inline',
-                                    method: 'POST',
-                                    data: {
-                                        _token: '{{ csrf_token() }}',
-                                        id: id,
-                                        field: field,
-                                        value: value
-                                    },
-                                    success: function(res) {
-                                        console.log('Updated:', field);
-                                        showStatusIcon($this, true);
-                                    },
-                                    error: function() {
-                                        showStatusIcon($this, false);
-                                    }
-                                });
-                            });
-
-                            // Untuk dropdown Potensi Kelas
-                            $(document).on('change', '.select-potensi', function() {
-                                let id = $(this).data('id');
-                                let kelas_id = $(this).val();
-
-                                $.ajax({
-                                    url: `/admin/database/update-potensi/${id}`,
-                                    type: 'POST',
-                                    data: {
-                                        _token: '{{ csrf_token() }}',
-                                        kelas_id: kelas_id
-                                    },
-                                    success: function(response) {
-                                        console.log('Potensi kelas updated');
-                                    },
-                                    error: function() {
-                                        alert('Gagal update potensi kelas');
-                                    }
-                                });
-                            });
-
-                        });
-                    </script>
-
-    <script>
-    // Delegated event for Sumber Leads Select
-    $(document).on('change', '.select-sumber', function() {
-        let id = $(this).data('id');
-        let value = $(this).val();
-
-        $.ajax({
-            url: '/admin/database/update-inline',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: id,
-                field: 'leads',
-                value: value
-            }
-        });
-    });
-
-
-    function createNewRow(e) {
-        if(e) e.preventDefault();
-        
-        $.ajax({
-            url: '{{ route("admin.database.createDraft") }}',
-            method: 'POST',
-            data: { _token: '{{ csrf_token() }}' },
-            success: function(response) {
-                if(response.success) {
-                    // Prepend to tbody
-                    $('#myTable tbody').prepend(response.html);
-                    
-                    let $newRow = $('#myTable tbody tr:first');
-                    
-                    // Optional: Highlight row or focus name
-                    $newRow.css('background-color', '#d4edda').animate({backgroundColor: '#fff'}, 2000);
-                }
-            },
-            error: function(xhr) {
-                let msg = 'Gagal menambah baris baru.';
-                if(xhr.responseJSON && xhr.responseJSON.message) {
-                    msg += '\n' + xhr.responseJSON.message;
-                }
-                alert(msg);
-            }
-        });
-    }
-    </script>
-                    <style>
-                        .editable {
-                            cursor: pointer;
-                        }
-
-                        .editing {
-                            background-color: #fff3cd !important;
-                            /* kuning saat edit */
-                        }
-
-                        .status-icon {
-                            margin-left: 5px;
-                            font-size: 14px;
-                        }
-
-                        .status-success {
-                            color: green;
-                        }
-
-                        .status-error {
-                            color: red;
-                        }
-
-                        /* Placeholder for empty contenteditable */
-                        [contenteditable]:empty:before {
-                            content: attr(placeholder);
-                            color: #adb5bd;
-                            pointer-events: none;
-                            display: block;
-                        }
-                    </style>
-                    <script>
-                        $(document).ready(function() {
-
-                            // Untuk Select Inline Update (Sumber Leads, Produk)
-                            $(document).on('change', '.select-inline', function() {
-                                let $this = $(this);
-                                let id = $this.data('id');
-                                let field = $this.data('field');
-                                let value = $this.val();
-
-                                $.ajax({
-                                    url: '/admin/database/update-inline',
-                                    method: 'POST',
-                                    data: {
-                                        _token: '{{ csrf_token() }}',
-                                        id: id,
-                                        field: field,
-                                        value: value
-                                    },
-                                    success: function() {
-                                        showStatusIcon($this, true);
-                                    },
-                                    error: function() {
-                                        showStatusIcon($this, false);
-                                    }
-                                });
-                            });
-
-                            // Tombol Riwayat SPIN
-                            $(document).on('click', '.btn-spin-history', function() {
-                                let id = $(this).data('id');
-                                let nama = $(this).data('nama');
-                                $('#spin_nama_peserta').text(nama);
-                                $('#modalRiwayatSpin').data('data-id', id);
-                                
-                                loadSpinInteractions(id);
-                                $('#modalRiwayatSpin').modal('show');
-                            });
-
-                            function loadSpinInteractions(id) {
-                                let $container = $('#spinCardsContainer');
-                                $container.html('<div class="p-4 text-center"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
-
-                                $.get(`/admin/database/${id}/spin-interactions`, function(res) {
-                                    if (res.success) {
-                                        renderSpinCards(res.interactions);
-                                    }
-                                });
-                            }
-
-                            function renderSpinCards(interactions) {
-                                let $container = $('#spinCardsContainer');
-                                $container.empty();
-
-                                interactions.forEach((spin, index) => {
-                                    $container.append(createSpinCardHtml(spin, index + 1));
-                                });
-
-                                // Add the "Tambah" card
-                                $container.append(`
-                                    <div class="add-spin-card ms-2" onclick="addNewSpinCard()">
-                                        <div class="text-center">
-                                            <i class="fas fa-plus-circle fa-3x text-primary shadow-sm rounded-circle"></i>
-                                            <div class="mt-2 fw-bold text-primary">Tambah SPIN</div>
-                                        </div>
-                                    </div>
-                                `);
-                            }
-
-                            function createSpinCardHtml(spin, num) {
-                                let dateStr = spin.created_at ? new Date(spin.created_at).toLocaleString('id-ID', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
-                                return `
-                                    <div class="spin-card" data-id="${spin.id || ''}">
-                                        <div class="spin-card-header">
-                                            <span>SPIN ${num}</span>
-                                            <span class="text-muted small">${dateStr}</span>
-                                        </div>
-                                        <div class="p-3">
-                                            <div class="row g-0 border rounded mb-3 overflow-hidden" style="font-size: 0.75rem;">
-                                                <div class="col-6 text-center border-end p-2 bg-light">
-                                                    <div class="text-muted fw-bold mb-1">WA</div>
-                                                    <input type="checkbox" class="spin-wa" ${spin.wa ? 'checked' : ''}>
-                                                </div>
-                                                <div class="col-6 text-center p-2 bg-light">
-                                                    <div class="text-muted fw-bold mb-1">TELP</div>
-                                                    <input type="checkbox" class="spin-telp" ${spin.telp ? 'checked' : ''}>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="fw-bold small text-muted text-uppercase d-block mb-1">HASIL FU</label>
-                                                <textarea class="form-control form-control-sm spin-hasil" rows="3" placeholder="Hasil follow up...">${spin.hasil_fu || ''}</textarea>
-                                            </div>
-                                            
-                                            <div class="mb-0">
-                                                <label class="fw-bold small text-muted text-uppercase d-block mb-1">TINDAK LANJUT</label>
-                                                <textarea class="form-control form-control-sm spin-tindak" rows="3" placeholder="Langkah selanjutnya...">${spin.tindak_lanjut || ''}</textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-
-                            window.addNewSpinCard = function() {
-                                let $container = $('#spinCardsContainer');
-                                let count = $container.find('.spin-card').length;
-                                // Insert before the add card
-                                $('.add-spin-card').before(createSpinCardHtml({wa:0, telp:0, hasil_fu:'', tindak_lanjut:''}, count + 1));
-                                // Scroll right
-                                let containerDom = $container[0];
-                                containerDom.scrollLeft = containerDom.scrollWidth;
-                            };
-
-                            $('#btnSaveSpinInteractions').on('click', function() {
-                                let id = $('#modalRiwayatSpin').data('data-id');
-                                let interactions = [];
-
-                                $('#spinCardsContainer .spin-card').each(function() {
-                                    interactions.push({
-                                        id: $(this).data('id'),
-                                        wa: $(this).find('.spin-wa').is(':checked'),
-                                        telp: $(this).find('.spin-telp').is(':checked'),
-                                        hasil_fu: $(this).find('.spin-hasil').val(),
-                                        tindak_lanjut: $(this).find('.spin-tindak').val()
-                                    });
-                                });
-
-                                let $btn = $(this);
-                                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
-
-                                $.ajax({
-                                    url: `/admin/database/${id}/save-spin-interactions`,
-                                    method: 'POST',
-                                    data: {
-                                        _token: '{{ csrf_token() }}',
-                                        interactions: interactions
-                                    },
-                                    success: function(res) {
-                                        if(res.success) {
-                                            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Riwayat SPIN disimpan!', timer: 1500, showConfirmButton: false });
-                                            $('#modalRiwayatSpin').modal('hide');
-                                        }
-                                    },
-                                    error: function() {
-                                        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menyimpan riwayat SPIN.' });
-                                    },
-                                    complete: function() {
-                                        $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan');
-                                    }
-                                });
-                            });
-
-                            // Untuk checkbox Inline Update (Berhasil Spin & Ikut Zoom)
-                            $(document).on('change', '.checkbox-inline', function() {
-                                let $this = $(this);
-                                let id = $this.data('id');
-                                let field = $this.data('field');
-                                let value = $this.is(':checked') ? 'Ya' : 'Tidak';
-                                let $tr = $this.closest('tr');
-
-                                $.ajax({
-                                    url: '/admin/database/update-inline',
-                                    method: 'POST',
-                                    data: {
-                                        _token: '{{ csrf_token() }}',
-                                        id: id,
-                                        field: field,
-                                        value: value
-                                    },
-                                    success: function() {
-                                        showStatusIcon($this, true);
-                                        
-                                        // Cek status B, A, T untuk memunculkan tombol Sales Plan
-                                        if (['spin_b', 'spin_a', 'spin_t'].includes(field)) {
-                                            let bChecked = $tr.find('input[data-field="spin_b"]').is(':checked');
-                                            let aChecked = $tr.find('input[data-field="spin_a"]').is(':checked');
-                                            let tChecked = $tr.find('input[data-field="spin_t"]').is(':checked');
-                                            
-                                            if (bChecked && aChecked && tChecked) {
-                                                $tr.find('.btn-move-salesplan').removeClass('d-none');
-                                            } else {
-                                                $tr.find('.btn-move-salesplan').addClass('d-none');
-                                            }
-                                        }
-                                    },
-                                    error: function() {
-                                        showStatusIcon($this, false);
-                                        // Revert checkbox state on error
-                                        $this.prop('checked', !$this.is(':checked'));
-                                    }
-                                });
-                            });
-
-                        });
-                    </script>
-
-
-
-                </div>
-                
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $data->withQueryString()->links('pagination::bootstrap-4') }}
-                </div>
-
-            </div>
-            
-
-        </div>
-    </div>
-
-    <script>
-    $(document).ready(function() {
-        // D. Main Filtering Logic (Consolidated)
-        function applyTableFilters() {
-            var userRole = "{{ strtolower(auth()->user()->role) }}";
-            
-            // Get values
-            var fUser = $('#filterUser').val() ? $('#filterUser').val().toLowerCase() : '';
-            var fBulan = $('#filterBulan').val();
-            var fSumber = $('#filterSumber').val();
-            var fKelas = $('#filterKelas').val();
-            var fSurvei = $('#filterSurvei').val();
-            
-            var search = $('#tableSearch').val() ? $('#tableSearch').val().toLowerCase() : '';
-
-            $('#myTable tbody tr').each(function() {
-                var $tr = $(this);
-                var trUser = $tr.data('created-by'); 
-                var trBulan = $tr.data('bulan');
-                var trYear = $tr.data('year');
-                var currentYear = new Date().getFullYear();
-                
-                // Row Values
-                var trText = $tr.text().toLowerCase();
-                var trSumber = $tr.find('.select-sumber').val();
-                
-                var show = true;
-
-                // Filter User
-                if (fUser && trUser !== fUser) show = false;
-                
-                // Filter Bulan
-                if (show && fBulan) {
-                    if (trBulan != fBulan) show = false;
-                    else if (trYear != currentYear) show = false;
-                }
-                
-                // Filter Sumber
-                if (show && fSumber && trSumber !== fSumber) show = false;
-                
-                // Filter Kelas
-                var trKelas = '';
-                var $kelasSelect = $tr.find('.select-potensi');
-                if ($kelasSelect.length > 0) {
-                    trKelas = $kelasSelect.find('option:selected').text().trim();
-                }
-                if (show && fKelas && trKelas !== fKelas) show = false;
-                
-                // Filter Survei Lokasi
-                var trSurvei = $tr.find('input[data-field="survei_lokasi"]').is(':checked') ? 'Ya' : 'Tidak';
-                if (show && fSurvei && trSurvei !== fSurvei) show = false;
-                
-                // Search
-                if (show && search && !trText.includes(search)) show = false;
-                
-                $tr.toggle(show);
-            });
+        .editable {
+            cursor: pointer;
         }
-        
-        // Hook into existing events to also call our unified filter
-        $('#filterSumber, #filterKelas, #filterSurvei').on('change', applyTableFilters);
-        
-        // Note: older applyFilters function defined in document.ready above might conflict if not careful.
-        // We are overriding or extending functionality. The previous script block used "applyFilters" name. 
-        // Since we are inside the same doc.ready (effectively), we should be careful. 
-        // To be safe, we'll assume the previous separate scripts might need consolidation, 
-        // but typically later script specific listeners will run.
-        // We explicitly attach applyTableFilters to the new inputs.
-    });
-    </script>
-    <!-- Modal Riwayat SPIN -->
-    <div class="modal fade" id="modalRiwayatSpin" tabindex="-1" aria-labelledby="modalRiwayatSpinLabel" aria-hidden="true" style="z-index: 9999;">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
-                    <h5 class="modal-title fw-bold" id="modalRiwayatSpinLabel">
-                        <i class="fas fa-history me-2"></i> Riwayat SPIN - <span id="spin_nama_peserta"></span>
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body p-4 bg-light">
-                    <div id="spinCardsContainer" class="d-flex overflow-auto pb-3" style="min-height: 400px; -webkit-overflow-scrolling: touch;">
-                        {{-- Cards will be injected here --}}
-                    </div>
-                </div>
-                <div class="modal-footer bg-white border-top">
-                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary px-4 fw-bold" id="btnSaveSpinInteractions">
-                        <i class="fas fa-save me-1"></i> Simpan
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal Pindah Sales Plan -->
-    <div class="modal fade" id="moveSalesPlanModal" tabindex="-1" aria-labelledby="moveSalesPlanModalLabel" aria-hidden="true" style="z-index: 9999;">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
-                    <h5 class="modal-title fw-bold" id="moveSalesPlanModalLabel">
-                        <i class="fas fa-arrow-right me-2"></i> Masukkan ke Sales Plan
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="moveSalesPlanForm" method="POST">
-                    @csrf
-                    <div class="modal-body p-4">
-                        <p class="text-muted mb-4">
-                            Anda akan memindahkan <strong id="move_nama_peserta"></strong> ke Sales Plan. 
-                            silakan pilih potensi produk :
-                        </p>
-                        
-                        <div class="product-list-container border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
-                            @foreach($kelas as $k)
-                                <div class="mb-2 p-2 border-bottom hover-bg-white transition-all rounded d-flex align-items-center" style="cursor: pointer;">
-                                    <input type="checkbox" name="kelas_ids[]" value="{{ $k->id }}" id="kelas_{{ $k->id }}" 
-                                           style="cursor: pointer; width: 1.4rem; height: 1.4rem; margin: 0; margin-right: 12px; flex-shrink: 0;">
-                                    <label class="fw-bold text-dark mb-0" for="kelas_{{ $k->id }}" style="cursor: pointer; flex: 1; font-size: 1.05rem;">
-                                        {{ $k->nama_kelas }}
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light border-0">
-                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary px-4 fw-bold">Masukkan ke Salesplan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+        .editing {
+            background-color: #fff3cd !important;
+        }
 
-    <style>
-        .hover-bg-white:hover { background-color: white !important; transform: translateX(5px); }
-        .transition-all { transition: all 0.2s ease; }
-        .cursor-pointer { cursor: pointer; }
-        
+        .status-icon {
+            margin-left: 5px;
+            font-size: 14px;
+        }
+
+        .status-success {
+            color: green;
+        }
+
+        .status-error {
+            color: red;
+        }
+
+        [contenteditable]:empty:before {
+            content: attr(placeholder);
+            color: #adb5bd;
+            pointer-events: none;
+            display: block;
+        }
+
+        .hover-bg-white:hover {
+            background-color: white !important;
+            transform: translateX(5px);
+        }
+
+        .transition-all {
+            transition: all 0.2s ease;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
         .spin-card {
             min-width: 280px;
             max-width: 280px;
@@ -968,10 +66,14 @@
             margin-right: 15px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s;
         }
-        .spin-card:hover { transform: translateY(-5px); }
+
+        .spin-card:hover {
+            transform: translateY(-5px);
+        }
+
         .spin-card-header {
             background: #ffca2c;
             color: #212529;
@@ -983,6 +85,7 @@
             font-size: 0.85rem;
             font-weight: 800;
         }
+
         .add-spin-card {
             min-width: 200px;
             border: 3px dashed #4e73df;
@@ -994,185 +97,602 @@
             transition: all 0.3s;
             margin-left: 10px;
         }
-        .add-spin-card:hover { background: #eaecf4; border-color: #224abe; }
-        .spin-hasil, .spin-tindak {
+
+        .add-spin-card:hover {
+            background: #eaecf4;
+            border-color: #224abe;
+        }
+
+        .spin-hasil,
+        .spin-tindak {
             font-size: 0.8rem;
             border-radius: 8px;
             border: 1px solid #d1d3e2;
         }
     </style>
 
-    <script>
-        $(document).on('click', '.btn-move-salesplan', function() {
-            let id = $(this).data('id');
-            let nama = $(this).data('nama');
-            let existingKelas = $(this).data('existing-kelas') || []; // Array of IDs
-            
-            $('#move_nama_peserta').text(nama);
-            $('#moveSalesPlanForm').attr('action', `/data/${id}/pindah-ke-salesplan`);
-            
-            // Reset checklist first
-            $('#moveSalesPlanForm input[name="kelas_ids[]"]').prop('checked', false);
-            
-            // Check products already in salesplan
-            if (Array.isArray(existingKelas)) {
-                existingKelas.forEach(kelasId => {
-                    $(`#kelas_${kelasId}`).prop('checked', true);
-                });
-            }
-            
-            $('#moveSalesPlanModal').modal('show');
-        });
+    @if(auth()->user()->role !== 'administrator')
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Database Calon Pelanggan</h1>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Database Calon Pelanggan</li>
+                </ol>
+            </div>
+        </div>
+    @endif
 
-        $('#moveSalesPlanForm').on('submit', function(e) {
-            let checked = $(this).find('input[name="kelas_ids[]"]:checked').length;
-            if (checked === 0) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Pilih Produk',
-                    text: 'Silakan pilih minimal satu produk.'
-                });
-            }
-        });
-    </script>
-    @endsection
+    {{-- ALERT MODE READ ONLY --}}
+    @if(isset($user) && $readonly)
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+            <div>
+                <strong>Database CS:</strong> <strong>{{ $user->name }} </strong> <br>
+                <span class="text-muted small">Email: {{ $user->email }} | Role: {{ ucfirst($user->role) }}</span>
+            </div>
+            <div>
+                <span class="text-white badge bg-primary p-2">Mode Read-Only</span>
+            </div>
+        </div>
+    @endif
 
-    <!-- Modal Create -->
+    <div class="content">
+        <div class="card card-info card-outline">
+            @php
+                use Carbon\Carbon;
+                $now = Carbon::now();
+                $bulanLabel = $bulanLabel ?? $now->isoFormat('MMMM YYYY');
+                $databaseBaru = $databaseBaru ?? 0;
+                $totalDatabase = $totalDatabase ?? 0;
+                $target = $target ?? 100;
+                $kurang = $kurang ?? 0;
+                $data = $data ?? collect([]);
+            @endphp
 
+            <div class="card-header">
+                {{-- Stats Cards --}}
+                <style>
+                    .stat-card-group {
+                        display: flex;
+                        gap: 15px;
+                        flex-wrap: wrap;
+                    }
 
-    <script>
-        $('#createForm').on('submit', function(e) {
-            e.preventDefault();
+                    .g-stat-card {
+                        display: flex;
+                        align-items: center;
+                        padding: 10px 15px;
+                        border-radius: 12px;
+                        color: white;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        transition: all 0.3s ease;
+                        min-width: 140px;
+                        position: relative;
+                        overflow: hidden;
+                        flex: 1;
+                    }
 
-            $.ajax({
-                url: $(this).attr('action'),
-                method: 'POST',
-                data: $(this).serialize(),
-                success: function(res) {
-                    alert('Berhasil disimpan!');
-                    $('#createPesertaModal').modal('hide');
-                    location.reload(); // atau refresh tabel data
-                },
-                error: function(err) {
-                    alert('Gagal menyimpan.');
-                }
-            });
-        });
-    </script>
+                    .g-sc-cyan {
+                        background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+                    }
 
-    <script>
-        function create() {
-            $('#createPesertaModal').modal('show');
-        }
+                    .g-sc-blue {
+                        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+                    }
 
-        $('#createForm').on('submit', function(e) {
-            e.preventDefault();
-            // Add your AJAX call here to save the data
-            alert('Data saved successfully!');
-            $('#createPesertaModal').modal('hide');
-        });
-    </script>
-    {{--    <script>
-            $(document).ready(function() {
-                $('#myTable').DataTable({
-                    responsive: true,
-                    autoWidth: false,
-                });
-            });
-        </script> --}}
+                    .g-sc-yellow {
+                        background: linear-gradient(135deg, #ffca2c 0%, #ffc107 100%);
+                        color: #212529;
+                    }
 
+                    .g-sc-red {
+                        background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+                    }
 
+                    .g-sc-content {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
 
-    <!-- Modal Create -->
-    <div class="modal fade" id="createPesertaModal" tabindex="-1" role="dialog" aria-labelledby="createPesertaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createPesertaModalLabel">Tambah Calon Pelanggan</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    .g-sc-label {
+                        font-size: 0.7rem;
+                        text-transform: uppercase;
+                        font-weight: 700;
+                        opacity: 0.8;
+                        margin-bottom: 4px;
+                        white-space: nowrap;
+                    }
+
+                    .g-sc-value {
+                        font-size: 1.5rem;
+                        font-weight: 900;
+                        line-height: 1;
+                    }
+
+                    .g-sc-icon {
+                        margin-left: auto;
+                        font-size: 1.8rem;
+                        opacity: 0.3;
+                    }
+                </style>
+
+                <div class="stat-card-group mb-4">
+                    <div class="g-stat-card g-sc-cyan">
+                        <div class="g-sc-content">
+                            <span class="g-sc-label">Database Baru</span>
+                            <span class="g-sc-value">{{ $databaseBaru }}</span>
+                        </div>
+                        <div class="g-sc-icon"><i class="fas fa-database"></i></div>
+                    </div>
+                    <div class="g-stat-card g-sc-blue">
+                        <div class="g-sc-content">
+                            <span class="g-sc-label">Total Database</span>
+                            <span class="g-sc-value">{{ $totalDatabase }}</span>
+                        </div>
+                        <div class="g-sc-icon"><i class="fas fa-layer-group"></i></div>
+                    </div>
+                    <div class="g-stat-card g-sc-yellow">
+                        <div class="g-sc-content">
+                            <span class="g-sc-label">Target Bulanan</span>
+                            <span class="g-sc-value">{{ $target }}</span>
+                        </div>
+                        <div class="g-sc-icon"><i class="fas fa-bullseye"></i></div>
+                    </div>
+                    <div class="g-stat-card g-sc-red text-white">
+                        <div class="g-sc-content">
+                            <span class="g-sc-label text-white">Kurang</span>
+                            <span class="g-sc-value">{{ $kurang }}</span>
+                        </div>
+                        <div class="g-sc-icon text-white"><i class="fas fa-exclamation-triangle"></i></div>
+                    </div>
                 </div>
-                <form id="createForm" action="{{ route('admin.database.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
 
-                        {{-- Nama Peserta --}}
-                        <div class="form-group">
-                            <label for="nama">Nama Calon Pelanggan</label>
-                            <input type="text" class="form-control" id="nama" name="nama" required>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) && !(auth()->user()->name === 'Linda' && request('view') !== 'me'))
+                            <button type="button" class="btn btn-success" id="btnTambahInline">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        @endif
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        @php
+                            $user = auth()->user();
+                            $csList = \App\Models\User::whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi'])->orderBy('name')->get();
+                        @endphp
+
+                        {{-- Elegant Filter Group --}}
+                        <div class="d-flex gap-2">
+                            @if((in_array(strtolower($user->role), ['administrator', 'manager']) && $user->name !== 'Agus Setyo') || ($user->name === 'Linda' && request('view') !== 'me'))
+                                <select onchange="updateFilter('cs_name', this.value)"
+                                    class="form-select form-select-sm border-radius-50 px-3" style="min-width: 150px;">
+                                    <option value="">-- Semua Sales --</option>
+                                    @foreach($csList as $cs)
+                                        <option value="{{ $cs->name }}" {{ request('cs_name') == $cs->name ? 'selected' : '' }}>
+                                            {{ $cs->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+
+                            <div class="input-group input-group-sm" style="width: auto;">
+                                <span class="input-group-text bg-white"><i
+                                        class="far fa-calendar-alt text-muted"></i></span>
+                                <select onchange="updateFilter('bulan', this.value)" class="form-select"
+                                    style="min-width: 100px;">
+                                    <option value="">Bulan</option>
+                                    @foreach(range(1, 12) as $m)
+                                        <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
+                                            {{ Carbon::create()->month($m)->translatedFormat('F') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <select onchange="updateFilter('tahun', this.value)" class="form-select"
+                                    style="min-width: 85px;">
+                                    <option value="">Tahun</option>
+                                    @foreach(range(2024, 2030) as $y)
+                                        <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
-                        {{-- Status Peserta --}}
-        
+                        <div class="input-group input-group-sm" style="width: 280px;">
+                            <input type="text" id="tableSearch" class="form-control ps-3"
+                                placeholder="Cari Nama Pelanggan..." value="{{ request('search') }}"
+                                style="border-radius: 50px 0 0 50px;">
+                            <button class="btn btn-primary px-3" type="button"
+                                onclick="updateFilter('search', $('#tableSearch').val())"
+                                style="border-radius: 0 50px 50px 0;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                {{-- Potensi Kelas --}}
-    <div class="form-group">
-        <label for="kelas_id">Potensi Produk </label>
-        <select name="kelas_id" id="kelas_id" class="form-control" required>
-            <option value="">Pilih Potensi Produk</option>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 600px;">
+                    <table id="myTable" class="table table-bordered table-striped nowrap" style="width: max-content;">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th style="min-width: 250px;">
+                                    Nama Calon Pelanggan
+                                    <button type="button" id="btnToggleWA"
+                                        class="btn btn-xs btn-light ms-2 border shadow-sm">
+                                        <i class="fas fa-eye text-primary"></i>
+                                    </button>
+                                </th>
+                                <th>Sumber Leads</th>
+                                @if(strtolower(auth()->user()->role) !== 'marketing')
+                                    <th>Survei</th>
+                                @endif
+                                <th class="text-center">B</th>
+                                <th class="text-center">A</th>
+                                <th class="text-center">T</th>
+                                @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'marketing']))
+                                    <th>Sales Plan</th>
+                                @endif
+                                @if(in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) || auth()->user()->name === 'Agus Setyo')
+                                    <th>Input Oleh</th>
+                                @endif
+                                @if(!in_array(strtolower(auth()->user()->role), ['administrator']))
+                                    <th>Action</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data as $item)
+                                @include('admin.database.partials.row', ['item' => $item, 'loop' => $loop, 'kelas' => $kelas])
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-            @forelse($kelas as $item)
-                <option value="{{ $item->id }}">{{ $item->nama_kelas }}</option>
-            @empty
-                <option disabled>Tidak ada kelas tersedia</option>
-            @endforelse
-        </select>
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $data->withQueryString()->links('pagination::bootstrap-4') }}
+                </div>
+            </div>
+        </div>
     </div>
 
+    {{-- MODALS --}}
 
-                        {{-- Sumber Leads --}}
-                        <div class="form-group">
-                            <label for="leads">Sumber Leads</label>
-                            <select name="leads" id="leads" class="form-control">
-                                <option value="Marketing">Marketing</option>
-                                <option value="Iklan">Iklan</option>
-                                <option value="Alumni">Referal</option>
-                                <option value="Mandiri">Mandiri</option>
-                            </select>
+    <!-- Modal Riwayat SPIN -->
+    <div class="modal fade" id="modalRiwayatSpin" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-history me-2"></i> SPIN: <span
+                            id="spin_nama_peserta"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div id="spinCardsContainer" class="d-flex flex-row overflow-auto p-2" style="min-height: 400px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveSpinInteractions">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Move to SalesPlan -->
+    <div class="modal fade" id="moveSalesPlanModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Move to Sales Plan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="moveSalesPlanForm" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p>Pindahkan <strong id="move_nama_peserta"></strong> ke Sales Plan produk:</p>
+                        <div class="product-list border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                            @foreach($kelas as $k)
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="kelas_ids[]" value="{{ $k->id }}"
+                                        id="kelas_{{ $k->id }}">
+                                    <label class="form-check-label fw-bold"
+                                        for="kelas_{{ $k->id }}">{{ $k->nama_kelas }}</label>
+                                </div>
+                            @endforeach
                         </div>
-
-
-
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Pindahkan</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Modal Create Removed as per user request (Inline editing used instead) -->
 
+@endsection
 
-
-    <!-- End Modal Create -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@push('scripts')
     <script>
-        // Logic filter kelas sudah digabung di applyFilters()
+        // Global Privacy State
+        let isPrivacyMasked = false;
+
+        // Filter Helper
+        function updateFilter(key, val) {
+            let url = new URL(window.location.href);
+            if (val) url.searchParams.set(key, val); else url.searchParams.delete(key);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        }
+
+        $(document).ready(function () {
+            // Handle Search Enter
+            $('#tableSearch').on('keypress', function (e) {
+                if (e.key === 'Enter') updateFilter('search', $(this).val());
+            });
+
+            // Global Privacy Masking Toggle
+            $(document).on('click', '#btnToggleWA', function () {
+                isPrivacyMasked = !isPrivacyMasked;
+                const icon = $(this).find('i');
+
+                if (isPrivacyMasked) {
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash').css('color', '#dc3545');
+                    $('.wa-input').each(function () {
+                        const original = $(this).val();
+                        $(this).attr('data-original', original);
+                        $(this).val(original.startsWith('08') ? '08xxxxxx' : original);
+                    });
+                } else {
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye').css('color', '#0d6efd');
+                    $('.wa-input').each(function () {
+                        $(this).val($(this).attr('data-original') || $(this).val());
+                    });
+                }
+            });
+
+            // Smart Behavior for WA Inputs
+            $(document).on('focus', '.wa-input', function () {
+                if (isPrivacyMasked) {
+                    $(this).val($(this).attr('data-original') || $(this).val());
+                }
+            }).on('blur', '.wa-input', function () {
+                if (isPrivacyMasked) {
+                    const original = $(this).val();
+                    $(this).attr('data-original', original);
+                    $(this).val(original.startsWith('08') ? '08xxxxxx' : original);
+                }
+            });
+
+            // Inline Editing
+            $(document).on('focus', '.editable', function () {
+                $(this).addClass('editing');
+            }).on('blur', '.editable', function () {
+                const $this = $(this);
+                const id = $this.data('id');
+                const field = $this.data('field');
+                const value = $this.is('input') ? $this.val() : $this.text();
+
+                $.ajax({
+                    url: '/admin/database/update-inline',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}', id, field, value },
+                    success: function () {
+                        $this.removeClass('editing');
+                        showStatusIcon($this, true);
+                    },
+                    error: function () {
+                        $this.removeClass('editing');
+                        showStatusIcon($this, false);
+                    }
+                });
+            });
+
+            // Inline Selection
+            $(document).on('change', '.select-inline', function () {
+                const $this = $(this);
+                const id = $this.data('id');
+                const field = $this.data('field');
+                const value = $this.val();
+
+                $.ajax({
+                    url: '/admin/database/update-inline',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}', id, field, value },
+                    success: function () {
+                        showStatusIcon($this, true);
+                    },
+                    error: function () {
+                        showStatusIcon($this, false);
+                    }
+                });
+            });
+
+            $(document).on('change', '.checkbox-inline', function () {
+                const $this = $(this);
+                const $row = $this.closest('tr');
+                const id = $this.data('id');
+                const field = $this.data('field');
+                const value = $this.is(':checked') ? 'Ya' : 'Tidak';
+
+                $.ajax({
+                    url: '/admin/database/update-inline',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}', id, field, value },
+                    success: function () {
+                        showStatusIcon($this, true);
+
+                        // Cek apakah semua B, A, T sudah 'Ya' untuk memunculkan tombol pindah
+                        if (['spin_b', 'spin_a', 'spin_t'].includes(field)) {
+                            const b = $row.find('input[data-field="spin_b"]').is(':checked');
+                            const a = $row.find('input[data-field="spin_a"]').is(':checked');
+                            const t = $row.find('input[data-field="spin_t"]').is(':checked');
+
+                            if (b && a && t) {
+                                $row.find('.btn-move-salesplan').removeClass('d-none');
+                            } else {
+                                $row.find('.btn-move-salesplan').addClass('d-none');
+                            }
+                        }
+                    },
+                    error: function () {
+                        showStatusIcon($this, false);
+                    }
+                });
+            });
+
+            function showStatusIcon($el, success) {
+                $el.parent().find('.status-icon').remove();
+                const icon = success ? '<i class="fas fa-check-circle status-icon status-success"></i>' : '<i class="fas fa-times-circle status-icon status-error"></i>';
+                $el.after(icon);
+                setTimeout(() => $el.parent().find('.status-icon').fadeOut(1000), 2000);
+            }
+
+            // SPIN Logic
+            $(document).on('click', '.btn-spin-history', function () {
+                const id = $(this).data('id');
+                const nama = $(this).data('nama');
+                $('#spin_nama_peserta').text(nama);
+                $('#btnSaveSpinInteractions').data('id', id);
+
+                $('#spinCardsContainer').html('<div class="p-4 w-100 text-center text-muted">Memuat data...</div>');
+                $('#modalRiwayatSpin').modal('show');
+
+                $.get(`/admin/database/${id}/spin-interactions`, function (data) {
+                    let html = '';
+                    data.forEach(spin => {
+                        html += `
+                                                <div class="spin-card" data-spin-id="${spin.id}">
+                                                    <div class="spin-card-header">
+                                                        <span><i class="fas fa-calendar-alt me-1"></i> ${new Date(spin.created_at).toLocaleDateString()}</span>
+                                                        <span class="badge bg-white text-dark">ID: ${spin.id}</span>
+                                                    </div>
+                                                    <div class="p-3">
+                                                        <label class="small fw-bold">Hasil Interaksi</label>
+                                                        <textarea class="form-control spin-hasil mb-2" rows="3">${spin.hasil || ''}</textarea>
+                                                        <label class="small fw-bold">Tindak Lanjut</label>
+                                                        <textarea class="form-control spin-tindak" rows="3">${spin.tindak_lanjut || ''}</textarea>
+                                                    </div>
+                                                </div>`;
+                    });
+                    html += `
+                                            <div class="add-spin-card shadow-sm" id="addNewSpin">
+                                                <div class="text-center p-4">
+                                                    <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                                                    <div class="fw-bold text-primary">Tambah PIN Baru</div>
+                                                </div>
+                                            </div>`;
+                    $('#spinCardsContainer').html(html);
+                });
+            });
+
+            $(document).on('click', '#addNewSpin', function () {
+                const newCard = `
+                                        <div class="spin-card shadow-lg bg-light" data-spin-id="new">
+                                            <div class="spin-card-header bg-primary text-white">
+                                                <span><i class="fas fa-plus me-1"></i> PIN BARU</span>
+                                                <span class="badge bg-white text-primary">NEW</span>
+                                            </div>
+                                            <div class="p-3">
+                                                <label class="small fw-bold text-primary">Hasil Interaksi</label>
+                                                <textarea class="form-control spin-hasil mb-2" rows="3" placeholder="Apa hasil interaksi hari ini?"></textarea>
+                                                <label class="small fw-bold text-primary">Tindak Lanjut</label>
+                                                <textarea class="form-control spin-tindak" rows="3" placeholder="Rencana langkah berikutnya?"></textarea>
+                                            </div>
+                                        </div>`;
+                $(this).before(newCard);
+                $('#spinCardsContainer').animate({ scrollLeft: $('#spinCardsContainer')[0].scrollWidth }, 500);
+            });
+
+            $('#btnSaveSpinInteractions').on('click', function () {
+                const dataId = $(this).data('id');
+                const spins = [];
+                $('.spin-card').each(function () {
+                    spins.push({
+                        id: $(this).data('spin-id'),
+                        hasil: $(this).find('.spin-hasil').val(),
+                        tindak_lanjut: $(this).find('.spin-tindak').val()
+                    });
+                });
+
+                $.post(`/admin/database/${dataId}/save-spin-interactions`, {
+                    _token: '{{ csrf_token() }}',
+                    spins: spins
+                }, function () {
+                    Swal.fire('Berhasil', 'Data SPIN disimpan', 'success');
+                    $('#modalRiwayatSpin').modal('hide');
+                });
+            });
+
+            // Move to SalesPlan Logic
+            $(document).on('click', '.btn-move-salesplan', function () {
+                const id = $(this).data('id');
+                const nama = $(this).data('nama');
+                const existing = $(this).data('existing-kelas') || [];
+
+                $('#move_nama_peserta').text(nama);
+                $('#moveSalesPlanForm').attr('action', `/data/${id}/pindah-ke-salesplan`);
+                $('#moveSalesPlanForm input[type="checkbox"]').prop('checked', false);
+                existing.forEach(kid => $(`#kelas_${kid}`).prop('checked', true));
+                $('#moveSalesPlanModal').modal('show');
+            });
+
+            // Create Inline Draft Row
+            $('#btnTambahInline').on('click', function () {
+                const $btn = $(this);
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Menambahkan...');
+
+                $.ajax({
+                    url: '/admin/database/create-draft',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function (response) {
+                        if (response.success) {
+                            // Prepend new row to table
+                            $('#myTable tbody').prepend(response.html);
+
+                            // Focus on the name input of the newly added row
+                            const $newRow = $('#myTable tbody tr:first-child');
+                            $newRow.addClass('bg-light transition-all');
+                            $newRow.find('input[data-field="nama"]').focus();
+
+                            // Visual cue
+                            setTimeout(() => {
+                                $newRow.removeClass('bg-light');
+                            }, 2000);
+                        } else {
+                            Swal.fire('Error', response.message || 'Gagal membuat baris baru', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', 'Gagal membuat baris baru: ' + xhr.responseText, 'error');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).html('<i class="fa-solid fa-plus"></i> Tambah');
+                    }
+                });
+            });
+
+            // Create Form (Legacy - Keep handle just in case but modal is gone)
+            $('#createForm').on('submit', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function () {
+                        Swal.fire('Berhasil', 'Data ditambahkan', 'success').then(() => location.reload());
+                    },
+                    error: function () {
+                        Swal.fire('Gagal', 'Gagal menyimpan data', 'error');
+                    }
+                });
+            });
+        });
     </script>
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-    <!-- ✅ Tambahkan ini di atas tabel kamu -->
-    <link rel="stylesheet" 
-        href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css">
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+@endpush

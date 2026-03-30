@@ -9,17 +9,20 @@
     <meta name="author" content="" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <link rel="icon" href="{{ asset('backend/blp_logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('backend/blp_logo.png') }}" type="image/png">
 
     <title>BLP Properti | Dashboard</title>
 
     <!-- Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css"
+        rel="stylesheet" />
 
     <!-- Custom fonts -->
     <link href="{{ asset('backend/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <!-- Custom styles -->
@@ -47,8 +50,13 @@
         }
 
         @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         .sidebar {
@@ -62,7 +70,8 @@
             .sidebar {
                 position: fixed;
                 top: 0;
-                left: -250px; /* hidden default */
+                left: -250px;
+                /* hidden default */
                 width: 220px;
                 height: 100vh;
                 z-index: 1050;
@@ -70,7 +79,8 @@
             }
 
             .sidebar.active {
-                left: 0; /* show when active */
+                left: 0;
+                /* show when active */
             }
 
             #content-wrapper {
@@ -111,7 +121,7 @@
             display: flex;
             align-items: center;
         }
-        
+
         .topbar-marquee-text {
             display: inline-block;
             padding-left: 100%;
@@ -126,17 +136,27 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
-            filter: drop-shadow(0 0 5px rgba(255,255,255,0.4));
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
         }
 
         @keyframes rgbFlow {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
         }
 
         @keyframes topbarMarqueeAnim {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         /* Sidebar Item Separators */
@@ -175,7 +195,8 @@
             <br>
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('home') }}">
-                <div class="sidebar-brand-icon" style="background-color: #0000; padding: 8px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <div class="sidebar-brand-icon"
+                    style="background-color: #0000; padding: 8px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                     @php
                         $nama = Auth::user()->name ?? '';
                         $namaSMI = ['Latifah', 'Tursia', 'Agus Setyo'];
@@ -183,10 +204,12 @@
 
                     @if(in_array($nama, $namaSMI))
                         {{-- Logo SMI --}}
-                        <img src="{{ asset('backend/blp_logo.png') }}" alt="BLP Logo" style="height: 70px; width: auto; object-fit: contain; display: block;">
+                        <img src="{{ asset('backend/blp_logo.png') }}" alt="BLP Logo"
+                            style="height: 70px; width: auto; object-fit: contain; display: block;">
                     @else
                         {{-- Logo BLP --}}
-                        <img src="{{ asset('backend/blp_logo.png') }}" alt="BLP Logo" style="height: 65px; width: auto; object-fit: contain; display: block;">
+                        <img src="{{ asset('backend/blp_logo.png') }}" alt="BLP Logo"
+                            style="height: 65px; width: auto; object-fit: contain; display: block;">
                     @endif
                 </div>
             </a>
@@ -199,110 +222,120 @@
             {{-- Nav Item - Dashboard --}}
             @if(strtolower(Auth::user()->role) === 'administrator')
                 @if(\App\Models\Menu::isActive('dashboard_admin'))
-                <li class="nav-item {{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? 'active' : '' }}">
-                    <a class="nav-link {{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseDashboard"
-                        aria-expanded="{{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? 'true' : 'false' }}" aria-controls="collapseDashboard">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>DASHBOARD ADMIN</span>
-                    </a>
-                    <div id="collapseDashboard" class="collapse {{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? 'show' : '' }}" aria-labelledby="headingDashboard" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Sub Dashboard:</h6>
-                            {{-- Penjualan --}}
-                            @if(\App\Models\Menu::isActive('penjualan'))
-                            <a class="collapse-item {{ request()->routeIs('penjualan.index') ? 'active' : '' }}" href="{{ route('penjualan.index') }}">Penjualan</a>
-                            @endif
-                            {{-- HRD --}}
-                            @if(\App\Models\Menu::isActive('hr'))
-                            <a class="collapse-item {{ request()->routeIs('hr') ? 'active' : '' }}" href="{{ route('hr') }}">HRD</a>
-                            @endif
-                            {{-- Marketing --}}
-                            @if(\App\Models\Menu::isActive('marketing'))
-                            <a class="collapse-item {{ request()->routeIs('marketing') ? 'active' : '' }}" href="{{ route('marketing') }}">Marketing</a>
-                            @endif
-                            {{-- Operasional --}}
-                            @if(\App\Models\Menu::isActive('operasional'))
-                            <a class="collapse-item {{ request()->routeIs('admin.operasional') ? 'active' : '' }}" href="{{ route('admin.operasional') }}">Operasional</a>
-                            @endif
-                            {{-- Keuangan --}}
-                            @if(\App\Models\Menu::isActive('keuangan'))
-                            <a class="collapse-item {{ request()->routeIs('admin.keuangan') ? 'active' : '' }}" href="{{ route('admin.keuangan') }}">Keuangan</a>
-                            @endif
+                    <li
+                        class="nav-item {{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? 'active' : '' }}">
+                        <a class="nav-link {{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? '' : 'collapsed' }}"
+                            href="#" data-toggle="collapse" data-target="#collapseDashboard"
+                            aria-expanded="{{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? 'true' : 'false' }}"
+                            aria-controls="collapseDashboard">
+                            <i class="fas fa-fw fa-tachometer-alt"></i>
+                            <span>DASHBOARD ADMIN</span>
+                        </a>
+                        <div id="collapseDashboard"
+                            class="collapse {{ request()->routeIs('penjualan.index') || request()->routeIs('hr') || request()->routeIs('marketing') || request()->routeIs('admin.operasional') || request()->routeIs('admin.keuangan') ? 'show' : '' }}"
+                            aria-labelledby="headingDashboard" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Sub Dashboard:</h6>
+                                {{-- Penjualan --}}
+                                @if(\App\Models\Menu::isActive('penjualan'))
+                                    <a class="collapse-item {{ request()->routeIs('penjualan.index') ? 'active' : '' }}"
+                                        href="{{ route('penjualan.index') }}">Penjualan</a>
+                                @endif
+                                {{-- HRD --}}
+                                @if(\App\Models\Menu::isActive('hr'))
+                                    <a class="collapse-item {{ request()->routeIs('hr') ? 'active' : '' }}"
+                                        href="{{ route('hr') }}">HRD</a>
+                                @endif
+                                {{-- Marketing --}}
+                                @if(\App\Models\Menu::isActive('marketing'))
+                                    <a class="collapse-item {{ request()->routeIs('marketing') ? 'active' : '' }}"
+                                        href="{{ route('marketing') }}">Marketing</a>
+                                @endif
+                                {{-- Operasional --}}
+                                @if(\App\Models\Menu::isActive('operasional'))
+                                    <a class="collapse-item {{ request()->routeIs('admin.operasional') ? 'active' : '' }}"
+                                        href="{{ route('admin.operasional') }}">Operasional</a>
+                                @endif
+                                {{-- Keuangan --}}
+                                @if(\App\Models\Menu::isActive('keuangan'))
+                                    <a class="collapse-item {{ request()->routeIs('admin.keuangan') ? 'active' : '' }}"
+                                        href="{{ route('admin.keuangan') }}">Keuangan</a>
+                                @endif
+                            </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
                 @endif
             @elseif(strtolower(Auth::user()->role) === 'marketing')
                 @if(\App\Models\Menu::isActive('dashboard_marketing'))
-                <li class="nav-item active">
-                    {{-- Dashboard untuk Marketing --}}
-                    <a class="nav-link" href="{{ route('marketing') }}">
-                        <i class="fas fa-fw fa-chart-line"></i>
-                        <span>DASHBOARD</span>
-                    </a>
-                </li>
+                    <li class="nav-item active">
+                        {{-- Dashboard untuk Marketing --}}
+                        <a class="nav-link" href="{{ route('marketing') }}">
+                            <i class="fas fa-fw fa-chart-line"></i>
+                            <span>DASHBOARD</span>
+                        </a>
+                    </li>
                 @endif
             @elseif(strtolower(Auth::user()->role) === 'manager')
                 @if(\App\Models\Menu::isActive('dashboard_manager'))
-                <li class="nav-item active">
-                    {{-- Dashboard untuk Manager --}}
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-fw fa-briefcase"></i>
-                        <span>DASHBOARD MANAGER</span>
-                    </a>
-                </li>
+                    <li class="nav-item active">
+                        {{-- Dashboard untuk Manager --}}
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-fw fa-briefcase"></i>
+                            <span>DASHBOARD MANAGER</span>
+                        </a>
+                    </li>
                 @endif
             @elseif(strtolower(Auth::user()->role) === 'hrd')
                 @if(\App\Models\Menu::isActive('dashboard_hr'))
-                <li class="nav-item active">
-                    {{-- Dashboard untuk HRD --}}
-                    <a class="nav-link" href="{{ route('hr') }}">
-                        <i class="fas fa-fw fa-briefcase"></i>
-                        <span>DASHBOARD HR</span>
-                    </a>
-                </li>
+                    <li class="nav-item active">
+                        {{-- Dashboard untuk HRD --}}
+                        <a class="nav-link" href="{{ route('hr') }}">
+                            <i class="fas fa-fw fa-briefcase"></i>
+                            <span>DASHBOARD HR</span>
+                        </a>
+                    </li>
                 @endif
             @elseif(strtolower(trim(Auth::user()->role)) === 'advertising')
                 @if(\App\Models\Menu::isActive('dashboard_advertising'))
-                <li class="nav-item active">
-                    {{-- Dashboard untuk Advertising --}}
-                    <a class="nav-link" href="{{ route('advertising') }}">
-                        <i class="fas fa-fw fa-bullhorn"></i>
-                        <span>DASHBOARD ADVERTISING</span>
-                    </a>
-                </li>
+                    <li class="nav-item active">
+                        {{-- Dashboard untuk Advertising --}}
+                        <a class="nav-link" href="{{ route('advertising') }}">
+                            <i class="fas fa-fw fa-bullhorn"></i>
+                            <span>DASHBOARD ADVERTISING</span>
+                        </a>
+                    </li>
                 @endif
             @else
                 @if(\App\Models\Menu::isActive('dashboard_general'))
-                <li class="nav-item active">
-                    {{-- Dashboard default --}}
-                    <a class="nav-link" href="{{ route('home') }}">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>DASHBOARD</span>
-                    </a>
-                </li>
+                    <li class="nav-item active">
+                        {{-- Dashboard default --}}
+                        <a class="nav-link" href="{{ route('home') }}">
+                            <i class="fas fa-fw fa-tachometer-alt"></i>
+                            <span>DASHBOARD</span>
+                        </a>
+                    </li>
                 @endif
             @endif
 
             {{-- Program Kerja & Ganchart untuk Marketing & Manager --}}
             @if(in_array(strtolower(Auth::user()->role), ['advertising']))
                 @if(\App\Models\Menu::isActive('program_kerja'))
-                {{-- Program Kerja --}}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ route('programkerja.index') }}">
-                        <i class="fas fa-globe me-2"></i>
-                        <span>Program Kerja</span>
-                    </a>
-                </li>
+                    {{-- Program Kerja --}}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ route('programkerja.index') }}">
+                            <i class="fas fa-globe me-2"></i>
+                            <span>Program Kerja</span>
+                        </a>
+                    </li>
                 @endif
                 @if(\App\Models\Menu::isActive('ganchart'))
-                {{-- Ganchart --}}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ route('gantt.index') }}">
-                        <i class="fas fa-project-diagram me-2"></i>
-                        <span>Ganchart</span>
-                    </a>
-                </li>
+                    {{-- Ganchart --}}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ route('gantt.index') }}">
+                            <i class="fas fa-project-diagram me-2"></i>
+                            <span>Ganchart</span>
+                        </a>
+                    </li>
                 @endif
 
                 {{-- Penilaian Karyawan --}}
@@ -317,507 +350,529 @@
             {{-- Sidebar Marketing --}}
             @auth
                 @if(strtolower(Auth::user()->role) === 'marketing')
-                    {{-- <ul class="navbar-nav sidebar sidebar-dark" style="background-color: #0b198f;"> --}} 
-                    <!-- Removed nested ul that was in original code as it might break layout, kept items inline or check if separate section needed. 
-                         Original code started a NEW ul inside the sidebar ul which is invalid HTML structure. 
-                         I will flatten this out into the existing list. -->
-                    
-                    <hr class="sidebar-divider my-0">
+                    {{-- <ul class="navbar-nav sidebar sidebar-dark" style="background-color: #0b198f;"> --}}
+                        <!-- Removed nested ul that was in original code as it might break layout, kept items inline or check if separate section needed. 
+                                         Original code started a NEW ul inside the sidebar ul which is invalid HTML structure. 
+                                         I will flatten this out into the existing list. -->
 
-                    @if(\App\Models\Menu::isActive('data_lead'))
-                    {{-- Data Lead / Prospek --}}
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ route('admin.database.database') }}">
-                            <i class="fas fa-table me-2"></i>
-                            <span>Data Lead / Prospek</span>
-                        </a>
-                    </li>
-                    @endif
+                        <hr class="sidebar-divider my-0">
 
-                    @if(\App\Models\Menu::isActive('program_kerja'))
-                    {{-- Program Kerja --}}
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ route('programkerja.index') }}">
-                            <i class="fas fa-globe me-2"></i>
-                            <span>Program Kerja</span>
-                        </a>
-                    </li>
-                    @endif
+                        @if(\App\Models\Menu::isActive('data_lead'))
+                            {{-- Data Lead / Prospek --}}
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="{{ route('admin.database.database') }}">
+                                    <i class="fas fa-table me-2"></i>
+                                    <span>Data Lead / Prospek</span>
+                                </a>
+                            </li>
+                        @endif
 
-                    @if(\App\Models\Menu::isActive('ganchart'))
-                    {{-- Ganchart --}}
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ route('gantt.index') }}">
-                            <i class="fas fa-project-diagram me-2"></i>
-                            <span>Ganchart</span>
-                        </a>
-                    </li>
-                    @endif
+                        @if(\App\Models\Menu::isActive('program_kerja'))
+                            {{-- Program Kerja --}}
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="{{ route('programkerja.index') }}">
+                                    <i class="fas fa-globe me-2"></i>
+                                    <span>Program Kerja</span>
+                                </a>
+                            </li>
+                        @endif
 
-                    {{-- Penilaian Kinerja --}}
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ route('marketing.penilaian.index') }}">
-                            <i class="fas fa-fw fa-star me-2"></i>
-                            <span>Penilaian Sales</span>
-                        </a>
-                    </li>
+                        @if(\App\Models\Menu::isActive('ganchart'))
+                            {{-- Ganchart --}}
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="{{ route('gantt.index') }}">
+                                    <i class="fas fa-project-diagram me-2"></i>
+                                    <span>Ganchart</span>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Penilaian Kinerja --}}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ route('marketing.penilaian.index') }}">
+                                <i class="fas fa-fw fa-star me-2"></i>
+                                <span>Penilaian Sales</span>
+                            </a>
+                        </li>
                 @endif
             @endauth
 
-            {{-- Sidebar ini hanya tampil jika BUKAN administrator, marketing, manager, hrd, advertising --}}
-            @if(!in_array(strtolower(trim(Auth::user()->role)), ['administrator', 'marketing', 'manager', 'hrd', 'advertising']))
-                @if(\App\Models\Menu::isActive('data_calon_peserta'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.database.database', ['view' => 'me']) }}">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span><strong>DATA CALON PELANGGAN</strong></span>
-                    </a>
-                </li>
-                @endif
+                {{-- Sidebar ini hanya tampil jika BUKAN administrator, marketing, manager, hrd, advertising --}}
+                @if(!in_array(strtolower(trim(Auth::user()->role)), ['administrator', 'marketing', 'manager', 'hrd', 'advertising']))
+                    @if(\App\Models\Menu::isActive('data_calon_peserta'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.database.database', ['view' => 'me']) }}">
+                                <i class="fas fa-fw fa-tachometer-alt"></i>
+                                <span><strong>DATA CALON PELANGGAN</strong></span>
+                            </a>
+                        </li>
+                    @endif
 
-                @if(\App\Models\Menu::isActive('daily_activity'))
-                <li class="nav-item active">
-                    <a class="nav-link" href="{{ auth()->user()->name === 'Agus Setyo' ? route('manager.penilaian-cs.index') : route('admin.dailyactivity.index') }}">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>DAILY ACTIVITY</span>
-                    </a>
-                </li>
-                @endif
-
-
-            @endif
-
-            @php
-                $userName = auth()->user()->name;
-            @endphp
-
-            @php
-                $userRole = strtolower(trim(Auth::user()->role));
-            @endphp
-            @if(!in_array($userRole, ['marketing', 'hrd', 'advertising']))
-                @if(\App\Models\Menu::isActive('sales_plan'))
-                    <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
-                            <i class="fas fa-fw fa-chart-line"></i>
-                            <span><strong>SALES PLAN</strong></span>
-                        </a>
-                    </li>
-                @endif
-            @endif
-
-            {{-- DATA KPR --}}
-            <li class="nav-item {{ request()->routeIs('admin.kpr.index') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('admin.kpr.index') }}">
-                    <i class="fas fa-fw fa-university text-warning"></i>
-                    <span><strong>DATA KPR</strong></span>
-                </a>
-            </li>
-
-            {{-- Menu Khusus CS MBC & CS SMI --}}
-            @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))
-            @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))
-                @if(\App\Models\Menu::isActive('data_peserta_smi'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.salesplan.index', ['kelas' => 'Start-Up Muda Indonesia']) }}">
-                        <i class="fas fa-fw fa-users"></i>
-                        <span><strong>Data Peserta SMI</strong></span>
-                    </a>
-                </li>
-                @endif
-            @endif
-            @endif
-
-            {{-- Dropdown Semua Akun --}}
-            @if(strtolower(auth()->user()->role) === 'administrator' || auth()->user()->name === 'Linda')
-                {{-- Administrator & Linda: langsung ke halaman utama Database CS --}}
-                @if(\App\Models\Menu::isActive('database_cs'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.database.database') }}">
-                        <i class="fas fa-fw fa-users"></i>
-                        <span><strong>DATABASE CS</strong></span>
-                    </a>
-                </li>
-                @endif
-            @elseif(auth()->user()->name === 'Agus Setyo')
-                {{-- Agus Setyo: Hanya bisa lihat Tursia dan Latifah --}}
-                <li class="nav-item {{ request()->routeIs('pembelajaran.index') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('pembelajaran.index') }}">
-                        <i class="fas fa-fw fa-book"></i>
-                        <span><strong>PEMBELAJARAN SISWA</strong></span>
-                    </a>
-                </li>
-                
-                <li class="nav-item">
-                     <a class="nav-link" href="{{ route('peserta-smi.index') }}">
-                        <i class="fas fa-fw fa-users"></i>
-                        <span><strong>DAFTAR PESERTA SMI</strong></span>
-                    </a>
-                </li>
-                
-                @if(\App\Models\Menu::isActive('database_cs'))
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseKoordinasi"
-                       aria-expanded="false" aria-controls="collapseKoordinasi">
-                        <i class="fas fa-fw fa-users"></i>
-                        <span><strong>DATABASE CS</strong></span>
-                    </a>
-
-                    <div id="collapseKoordinasi" class="collapse" aria-labelledby="headingKoordinasi" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header text-uppercase text-secondary">Daftar Pengguna:</h6>
-                            @foreach(\App\Models\User::whereIn('name', ['Tursia', 'Latifah', 'Gunawan', 'Puput'])->orderBy('name')->get() as $user)
-                                <a class="collapse-item d-flex align-items-center justify-content-between" href="{{ route('koordinasi.show', $user->id) }}">
-                                    <span>
-                                        <i class="fas fa-user-circle mr-2 text-primary"></i> 
-                                        {{ $user->name }}
-                                    </span>
-                                    <small class="text-muted">({{ ucfirst($user->role) }})</small>
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                </li>
-                @endif
-            @endif
-
-            @if(strtolower(auth()->user()->role) === 'administrator')
-                @if(\App\Models\Menu::isActive('jadwal_kelas'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.kelas.index') }}">
-                        <strong><i class="fa-solid fa-home me-2"></i> MANAJEMEN PRODUK</strong> 
-                    </a>
-                </li>
-                @endif
-
-                @if(\App\Models\Menu::isActive('activity_cs'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.activity-cs.index') }}">
-                        <strong><i class="fa-solid fa-list-check me-2"></i> ACTIVITY CS</strong> 
-                    </a>
-                </li>
-                @endif
-                @if(\App\Models\Menu::isActive('penilaian_karyawan'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.penilaian-cs.index') }}">
-                        <strong><i class="fa-solid fa-list-user me-2"></i> PENILAIAN SALES</strong> 
-                    </a>
-                </li>
-                @endif
-
-
-
-                {{-- NEW SETTING MENU --}}
-                @if(\App\Models\Menu::isActive('settings'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.settings.index') }}">
-                        <strong><i class="fa-solid fa-cogs me-2"></i> SETTING</strong>
-                    </a>
-                </li>
-                @endif
-            @endif
-            
-            
-   
-            
-
-            @if(in_array(Auth::user()->name, ['Linda', 'Yasmin', 'Agus Setyo']))
-                @if(\App\Models\Menu::isActive('program_kerja'))
-                {{-- Program Kerja --}}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ route('programkerja.index') }}">
-                        <i class="fas fa-globe me-2"></i>
-                        <span>Program Kerja</span>
-                    </a>
-                </li>
-                @endif
-                @if(\App\Models\Menu::isActive('ganchart'))
-                {{-- Ganchart --}}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ route('gantt.index') }}">
-                        <i class="fas fa-project-diagram me-2"></i>
-                        <span>Ganchart</span>
-                    </a>
-                </li>
-                @endif
-
-                @if(\App\Models\Menu::isActive('jadwal_kelas') && auth()->user()->name !== 'Agus Setyo')
-                {{-- Jadwal Kelas --}}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ route('admin.kelas.index') }}">
-                        <i class="fa-solid fa-home me-2"></i>
-                        <span>MANAJEMEN PRODUK</span>
-                    </a>
-                </li>
-                @endif
-                    
-                    
-            @if(strtolower(auth()->user()->name) === 'Yasmin')
-                @if(\App\Models\Menu::isActive('settings'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.settings.index') }}">
-                        <strong><i class="fa-solid fa-cogs me-2"></i> SETTING</strong>
-                    </a>
-                </li>
-                @endif
-            @endif
-
-
-
-                {{-- Penilaian Karyawan --}}
-                @if(\App\Models\Menu::isActive('penilaian_karyawan'))
-                    @if(auth()->user()->name !== 'Agus Setyo')
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ route('manager.penilaian-cs.index') }}">
-                            <i class="fa-solid fa-list-user me-2"></i>
-                            <span>Penilaian Kinerja Tim</span>
-                        </a>
-                    </li>
+                    @if(\App\Models\Menu::isActive('daily_activity'))
+                        <li class="nav-item active">
+                            <a class="nav-link"
+                                href="{{ auth()->user()->name === 'Agus Setyo' ? route('manager.penilaian-cs.index') : route('admin.dailyactivity.index') }}">
+                                <i class="fas fa-fw fa-tachometer-alt"></i>
+                                <span>DAILY ACTIVITY</span>
+                            </a>
+                        </li>
                     @endif
 
 
                 @endif
-            @endif
 
-            {{-- MENU HRD --}}
-            @if(strtolower(auth()->user()->role) === 'hrd')
-                @if(\App\Models\Menu::isActive('menu_hrd'))
-                <li class="nav-item mt-3">
-                    <span class="nav-link text-uppercase fw-bold fs-5" style="color: #a8c6ff;">
-                        MENU HRD
-                    </span>
-                </li>
+                @php
+                    $userName = auth()->user()->name;
+                @endphp
 
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-users me-2"></i> Data Karyawan</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-sitemap me-2"></i> Jabatan & Divisi</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-calendar-check me-2"></i> Absensi</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-person-walking-arrow-right me-2"></i> Izin / Sakit / Lembur</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-star-half-stroke me-2"></i> Penilaian Sales</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-chart-line me-2"></i> KPI</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-money-bill-wave me-2"></i> Payroll / Slip Gaji</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-umbrella-beach me-2"></i> Cuti</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-user-plus me-2"></i> Rekrutmen</strong> 
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <strong><i class="fa-solid fa-file-lines me-2"></i> Laporan HRD</strong> 
-                    </a>
-                </li>
+                @php
+                    $userRole = strtolower(trim(Auth::user()->role));
+                @endphp
+                @if(!in_array($userRole, ['marketing', 'hrd', 'advertising']))
+                    @if(\App\Models\Menu::isActive('sales_plan'))
+                        <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
+                                <i class="fas fa-fw fa-chart-line"></i>
+                                <span><strong>SALES PLAN</strong></span>
+                            </a>
+                        </li>
+                    @endif
                 @endif
-            @endif
 
-            <hr class="sidebar-divider d-none d-md-block" />
-        </ul>
-        <!-- End of Sidebar -->
+                {{-- DATA KPR --}}
+                <li class="nav-item {{ request()->routeIs('admin.kpr.index') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.kpr.index') }}">
+                        <i class="fas fa-fw fa-university text-warning"></i>
+                        <span><strong>DATA KPR</strong></span>
+                    </a>
+                </li>
 
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-            <!-- Main Content -->
-            <div id="content">
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
+                {{-- Menu Khusus CS MBC & CS SMI --}}
+                @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))
+                    @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))
+                        @if(\App\Models\Menu::isActive('data_peserta_smi'))
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                    href="{{ route('admin.salesplan.index', ['kelas' => 'Start-Up Muda Indonesia']) }}">
+                                    <i class="fas fa-fw fa-users"></i>
+                                    <span><strong>Data Peserta SMI</strong></span>
+                                </a>
+                            </li>
+                        @endif
+                    @endif
+                @endif
 
-                    <!-- Topbar Running Text -->
-                    <div class="topbar-marquee-container d-none d-md-flex">
-                        <div class="topbar-marquee-text">
-                            @if(request()->routeIs('admin.dailyactivity.*') || request()->is('admin/dailyactivity*'))
-                                📝 JANGAN LUPA MENGISI DAILY ACTIVITY SETIAP JAM 15.00 , SEMANGAT... 💪
-                            @else
-                                ✨ SELAMAT DATANG DI BLP PROPERTI. SELAMAT BEKERJA, ✨
-                            @endif
+                {{-- Dropdown Semua Akun --}}
+                @if(strtolower(auth()->user()->role) === 'administrator' || auth()->user()->name === 'Linda')
+                    {{-- Administrator & Linda: langsung ke halaman utama Database CS --}}
+                    @if(\App\Models\Menu::isActive('database_cs'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.database.database') }}">
+                                <i class="fas fa-fw fa-users"></i>
+                                <span><strong>DATABASE CS</strong></span>
+                            </a>
+                        </li>
+                    @endif
+                @elseif(auth()->user()->name === 'Agus Setyo')
+                    {{-- Agus Setyo: Hanya bisa lihat Tursia dan Latifah --}}
+                    <li class="nav-item {{ request()->routeIs('pembelajaran.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('pembelajaran.index') }}">
+                            <i class="fas fa-fw fa-book"></i>
+                            <span><strong>PEMBELAJARAN SISWA</strong></span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('peserta-smi.index') }}">
+                            <i class="fas fa-fw fa-users"></i>
+                            <span><strong>DAFTAR PESERTA SMI</strong></span>
+                        </a>
+                    </li>
+
+                    @if(\App\Models\Menu::isActive('database_cs'))
+                        <li class="nav-item">
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseKoordinasi"
+                                aria-expanded="false" aria-controls="collapseKoordinasi">
+                                <i class="fas fa-fw fa-users"></i>
+                                <span><strong>DATABASE CS</strong></span>
+                            </a>
+
+                            <div id="collapseKoordinasi" class="collapse" aria-labelledby="headingKoordinasi"
+                                data-parent="#accordionSidebar">
+                                <div class="bg-white py-2 collapse-inner rounded">
+                                    <h6 class="collapse-header text-uppercase text-secondary">Daftar Pengguna:</h6>
+                                    @foreach(\App\Models\User::whereIn('name', ['Tursia', 'Latifah', 'Gunawan', 'Puput'])->orderBy('name')->get() as $user)
+                                        <a class="collapse-item d-flex align-items-center justify-content-between"
+                                            href="{{ route('koordinasi.show', $user->id) }}">
+                                            <span>
+                                                <i class="fas fa-user-circle mr-2 text-primary"></i>
+                                                {{ $user->name }}
+                                            </span>
+                                            <small class="text-muted">({{ ucfirst($user->role) }})</small>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </li>
+                    @endif
+                @endif
+
+                @if(strtolower(auth()->user()->role) === 'administrator')
+                    @if(\App\Models\Menu::isActive('jadwal_kelas'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.kelas.index') }}">
+                                <strong><i class="fa-solid fa-home me-2"></i> MANAJEMEN PRODUK</strong>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if(\App\Models\Menu::isActive('activity_cs'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.activity-cs.index') }}">
+                                <strong><i class="fa-solid fa-list-check me-2"></i> ACTIVITY CS</strong>
+                            </a>
+                        </li>
+                    @endif
+                    @if(\App\Models\Menu::isActive('penilaian_karyawan'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.penilaian-cs.index') }}">
+                                <strong><i class="fa-solid fa-list-user me-2"></i> PENILAIAN SALES</strong>
+                            </a>
+                        </li>
+                    @endif
+
+
+
+                    {{-- NEW SETTING MENU --}}
+                    @if(\App\Models\Menu::isActive('settings'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.settings.index') }}">
+                                <strong><i class="fa-solid fa-cogs me-2"></i> SETTING</strong>
+                            </a>
+                        </li>
+                    @endif
+                @endif
+
+
+
+
+
+                @if(in_array(Auth::user()->name, ['Linda', 'Yasmin', 'Agus Setyo']))
+                    @if(\App\Models\Menu::isActive('program_kerja'))
+                        {{-- Program Kerja --}}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ route('programkerja.index') }}">
+                                <i class="fas fa-globe me-2"></i>
+                                <span>Program Kerja</span>
+                            </a>
+                        </li>
+                    @endif
+                    @if(\App\Models\Menu::isActive('ganchart'))
+                        {{-- Ganchart --}}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ route('gantt.index') }}">
+                                <i class="fas fa-project-diagram me-2"></i>
+                                <span>Ganchart</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if(\App\Models\Menu::isActive('jadwal_kelas') && auth()->user()->name !== 'Agus Setyo')
+                        {{-- Jadwal Kelas --}}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ route('admin.kelas.index') }}">
+                                <i class="fa-solid fa-home me-2"></i>
+                                <span>MANAJEMEN PRODUK</span>
+                            </a>
+                        </li>
+                    @endif
+
+
+                    @if(strtolower(auth()->user()->name) === 'Yasmin')
+                        @if(\App\Models\Menu::isActive('settings'))
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.settings.index') }}">
+                                    <strong><i class="fa-solid fa-cogs me-2"></i> SETTING</strong>
+                                </a>
+                            </li>
+                        @endif
+                    @endif
+
+
+
+                    {{-- Penilaian Karyawan --}}
+                    @if(\App\Models\Menu::isActive('penilaian_karyawan'))
+                        @if(auth()->user()->name !== 'Agus Setyo')
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="{{ route('manager.penilaian-cs.index') }}">
+                                    <i class="fa-solid fa-list-user me-2"></i>
+                                    <span>Penilaian Kinerja Tim</span>
+                                </a>
+                            </li>
+                        @endif
+
+
+                    @endif
+                @endif
+
+                {{-- MENU HRD --}}
+                @if(strtolower(auth()->user()->role) === 'hrd')
+                    @if(\App\Models\Menu::isActive('menu_hrd'))
+                        <li class="nav-item mt-3">
+                            <span class="nav-link text-uppercase fw-bold fs-5" style="color: #a8c6ff;">
+                                MENU HRD
+                            </span>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-users me-2"></i> Data Karyawan</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-sitemap me-2"></i> Jabatan & Divisi</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-calendar-check me-2"></i> Absensi</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-person-walking-arrow-right me-2"></i> Izin / Sakit /
+                                    Lembur</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-star-half-stroke me-2"></i> Penilaian Sales</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-chart-line me-2"></i> KPI</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-money-bill-wave me-2"></i> Payroll / Slip Gaji</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-umbrella-beach me-2"></i> Cuti</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-user-plus me-2"></i> Rekrutmen</strong>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong><i class="fa-solid fa-file-lines me-2"></i> Laporan HRD</strong>
+                            </a>
+                        </li>
+                    @endif
+                @endif
+
+                <hr class="sidebar-divider d-none d-md-block" />
+            </ul>
+            <!-- End of Sidebar -->
+
+            <!-- Content Wrapper -->
+            <div id="content-wrapper" class="d-flex flex-column">
+                <!-- Main Content -->
+                <div id="content">
+                    <!-- Topbar -->
+                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                        <!-- Sidebar Toggle (Topbar) -->
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                            <i class="fa fa-bars"></i>
+                        </button>
+
+                        <!-- Topbar Running Text -->
+                        <div class="topbar-marquee-container d-none d-md-flex">
+                            <div class="topbar-marquee-text">
+                                @if(request()->routeIs('admin.dailyactivity.*') || request()->is('admin/dailyactivity*'))
+                                    📝 JANGAN LUPA MENGISI DAILY ACTIVITY SETIAP JAM 15.00 , SEMANGAT... 💪
+                                @else
+                                    ✨ SELAMAT DATANG DI BLP PROPERTI. SELAMAT BEKERJA, ✨
+                                @endif
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" />
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
+                        <!-- Topbar Navbar -->
+                        <ul class="navbar-nav ml-auto">
+                            <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                            <li class="nav-item dropdown no-arrow d-sm-none">
+                                <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-search fa-fw"></i>
+                                </a>
+                                <!-- Dropdown - Messages -->
+                                <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                                    aria-labelledby="searchDropdown">
+                                    <form class="form-inline mr-auto w-100 navbar-search">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control bg-light border-0 small"
+                                                placeholder="Search for..." aria-label="Search"
+                                                aria-describedby="basic-addon2" />
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" type="button">
+                                                    <i class="fas fa-search fa-sm"></i>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
+                                    </form>
+                                </div>
+                            </li>
 
-                        <!-- ================== NAVBAR NOTIFIKASI ================== -->
-                        @if(auth()->user()->role !== 'administrator')
-                        <li class="nav-item mx-1">
-                            <a class="nav-link position-relative notif-bell" href="{{ route('notifikasi.index') }}">
-                                <i class="fas fa-bell fa-lg text-primary"></i>
-                                @if(isset($notifCount) && $notifCount > 0)
-                                    <span class="badge badge-pill badge-danger badge-counter pulse-badge">
-                                        {{ $notifCount }}
+                            <!-- ================== NAVBAR NOTIFIKASI ================== -->
+                            @if(auth()->user()->role !== 'administrator')
+                                <li class="nav-item mx-1">
+                                    <a class="nav-link position-relative notif-bell" href="{{ route('notifikasi.index') }}">
+                                        <i class="fas fa-bell fa-lg text-primary"></i>
+                                        @if(isset($notifCount) && $notifCount > 0)
+                                            <span class="badge badge-pill badge-danger badge-counter pulse-badge">
+                                                {{ $notifCount }}
+                                            </span>
+                                        @endif
+                                    </a>
+                                </li>
+                            @endif
+
+                            <!-- ================== NAVBAR PESAN MASUK (ADMIN) ================== -->
+                            @if(auth()->user()->role === 'administrator')
+                                <li class="nav-item mx-1">
+                                    <a class="nav-link position-relative notif-message"
+                                        href="{{ route('admin.messages.index') }}">
+                                        <i class="fas fa-envelope fa-lg text-primary"></i>
+                                        @if(isset($messageCount) && $messageCount > 0)
+                                            <span class="badge badge-pill badge-danger badge-counter pulse-badge">
+                                                {{ $messageCount }}
+                                            </span>
+                                        @endif
+                                    </a>
+                                </li>
+                            @endif
+
+                            <!-- ================== STYLE BADGE ================== -->
+                            <style>
+                                /* Lonceng & Pesan */
+                                .notif-bell,
+                                .notif-message {
+                                    display: flex;
+                                    align-items: center;
+                                }
+
+                                .badge-counter {
+                                    font-size: 0.65rem;
+                                    padding: 3px 6px;
+                                }
+
+                                .pulse-badge {
+                                    position: absolute;
+                                    top: 9px;
+                                    right: 6px;
+                                    min-width: 18px;
+                                    height: 18px;
+                                    font-size: 0.7rem;
+                                    padding: 0;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    animation: pulse 1.5s infinite;
+                                }
+
+                                @keyframes pulse {
+                                    0% {
+                                        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+                                    }
+
+                                    70% {
+                                        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+                                    }
+
+                                    100% {
+                                        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+                                    }
+                                }
+
+                                .notif-bell:hover i {
+                                    color: #f59e0b;
+                                    transform: scale(1.1);
+                                    transition: 0.3s;
+                                }
+
+                                .notif-message:hover i {
+                                    color: #2563eb;
+                                    transform: scale(1.1);
+                                    transition: 0.3s;
+                                }
+                            </style>
+
+                            <div class="topbar-divider d-none d-sm-block"></div>
+
+                            <!-- Nav Item - User Information -->
+                            <li class="nav-item dropdown no-arrow">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                        <strong>{{ strtoupper(Auth::user()->role) }} - {{ Auth::user()->name }}</strong>
                                     </span>
-                                @endif
-                            </a>
-                        </li>
-                        @endif
-
-                        <!-- ================== NAVBAR PESAN MASUK (ADMIN) ================== -->
-                        @if(auth()->user()->role === 'administrator')
-                        <li class="nav-item mx-1">
-                            <a class="nav-link position-relative notif-message" href="{{ route('admin.messages.index') }}">
-                                <i class="fas fa-envelope fa-lg text-primary"></i>
-                                @if(isset($messageCount) && $messageCount > 0)
-                                    <span class="badge badge-pill badge-danger badge-counter pulse-badge">
-                                        {{ $messageCount }}
-                                    </span>
-                                @endif
-                            </a>
-                        </li>
-                        @endif
-
-                        <!-- ================== STYLE BADGE ================== -->
-                        <style>
-                            /* Lonceng & Pesan */
-                            .notif-bell, .notif-message {
-                                display: flex;
-                                align-items: center;
-                            }
-                            
-                            .badge-counter {
-                                font-size: 0.65rem;
-                                padding: 3px 6px;
-                            }
-                            
-                            .pulse-badge {
-                                position: absolute;
-                                top: 9px;
-                                right: 6px;
-                                min-width: 18px;
-                                height: 18px;
-                                font-size: 0.7rem;
-                                padding: 0;
-                                border-radius: 50%;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                animation: pulse 1.5s infinite;
-                            }
-                            
-                            @keyframes pulse {
-                                0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-                                70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-                                100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-                            }
-                            
-                            .notif-bell:hover i {
-                                color: #f59e0b;
-                                transform: scale(1.1);
-                                transition: 0.3s;
-                            }
-                            
-                            .notif-message:hover i {
-                                color: #2563eb;
-                                transform: scale(1.1);
-                                transition: 0.3s;
-                            }
-                        </style>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                    <strong>{{ strtoupper(Auth::user()->role) }} - {{ Auth::user()->name }}</strong>
-                                </span>
-                                <img class="img-profile rounded-circle" src="{{ asset('backend/img/undraw_profile.svg') }}" alt="Profile Image" />
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
+                                    <img class="img-profile rounded-circle"
+                                        src="{{ asset('backend/img/undraw_profile.svg') }}" alt="Profile Image" />
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                </nav>
-                <!-- End of Topbar -->
+                                <!-- Dropdown - User Information -->
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                    aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Profile
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Settings
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Activity Log
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Logout
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+                    <!-- End of Topbar -->
 
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-                    <!-- Isi Konten -->
-                    @yield('content')
+                    <!-- Begin Page Content -->
+                    <div class="container-fluid">
+                        <!-- Isi Konten -->
+                        @yield('content')
+                    </div>
+                    <!-- /.container-fluid -->
                 </div>
-                <!-- /.container-fluid -->
-            </div>
-            <!-- End of Main Content -->
+                <!-- End of Main Content -->
 
-            <!-- Footer -->
-            <!-- 
+                <!-- Footer -->
+                <!-- 
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
@@ -826,9 +881,9 @@
                 </div>
             </footer> 
             -->
-            <!-- End of Footer -->
-        </div>
-        <!-- End of Content Wrapper -->
+                <!-- End of Footer -->
+            </div>
+            <!-- End of Content Wrapper -->
     </div>
     <!-- End of Page Wrapper -->
 
@@ -840,7 +895,8 @@
     -->
 
     <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -892,16 +948,17 @@
     <script src="{{ asset('backend/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('backend/js/demo/chart-pie-demo.js') }}"></script>
 
-    <!-- SweetAlert -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function() {
-            $("#close").click(function() {
+        $(document).ready(function () {
+            $("#close").click(function () {
                 $("#exampleModal").modal("hide");
             });
         });
     </script>
+    @stack('scripts')
 </body>
 
 </html>

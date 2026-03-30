@@ -19,13 +19,12 @@ class KprController extends Controller
     {
         $plan = SalesPlan::with('data')->findOrFail($salesplanId);
 
-        // Check if already moved
-        $exists = Kpr::where('salesplan_id', $plan->id)->exists();
-        if ($exists) {
-            return back()->with('error', 'Data ini sudah ada di monitoring KPR.');
+        $kpr = Kpr::where('salesplan_id', $plan->id)->first();
+        if ($kpr) {
+            return redirect()->route('admin.kpr.show', $kpr->id)->with('info', 'Data ini sudah ada di monitoring KPR.');
         }
 
-        Kpr::create([
+        $newKpr = Kpr::create([
             'salesplan_id' => $plan->id,
             'nama' => $plan->nama ?? ($plan->data->nama ?? '-'),
             'phone' => $plan->data->no_wa ?? '-',
@@ -34,7 +33,7 @@ class KprController extends Controller
             'status_global' => 'Ongoing'
         ]);
 
-        return back()->with('success', 'Berhasil memasukkan data ke monitoring KPR.');
+        return redirect()->route('admin.kpr.show', $newKpr->id)->with('success', 'Berhasil memasukkan data ke monitoring KPR.');
     }
 
     public function show($id)
@@ -46,9 +45,9 @@ class KprController extends Controller
     public function update(Request $request, $id)
     {
         $kpr = Kpr::findOrFail($id);
-        
+
         $data = $request->all();
-        
+
         // Bersihkan titik ribuan sebelum simpan ke DB
         $moneyFields = ['bf_nominal', 'appraisal_hasil_nilai', 'sp3k_plafon', 'sp3k_cicilan'];
         foreach ($moneyFields as $field) {
@@ -60,6 +59,22 @@ class KprController extends Controller
         $kpr->update($data);
 
         return back()->with('success', 'Data KPR berhasil diperbarui.');
+    }
+
+    public function updateStage(Request $request, $id)
+    {
+        $kpr = Kpr::findOrFail($id);
+        $kpr->tahap_posisi = $request->tahap;
+
+        // Auto-change status global to Success if last stage
+        if ($request->tahap == 'Pencairan/Final') {
+            $kpr->status_global = 'Success';
+        } else {
+            $kpr->status_global = 'Ongoing';
+        }
+
+        $kpr->save();
+        return response()->json(['success' => true]);
     }
 
     public function destroy($id)

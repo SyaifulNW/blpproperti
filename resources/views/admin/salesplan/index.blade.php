@@ -467,47 +467,56 @@
             background: linear-gradient(90deg, #0d6efd, #0b5ed7);
             color: #fff;
         }
+        tbody tr {
+            font-weight: bold;
+            color: #000;
+        }
         tbody tr:hover {
             background-color: #f8f9fa;
             transition: background 0.2s ease;
         }
         tfoot {
-            background-color: #e7f0ff; /* biru muda elegan */
+            background-color: #e7f0ff;
             font-weight: 600;
         }
         tfoot td {
-            border-top: 2px solid #0d6efd; /* garis pemisah atas tegas */
+            border-top: 2px solid #0d6efd;
         }
         .badge {
             font-size: 0.85rem;
             padding: 0.4em 0.7em;
             border-radius: 8px;
         }
-        .progress {
-            background: #e9ecef;
-            border-radius: 5px;
-        }
-        .progress-bar {
-            border-radius: 5px;
-            transition: width 0.4s ease;
-        }
         .table th, .table td { vertical-align: middle; }
-    .progress { background-color: #e9ecef; border-radius: 10px; }
-    .progress-bar { border-radius: 10px; transition: width 0.6s ease; }
 
+        /* Row Status Colors (Brighter - Vibrant) */
+        .row-tunai { background-color: #48e7ecff !important; }
+        .row-kpr { background-color: #1cc600 !important; }
+        .row-tertarik { background-color: #ffd900ff !important; }
+        .row-no { background-color: #ff4d4d !important; color: #fff !important; }
+        .row-cold { background-color: #ffffff !important; }
 
-    /* Custom Badge Colors for Leads */
-    .badge-leads-iklan { background-color: #28a745; color: white; } /* Hijau */
-    .badge-leads-referal { background-color: #dc3545; color: white; } /* Merah */
-    .badge-leads-marketing { background-color: #ffc107; color: black; } /* Kuning */
-    .badge-leads-mandiri { background-color: #0d6efd; color: white; } /* Biru */
-    .badge-leads-pameran { background-color: #fd7e14; color: white; } /* Orange */
-    .badge-leads-sosmed { background-color: #6f42c1; color: white; } /* Ungu */
-    .badge-leads-canvasing { background-color: #20c997; color: white; } /* Teal */
-    .badge-leads-lain { background-color: #6c757d; color: white; } /* Abu-abu */
+        /* Ensure all TDs in colored rows follow the background */
+        .row-tunai td, .row-kpr td, .row-tertarik td, .row-no td {
+            background-color: transparent !important;
+        }
 
+        /* Dropdown Styling matching Status */
+        .status-dropdown.status-sudah_transfer { background-color: #48e7ecff; color: #000; font-weight: bold; }
+        .status-dropdown.status-mau_transfer { background-color: #1cc600; color: #000; font-weight: bold; }
+        .status-dropdown.status-tertarik { background-color: #ffd900ff; color: #000; font-weight: bold; }
+        .status-dropdown.status-no { background-color: #ff4d4d; color: #fff; font-weight: bold; }
+        .status-dropdown.status-cold { background-color: #ffffff; color: #000; }
 
-
+        /* Custom Badge Colors for Leads */
+        .badge-leads-iklan { background-color: #28a745; color: white; }
+        .badge-leads-referal { background-color: #dc3545; color: white; }
+        .badge-leads-marketing { background-color: #ffc107; color: black; }
+        .badge-leads-mandiri { background-color: #0d6efd; color: white; }
+        .badge-leads-pameran { background-color: #fd7e14; color: white; }
+        .badge-leads-sosmed { background-color: #6f42c1; color: white; }
+        .badge-leads-canvasing { background-color: #20c997; color: white; }
+        .badge-leads-lain { background-color: #6c757d; color: white; }
 
         .editable {
             cursor: text;
@@ -523,6 +532,53 @@
             color: #000;
             min-width: 100px;
         }
+
+        /* KPR Tracker Mini Stepper */
+        .kpr-tracker-mini {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0;
+            padding: 8px 0;
+        }
+        .kpr-step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 65px;
+            position: relative;
+        }
+        .kpr-step-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        .kpr-step-label {
+            font-size: 8px;
+            margin-top: 5px;
+            color: #94a3b8;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .kpr-step-dot.active { background-color: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        .kpr-step-dot.active + .kpr-step-label { color: #3b82f6; }
+        .kpr-step-dot.completed { background-color: #10b981; border-color: #10b981; }
+        .kpr-step-dot.completed + .kpr-step-label { color: #10b981; }
+        .kpr-step-line-chevron {
+            align-self: flex-start;
+            margin-top: 4px;
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+        .kpr-step-line-chevron.completed { color: #10b981 !important; }
+        .kpr-step-line-chevron.active { color: #3b82f6 !important; }
     </style>
 
 
@@ -806,255 +862,111 @@
 
 
 
-                        <tbody>
+                        <tbody id="salesPlanBody">
                             @php $currentMonth = null; @endphp
                             @forelse ($salesplans as $plan)
-                            @if($plan->created_at)
-                                @php
-                                    $planMonth = \Carbon\Carbon::parse($plan->created_at)->locale('id')->isoFormat('MMMM Y');
-                                @endphp
-                                @if($currentMonth !== $planMonth)
-                                    <tr class="table-light">
-                                        <td colspan="25" class="fw-bold text-start ps-4 py-2" style="background-color: #e9ecef;">
-                                            🗓️ {{ $planMonth }}
-                                        </td>
-                                    </tr>
-                                    @php $currentMonth = $planMonth; @endphp
-                                @endif
-                            @endif
-
-                            @php
-                                $rowClass = '';
-                                if ($plan->status == 'sudah_transfer') {
-                                    $rowClass = 'table-info';
-                                } elseif ($plan->status == 'mau_transfer') {
-                                    $rowClass = 'table-success';
-                                } elseif ($plan->status == 'tertarik') {
-                                    $rowClass = 'table-warning';
-                                } elseif ($plan->status == 'no') {
-                                    $rowClass = 'table-danger';
-                                } elseif ($plan->status == 'cold') {
-                                    $rowClass = ''; // White/Default
-                                }
-                            @endphp
-
-                                        <td class="text-center">{{ $loop->iteration }}</td>
-                                <td>{{ $plan->nama ?? '-' }}</td>
-                                {{-- Potensi (Nominal) --}}
-                                <td contenteditable="true" class="editable fw-bold text-dark text-bold text-center"
-                                    data-id="{{ $plan->id }}"
-                                    data-field="nominal">
-                                    {{ number_format($plan->nominal, 0, ',', '.') }}
-                                </td>
-                                {{-- Status Dropdown --}}
-                                <td class="text-center">
-                                    <select class="form-control form-control-sm status-dropdown 
-                                    status-{{ $plan->status }}"
-                                        data-id="{{ $plan->id }}"
-                                        style="min-width: 160px;">
-                                        <option value="sudah_transfer" {{ $plan->status == 'sudah_transfer' ? 'selected' : '' }}>Sudah Transfer</option>
-                                        <option value="mau_transfer" {{ $plan->status == 'mau_transfer' ? 'selected' : '' }}>Mau Transfer</option>
-                                        <option value="tertarik" {{ $plan->status == 'tertarik' ? 'selected' : '' }}>Tertarik</option>
-                                        <option value="cold" {{ $plan->status == 'cold' ? 'selected' : '' }}>Cold</option>
-                                        <option value="no" {{ $plan->status == 'no' ? 'selected' : '' }}>No</option>
-                                    </select>
-                                </td>
-                                @if(strtolower(auth()->user()->role) !== 'administrator')
+                                @if($plan->created_at)
                                     @php
-                                    $leadSource = $plan->data->leads ?? ($dataMap[$plan->nama]->leads ?? '-');
-                                    $leadLower = strtolower($leadSource);
-                                    $badgeClass = 'badge-leads-lain'; // Default abu-abu
-
-                                    if (str_contains($leadLower, 'iklan')) {
-                                        $badgeClass = 'badge-leads-iklan';
-                                    } elseif (str_contains($leadLower, 'referal') || str_contains($leadLower, 'alumni')) {
-                                        $badgeClass = 'badge-leads-referal';
-                                    } elseif (str_contains($leadLower, 'marketing')) {
-                                        $badgeClass = 'badge-leads-marketing';
-                                    } elseif (str_contains($leadLower, 'mandiri')) {
-                                        $badgeClass = 'badge-leads-mandiri';
-                                    } elseif (str_contains($leadLower, 'pameran')) {
-                                        $badgeClass = 'badge-leads-pameran';
-                                    } elseif (str_contains($leadLower, 'sosmed') || str_contains($leadLower, 'instagram') || str_contains($leadLower, 'ig') || str_contains($leadLower, 'facebook') || str_contains($leadLower, 'fb')) {
-                                        $badgeClass = 'badge-leads-sosmed';
-                                    } elseif (str_contains($leadLower, 'canvasing')) {
-                                        $badgeClass = 'badge-leads-canvasing';
-                                    }
-                                @endphp
-                                <td>
-                                    <span class="badge {{ $badgeClass }}">
-                                        {{ $leadSource }}
-                                    </span>
-                                </td>
+                                        $planMonth = \Carbon\Carbon::parse($plan->created_at)->locale('id')->isoFormat('MMMM Y');
+                                    @endphp
+                                    @if($currentMonth !== $planMonth)
+                                        <tr class="table-light">
+                                            <td colspan="25" class="fw-bold text-start ps-4 py-2" style="background-color: #e9ecef;">
+                                                🗓️ {{ $planMonth }}
+                                            </td>
+                                        </tr>
+                                        @php $currentMonth = $planMonth; @endphp
+                                    @endif
                                 @endif
-                                {{-- <td>{{ $plan->situasi_bisnis ?? '-' }}</td> --}}
-                                <!--<td>{{ $plan->kendala ?? '-' }}</td>-->
-                                
-                                    {{-- KEBUTUHAN (Editable) --}}
-                                <td contenteditable="true" class="editable bg-light"
-                                    data-id="{{ $plan->id }}"
-                                    data-field="kebutuhan">
-                                    {{ $plan->kebutuhan ?? '-' }}
-                                </td>
 
+                                @php
+                                    $rowClass = 'row-cold';
+                                    if ($plan->status == 'sudah_transfer') $rowClass = 'row-tunai';
+                                    elseif ($plan->status == 'mau_transfer') $rowClass = 'row-kpr';
+                                    elseif ($plan->status == 'tertarik') $rowClass = 'row-tertarik';
+                                    elseif ($plan->status == 'no') $rowClass = 'row-no';
 
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <td contenteditable="true" class="editable bg-light"
-                                    data-id="{{ $plan->id }}"
-                                    data-field="fu{{ $i }}_hasil">
-                                    {{ $plan->{'fu'.$i.'_hasil'} ?? '-' }}
+                                    // Check KPR Status
+                                    $kpr = \App\Models\Kpr::where('salesplan_id', $plan->id)->first() 
+                                           ?? \App\Models\Kpr::where('nama', $plan->nama)->first();
+                                @endphp
+
+                                <tr class="{{ $rowClass }}">
+                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td>
+                                            <span>{{ $plan->nama ?? '-' }}</span>
                                     </td>
-
-                                    <td contenteditable="true" class="editable text-dark"
+                                    {{-- Potensi (Nominal) --}}
+                                    <td contenteditable="true" class="editable fw-bold text-dark text-center"
                                         data-id="{{ $plan->id }}"
-                                        data-field="fu{{ $i }}_tindak_lanjut">
-                                        {{ $plan->{'fu'.$i.'_tindak_lanjut'} ?? '-' }}
+                                        data-field="nominal">
+                                        {{ number_format($plan->nominal, 0, ',', '.') }}
                                     </td>
+                                    {{-- Status Dropdown --}}
+                                    <td class="text-center">
+                                        <select class="form-control form-control-sm status-dropdown status-{{ $plan->status }}"
+                                            data-id="{{ $plan->id }}"
+                                            style="min-width: 140px;">
+                                            <option value="sudah_transfer" {{ $plan->status == 'sudah_transfer' ? 'selected' : '' }}>Tunai</option>
+                                            <option value="mau_transfer" {{ $plan->status == 'mau_transfer' ? 'selected' : '' }}>KPR</option>
+                                            <option value="tertarik" {{ $plan->status == 'tertarik' ? 'selected' : '' }}>Tertarik</option>
+                                            <option value="cold" {{ $plan->status == 'cold' ? 'selected' : '' }}>Cold</option>
+                                            <option value="no" {{ $plan->status == 'no' ? 'selected' : '' }}>No</option>
+                                        </select>
+                                    </td>
+                                    @if(strtolower(auth()->user()->role) !== 'administrator')
+                                        @php
+                                            $leadSource = $plan->data->leads ?? ($dataMap[$plan->nama]->leads ?? '-');
+                                            $leadLower = strtolower($leadSource);
+                                            $badgeClass = 'badge-leads-lain';
+                                            if (str_contains($leadLower, 'iklan')) $badgeClass = 'badge-leads-iklan';
+                                            elseif (str_contains($leadLower, 'referal') || str_contains($leadLower, 'alumni')) $badgeClass = 'badge-leads-referal';
+                                            elseif (str_contains($leadLower, 'marketing')) $badgeClass = 'badge-leads-marketing';
+                                            elseif (str_contains($leadLower, 'mandiri')) $badgeClass = 'badge-leads-mandiri';
+                                            elseif (str_contains($leadLower, 'pameran')) $badgeClass = 'badge-leads-pameran';
+                                            elseif (str_contains($leadLower, 'sosmed')) $badgeClass = 'badge-leads-sosmed';
+                                            elseif (str_contains($leadLower, 'canvasing')) $badgeClass = 'badge-leads-canvasing';
+                                        @endphp
+                                        <td><span class="badge {{ $badgeClass }}">{{ $leadSource }}</span></td>
+                                    @endif
+                                    
+                                    <td contenteditable="true" class="editable bg-light"
+                                        data-id="{{ $plan->id }}"
+                                        data-field="kebutuhan">
+                                        {{ $plan->kebutuhan ?? '-' }}
+                                    </td>
+
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <td contenteditable="true" class="editable bg-light"
+                                            data-id="{{ $plan->id }}"
+                                            data-field="fu{{ $i }}_hasil">
+                                            {{ $plan->{'fu'.$i.'_hasil'} ?? '-' }}
+                                        </td>
+                                        <td contenteditable="true" class="editable text-dark"
+                                            data-id="{{ $plan->id }}"
+                                            data-field="fu{{ $i }}_tindak_lanjut">
+                                            {{ $plan->{'fu'.$i.'_tindak_lanjut'} ?? '-' }}
+                                        </td>
                                     @endfor
 
-
-
-                                    <style>
-                                        /* Style default */
-                                        .status-dropdown {
-                                            min-width: 160px;
-                                            padding: 4px 8px;
-                                            font-size: 14px;
-                                            font-weight: bold;
-                                            color: #fff;
-                                            /* teks default putih */
-                                        }
-
-                                        /* Warna sesuai status */
-                                        .status-sudah_transfer {
-                                            background-color: #48e7ecff;
-                                            color: #030303ff;
-                                        }
-
-                                        /* Hijau */
-                                        .status-mau_transfer {
-                                            background-color: #1cff07ff;
-                                            color: #000;
-                                        }
-
-                                        /* Kuning */
-                                        .status-tertarik {
-                                            background-color: #ffd900ff;
-                                            color: #000;
-                                        }
-
-                                        /* Biru */
-                                        .status-cold {
-                                            background-color: #6c757d;
-                                        }
-
-                                        /* Abu gelap */
-                                        .status-no {
-                                            background-color: #d12020ff;
-                                            color: #faf3f3ff;
-                                        }
-
-                                        /* Abu terang */
-                                    </style>
-    <script>
-    $(document).on('change', '.status-dropdown', function() {
-
-        let id = $(this).data('id');
-        let value = $(this).val();
-        let dropdown = $(this);
-
-        $.ajax({
-            url: "/admin/salesplan/update-status/" + id,   // ✔️ URL benar
-            type: "POST",                                  // ✔️ POST bukan PUT
-            data: {
-                _token: "{{ csrf_token() }}",
-                status: value
-            },
-
-            success: function(res) {
-
-                // 🔥 Replace CSS class status dropdown
-                dropdown.removeClass("status-sudah_transfer status-mau_transfer status-tertarik status-cold status-no")
-                        .addClass("status-" + value);
-
-                // 🔥 Replace warna row tabel
-                let row = dropdown.closest('tr');
-                row.removeClass("table-info table-success table-warning table-danger table-secondary");
-
-                if (value === "sudah_transfer") row.addClass("table-info");
-                if (value === "mau_transfer")    row.addClass("table-success");
-                if (value === "tertarik")        row.addClass("table-warning");
-                if (value === "no")              row.addClass("table-danger");
-                if (value === "cold")            row.addClass("table-secondary");
-
-                console.log("Status berhasil diupdate", res);
-            },
-
-        
-        });
-
-    });
-    </script>
-
-
-
-
                                     @if(Auth::user()->email == "mbchamasah@gmail.com")
-                                    <td>
-                                        {{ \App\Models\User::find($plan->created_by)->name ?? '-' }}
-                                    </td>
+                                    <td>{{ \App\Models\User::find($plan->created_by)->name ?? '-' }}</td>
                                     @endif
 
-                                    <!-- Komentar Atasan -->
-
-                                    <!--Form Hapus-->
                                     <td>
-                                                            <form id="delete-form-{{ $plan->id }}"
-        action="{{ route('admin.salesplan.destroy', $plan->id) }}"
-        method="POST" style="display:inline;">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn btn-danger btn-sm">
-            <i class="fas fa-trash"></i> Hapus
-        </button>
-    </form>
+                                        <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="{{ $plan->id }}">
+                                            <i class="fas fa-trash"></i> Hapus
+                                        </button>
+                                        <form id="delete-form-{{ $plan->id }}" action="{{ route('admin.salesplan.destroy', $plan->id) }}" method="POST" style="display:none;">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
                                     </td>
-
-
-                                    <!-- Script Hapus -->
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            const deleteButtons = document.querySelectorAll('.btn-delete');
-
-                                            deleteButtons.forEach(button => {
-                                                button.addEventListener('click', function() {
-                                                    let id = this.getAttribute('data-id');
-
-                                                    Swal.fire({
-                                                        title: 'Yakin ingin menghapus?',
-                                                        text: "Data yang sudah dihapus tidak bisa dikembalikan!",
-                                                        icon: 'warning',
-                                                        showCancelButton: true,
-                                                        confirmButtonColor: '#d33',
-                                                        cancelButtonColor: '#3085d6',
-                                                        confirmButtonText: 'Ya, Hapus!',
-                                                        cancelButtonText: 'Batal'
-                                                    }).then((result) => {
-                                                        if (result.isConfirmed) {
-                                                            document.getElementById('delete-form-' + id).submit();
-                                                        }
-                                                    });
-                                                });
-                                            });
-                                        });
-                                    </script>
-                            </tr>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="20" class="text-center text-muted">
-                                    Tidak ada data sales plan ditemukan.
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="25" class="text-center text-muted">Tidak ada data sales plan ditemukan.</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -1165,13 +1077,13 @@
                 Tertarik: {{ $countTertarik }}
             </span>
             <span class="badge bg-success text-white p-2 me-2 fs-6" style="font-size: 13px">
-                Mau Transfer: {{ $countMauTransfer }}
+                KPR: {{ $countMauTransfer }}
             </span>
             <span class="badge bg-danger text-white p-2 me-2 fs-6" style="font-size: 13px">
                 No: {{ $countNo }}
             </span>
             <span class="badge bg-info text-white p-2 me-2  fs-6" style="font-size: 13px">
-                Sudah Transfer: {{ $countSudahTransfer }}
+                Tunai: {{ $countSudahTransfer }}
             </span>
             <span class="badge bg-secondary text-white p-2 fs-6"style="font-size: 13px">
                 Cold: {{ $countCold }}
@@ -1199,7 +1111,16 @@
 
 
     <!-- Tabel daftar peserta -->
-
+    <div class="d-flex justify-content-end align-items-center mb-2">
+        <div style="width: 200px;">
+            <label class="small fw-bold mb-0">Filter Status:</label>
+            <select id="filterStatusDaftar" class="form-control form-control-sm">
+                <option value="all">Semua Status</option>
+                <option value="Tunai">Tunai</option>
+                <option value="KPR">KPR</option>
+            </select>
+        </div>
+    </div>
 
     <div style="overflow-x: auto; white-space: nowrap;">
         <table id="tabelPeserta" style="border-collapse: collapse; width: 100%; text-align: center; font-family: Arial, sans-serif; font-size: 14px; min-width: 500px;">
@@ -1207,34 +1128,85 @@
                 <tr style="background: linear-gradient(to right, #376bb9ff, #1c7f91ff); color: white;">
                     <th style="padding: 10px; border: 1px solid #ccc;">No</th>
                     <th style="padding: 10px; border: 1px solid #ccc;">Nama Peserta</th>
+                    <th style="padding: 10px; border: 1px solid #ccc;">Status</th>
                     <th style="padding: 10px; border: 1px solid #ccc;">Nominal</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Tanggal Transfer</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Nama CS Closing</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">KPR</th>
+                    <th style="padding: 10px; border: 1px solid #ccc;">KPR Action</th>
+                    <th style="padding: 10px; border: 1px solid #ccc;">Monitoring KPR</th>
                 </tr>
             </thead>
-    <tbody>
+    <tbody style="font-weight: bold; color: #000;">
         @php $totalNominal = 0; @endphp
         @forelse(($pesertaTransfer ?? collect()) as $i => $p)
-            <tr>
+            @php 
+                $statusLabel = ($p->status == 'mau_transfer') ? 'KPR' : 'Tunai'; 
+                $statusBadge = ($p->status == 'mau_transfer') ? 'bg-success' : 'bg-info';
+            @endphp
+            <tr class="peserta-row" data-status="{{ $statusLabel }}">
                 <td style="padding: 8px; border: 1px solid #ccc;">{{ $i+1 }}</td>
                 <td style="padding: 8px; border: 1px solid #ccc;">{{ $p->nama }}</td>
+                <td style="padding: 8px; border: 1px solid #ccc;">
+                    <span class="badge {{ $statusBadge }} text-white">{{ $statusLabel }}</span>
+                </td>
                 <td style="padding: 8px; border: 1px solid #ccc;">
                     Rp {{ number_format($p->nominal, 0, ',', '.') }}
                 </td>
                 <td style="padding: 8px; border: 1px solid #ccc;">
-                    {{ $p->updated_at ? $p->updated_at->format('d-m-Y') : '-' }}
-                </td>
-                <td style="padding: 8px; border: 1px solid #ccc;">
-                    {{ \App\Models\User::find($p->created_by)->name ?? '-' }}
-                </td>
-                <td style="padding: 8px; border: 1px solid #ccc;">
+                    @if($p->status == 'mau_transfer' && !$p->kpr)
                     <form action="{{ route('admin.kpr.move', $p->id) }}" method="POST" class="form-kpr-move">
                         @csrf
                         <button type="button" class="btn btn-sm btn-primary btn-move-kpr" data-nama="{{ $p->nama }}">
                             <i class="fas fa-arrow-right"></i>
                         </button>
                     </form>
+                    @else
+                        -
+                    @endif
+                </td>
+                <td style="padding: 8px; border: 1px solid #ccc;">
+                    @if($p->status == 'mau_transfer')
+                        @php
+                            $kprP = $p->kpr; 
+                        @endphp
+                        @if($kprP)
+                            <div class="kpr-tracker-mini d-flex justify-content-center">
+                                @php
+                                    $stepOrder = ['Booking Fee', 'Berkas KPR', 'Pengajuan Bank', 'Appraisal', 'SP3K/Approval', 'Akad Kredit', 'Pencairan/Final'];
+                                    $stepLabels = ['Booking', 'Berkas', 'Bank', 'Appraisal', 'Approval', 'Akad', 'Final'];
+                                    $currentIndex = array_search($kprP->tahap_posisi, $stepOrder);
+                                    if ($currentIndex === false) $currentIndex = 0;
+                                    if ($kprP->status_global == 'Success') $currentIndex = 99;
+                                @endphp
+                                @foreach($stepOrder as $idx => $stage)
+                                    @php
+                                        $isCompleted = ($idx < $currentIndex || $kprP->status_global == 'Success');
+                                        $isActive = ($idx === $currentIndex && $kprP->status_global != 'Success');
+                                    @endphp
+                                    <div class="kpr-step-item">
+                                        <div class="kpr-step-dot {{ $isCompleted ? 'completed' : ($isActive ? 'active' : '') }} kpr-clickable-dot" 
+                                             data-kpr-id="{{ $kprP->id }}" 
+                                             data-stage="{{ $stage }}"
+                                             style="cursor: pointer;"
+                                             title="Klik untuk ubah ke tahap {{ $stage }}">
+                                            @if($isCompleted)<i class="fas fa-check font-size-10 text-white"></i>@endif
+                                        </div>
+                                        <span class="kpr-step-label">{{ $stepLabels[$idx] }}</span>
+                                    </div>
+                                    @if(!$loop->last)
+                                        <i class="fas fa-chevron-right kpr-step-line-chevron {{ $isCompleted ? 'completed' : '' }}"></i>
+                                    @endif
+                                @endforeach
+                            </div>
+                            <div class="mt-1">
+                                <a href="{{ route('admin.kpr.show', $kprP->id) }}" class="btn btn-xs btn-outline-primary py-0" style="font-size: 10px;">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+                            </div>
+                        @else
+                            <span class="text-muted small">Belum diinput</span>
+                        @endif
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
                 </td>
             </tr>
             @php $totalNominal += $p->nominal; @endphp
@@ -1249,23 +1221,21 @@
 
             <tfoot>
                 <tr style="background: #f2f2f2; font-weight: bold; color: #040e0fff;">
-                    <td colspan="2" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Total Omset</td>
+                    <td colspan="3" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Total Omset</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         Rp {{ number_format($totalNominal, 0, ',', '.') }}
                     </td>
-                    <td style="padding: 10px; border: 1px solid #ccc;"></td>
                     <td style="padding: 10px; border: 1px solid #ccc;"></td>
                     <td style="padding: 10px; border: 1px solid #ccc;"></td>
                 </tr>
 
                 <!-- Target Omset -->
                 <tr style="background: #d1e7dd; font-weight: bold; color: #0f5132;">
-                    <td colspan="2" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Target Omset</td>
+                    <td colspan="3" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Target Omset</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         @php $targetOmsetVal = 1000000000; @endphp
                         Rp {{ number_format($targetOmsetVal, 0, ',', '.') }}
                     </td>
-                    <td style="padding: 10px; border: 1px solid #ccc;"></td>
                     <td style="padding: 10px; border: 1px solid #ccc;"></td>
                     <td style="padding: 10px; border: 1px solid #ccc;"></td>
                 </tr>
@@ -1275,132 +1245,201 @@
 
 
 
+@push('scripts')
     <script>
-        document.querySelectorAll('.status-select').forEach(select => {
-            select.addEventListener('change', function() {
-                if (this.value === 'done') {
-                    let nama = this.dataset.nama;
-                    let nominal = this.dataset.nominal;
+        $(document).ready(function() {
+            // Helper: Strip Thousand Separator
+            function stripDots(str) {
+                return str.replace(/\./g, '');
+            }
 
-                    let tbody = document.querySelector('#tabelPeserta tbody');
-                    let emptyRow = document.getElementById('emptyRow');
-                    if (emptyRow) emptyRow.remove();
+            // Helper: Format to Indonesian Thousand Separator
+            function formatRupiah(num) {
+                return new Intl.NumberFormat('id-ID').format(num);
+            }
 
-                    let rowCount = tbody.rows.length + 1;
-                    let newRow = `
-            <tr style="background: #fdfdfd; color: black;">
-            <td style="padding: 8px; border: 1px solid #ccc;">${rowCount}</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">${nama}</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">Rp ${parseInt(nominal).toLocaleString('id-ID')}</td>
-            </tr>
-        `;
-                    tbody.insertAdjacentHTML('beforeend', newRow);
+            // 1. Search Logic
+            $('#searchSalesPlan').on('keyup', function() {
+                let query = $(this).val().toLowerCase();
+                $('#salesPlanBody tr').each(function() {
+                    let nama = $(this).find('td:nth-child(2)').text().toLowerCase();
+                    $(this).toggle(nama.includes(query));
+                });
+            });
+
+            // 2. Nominal Formatting (Live while typing)
+            $(document).on('input', '.editable[data-field="nominal"]', function() {
+                let val = $(this).text().replace(/[^0-9]/g, '');
+                if (val !== '') {
+                    $(this).text(formatRupiah(val));
+                    // Place cursor at the end
+                    let range = document.createRange();
+                    let sel = window.getSelection();
+                    range.selectNodeContents(this);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
                 }
             });
-        });
-    </script>
 
+            // 3. Inline Update Logic
+            $(document).on('focus', '.editable', function() {
+                let current = $(this).text().trim();
+                $(this).data('original', current);
+                if (current === '-') $(this).text('');
+            });
 
+            $(document).on('blur', '.editable', function() {
+                let id = $(this).data('id');
+                let field = $(this).data('field');
+                let value = $(this).text().trim();
+                let original = $(this).data('original');
+                let $el = $(this);
 
-    </div>
-    <script>
-        $(document).ready(function() {
-            $('.status-cell').each(function() {
-                const status = $(this).text().trim().toLowerCase();
-                const row = $(this).closest('tr');
-
-                switch (status) {
-                    case 'hot':
-                        row.css('background-color', '#d4edda'); // Hijau muda
-                        break;
-                    case 'warm':
-                        row.css('background-color', '#fff3cd'); // Kuning muda
-                        break;
-                    case 'cold':
-                        row.css('background-color', '#ffffff'); // Putih (default)
-                        break;
-                    case 'no':
-                        row.css('background-color', '#f8d7da'); // Merah muda
-                        break;
-                    default:
-                        row.css('background-color', '#f0f0f0'); // Abu (jika status tidak dikenal)
+                if (value === '') {
+                    value = '-';
+                    $el.text('-');
                 }
-            });
-        });
-    </script>
 
-    <script>
-        $(document).ready(function() {
-            $('#example').DataTable({
-                "lengthMenu": [
-                    [15, 25, 50, 100, 500],
-                    [15, 25, 50, 100, 500]
-                ]
-            });
-        });
-    </script>
+                if (value === original) return;
 
-    @endsection
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        $(document).ready(function() {
-            $('.btn-move-kpr').on('click', function() {
-                var nama = $(this).data('nama');
-                var form = $(this).closest('form');
+                // Strip dots for nominal field
+                let finalValue = (field === 'nominal') ? stripDots(value) : value;
 
-                Swal.fire({
-                    title: 'Monitoring KPR',
-                    html: `Apakah Anda yakin ingin memasukkan <b>${nama}</b> ke dalam data monitoring KPR?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#4e73df',
-                    cancelButtonColor: '#858796',
-                    confirmButtonText: '<i class="fas fa-check"></i> Ya, Masukkan',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                    showClass: {
-                        popup: 'animate__animated animate__fadeInUp animate__faster'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
+                $.ajax({
+                    url: "{{ route('admin.salesplan.inline-update') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: id,
+                        field: field,
+                        value: finalValue
+                    },
+                    success: function() {
+                        $el.data('original', value);
+                        if(field === 'nominal') $el.text(formatRupiah(finalValue));
+                        
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Tersimpan',
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    },
+                    error: function(xhr) {
+                        $el.text(original);
+                        Swal.fire('Error', 'Gagal update data: ' + xhr.responseText, 'error');
                     }
                 });
+            });
+
+            // 4. Status Update Logic (Dropdown)
+            $(document).on('change', '.status-dropdown', function() {
+                let id = $(this).data('id');
+                let val = $(this).val();
+                let $dropdown = $(this);
+                let $row = $dropdown.closest('tr');
+
+                $.ajax({
+                    url: "/admin/salesplan/update-status/" + id,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        status: val
+                    },
+                    success: function() {
+                        // Update Dropdown Class
+                        $dropdown.removeClass("status-sudah_transfer status-mau_transfer status-tertarik status-cold status-no")
+                                 .addClass("status-" + val);
+                        
+                        // Update Row Class
+                        $row.removeClass("row-tunai row-kpr row-tertarik row-no row-cold");
+                        if (val === "sudah_transfer") $row.addClass("row-tunai");
+                        else if (val === "mau_transfer") $row.addClass("row-kpr");
+                        else if (val === "tertarik")     $row.addClass("row-tertarik");
+                        else if (val === "no")           $row.addClass("row-no");
+                        else                             $row.addClass("row-cold");
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Status Diperbarui',
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    }
+                });
+            });
+
+            // 5. Delete Button
+            $(document).on('click', '.btn-delete', function() {
+                let id = $(this).data('id');
+                Swal.fire({
+                    title: 'Hapus Data?',
+                    text: "Tindakan ini tidak bisa dibatalkan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Hapus'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#delete-form-' + id).submit();
+                    }
+                });
+            });
+
+            // 6. Move to KPR
+            $(document).on('click', '.btn-move-kpr', function() {
+                let nama = $(this).data('nama');
+                let $form = $(this).closest('form');
+                Swal.fire({
+                    title: 'Monitoring KPR',
+                    html: `Masukkan <b>${nama}</b> ke data monitoring KPR?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Masukkan'
+                }).then((result) => {
+                    if (result.isConfirmed) $form.submit();
+                });
+            });
+
+            // 7. Filter Status Daftar Pembeli
+            $('#filterStatusDaftar').on('change', function() {
+                let filter = $(this).val();
+                $('.peserta-row').each(function() {
+                    let rowStatus = $(this).data('status');
+                    if (filter === 'all' || rowStatus === filter) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            // 8. Go to KPR Detail (Interactive Dots)
+            $(document).on('click', '.kpr-clickable-dot', function() {
+                let id = $(this).data('kpr-id');
+                let stage = $(this).data('stage');
+                
+                // Navigate to detail page with step parameter
+                window.location.href = "/admin/kpr/" + id + "?step=" + encodeURIComponent(stage);
             });
         });
     </script>
 
     @if(session('warning'))
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let rawMessage = {!! json_encode(session('warning')) !!};
-            
-            // Formating pesan agar lebih menarik
-            let formattedMessage = rawMessage
-                .replace(/'Tertarik'/g, '<span class="badge bg-warning text-dark fs-6">Tertarik</span>')
-                .replace(/'Cold'/g, '<span class="badge bg-secondary fs-6">Cold</span>')
-                .replace(/'No'/g, '<span class="badge bg-danger fs-6">No</span>')
-                .replace(/'Mau Transfer'/g, '<span class="badge bg-success fs-6">Mau Transfer</span>')
-                .replace(/(\d+) data/g, '<b class="text-primary" style="font-size: 1.3em;">$1 Data</b>');
-
-            Swal.fire({
-                title: '<strong>Update Status Otomatis</strong>',
-                html: `<div class="mt-2" style="font-size: 1.1rem; line-height: 1.8; color: #444;">${formattedMessage}</div>`,
-                icon: 'info',
-                showClass: {
-                    popup: 'animate__animated animate__fadeInDown'
-                },
-                hideClass: {
-                    popup: 'animate__animated animate__fadeOutUp'
-                },
-                confirmButtonText: '<i class="fas fa-check"></i> Mengerti',
-                confirmButtonColor: '#4e73df',
-                background: '#fff',
-                backdrop: 'rgba(0,0,0,0.4)'
-            });
+        Swal.fire({
+            title: '<strong>Update Status Otomatis</strong>',
+            html: `{!! session('warning') !!}`,
+            icon: 'info',
+            confirmButtonText: 'Mengerti',
+            confirmButtonColor: '#4e73df'
         });
     </script>
     @endif
+@endpush
+@endsection

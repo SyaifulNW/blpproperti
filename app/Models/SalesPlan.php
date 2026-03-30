@@ -58,12 +58,17 @@ class SalesPlan extends Model
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
-    
+
+    public function kpr()
+    {
+        return $this->hasOne(Kpr::class, 'salesplan_id');
+    }
+
     // app/Models/SalesPlan.php
-public function createdBy()
-{
-    return $this->belongsTo(\App\Models\User::class, 'created_by');
-}
+    public function createdBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
 
 
     public function getCreatedByNameAttribute()

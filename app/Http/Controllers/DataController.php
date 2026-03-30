@@ -33,7 +33,7 @@ class DataController extends Controller
             // Gunakan view partial yang sama dengan loop utama untuk konsistensi
             $html = view('admin.database.partials.row', [
                 'item' => $newData,
-                'loop' => (object)['iteration' => 'New'], // Placeholder iteration
+                'loop' => (object) ['iteration' => 'New'], // Placeholder iteration
                 'kelas' => $kelas
             ])->render();
 
@@ -47,225 +47,225 @@ class DataController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-public function index(Request $request)
-{
-    $user = Auth::user();
-    $userId = $user->id;
-    $userRole = strtolower($user->role);
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+        $userRole = strtolower($user->role);
 
-    // --- Admin MBC Khusus ---
-    $adminMbcIds = [2, 3, 6, 10, 4, 12];
-    $allowedCsNames = ['Linda', 'Yasmin', 'Shafa', 'Arifa', 'Tursia', 'Latifah'];
+        // --- Admin MBC Khusus ---
+        $adminMbcIds = [2, 3, 6, 10, 4, 12];
+        $allowedCsNames = ['Linda', 'Yasmin', 'Shafa', 'Arifa', 'Tursia', 'Latifah'];
 
-    // --- Ambil daftar CS sesuai role ---
-    $csQuery = \App\Models\User::query();
+        // --- Ambil daftar CS sesuai role ---
+        $csQuery = \App\Models\User::query();
 
-    if (in_array($userId, $adminMbcIds)) {
-        // Admin MBC hanya bisa lihat CS tertentu
-        $csQuery->whereIn('name', $allowedCsNames);
-    } elseif ($userRole === 'manager') {
-        // Manager hanya boleh lihat Latifah & Tursia
-        $csQuery->whereIn('name', ['Latifah', 'Tursia']);
-    } elseif ($userRole === 'administrator' || $user->name === 'Agus Setyo' || $user->name === 'Linda') {
-        // Administrator & Agus Setyo & Linda boleh lihat semua CS
-        $csQuery->whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi']);
-    } else {
-        // CS biasa hanya bisa lihat dirinya sendiri
-        $csQuery->where('id', $userId);
+        if (in_array($userId, $adminMbcIds)) {
+            // Admin MBC hanya bisa lihat CS tertentu
+            $csQuery->whereIn('name', $allowedCsNames);
+        } elseif ($userRole === 'manager') {
+            // Manager hanya boleh lihat Latifah & Tursia
+            $csQuery->whereIn('name', ['Latifah', 'Tursia']);
+        } elseif ($userRole === 'administrator' || $user->name === 'Agus Setyo' || $user->name === 'Linda') {
+            // Administrator & Agus Setyo & Linda boleh lihat semua CS
+            $csQuery->whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi']);
+        } else {
+            // CS biasa hanya bisa lihat dirinya sendiri
+            $csQuery->where('id', $userId);
+        }
+
+        $csList = $csQuery->select('id', 'name')->orderBy('name')->get();
+
+        // --- Ambil filter ---
+        $kelasFilter = $request->input('kelas');
+        $csFilter = $request->input('cs_name');
+        $bulanFilter = $request->input('bulan');
+        $tahunFilter = $request->input('tahun'); // Tambah filter tahun
+        $searchFilter = $request->input('search');
+        $perPage = $request->get('per_page', 100);
+
+        // --- Query utama ---
+        $sortByParam = $request->input('sort_by', 'created_at');
+        $sortOrderParam = $request->input('order', 'desc');
+
+        // Whitelist columns
+        $allowedSorts = ['created_at', 'created_by', 'nama', 'status_peserta'];
+        if (!in_array($sortByParam, $allowedSorts)) {
+            $sortByParam = 'created_at';
+        }
+
+        // Base Query: Show both new leads and those already in Sales Plan
+        $query = \App\Models\Data::with('salesplan')->whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
+
+        // Filter Search
+        if (!empty($searchFilter)) {
+            $query->where(function ($q) use ($searchFilter) {
+                $q->where('nama', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('leads', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('nama_bisnis', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('no_wa', 'LIKE', '%' . $searchFilter . '%');
+            });
+        }
+
+        $query->orderBy($sortByParam, $sortOrderParam); // Order By must be after search conditions if any
+
+        // Jika admin MBC → hanya 6 CS tertentu (DISABLED/ADJUSTED: User reported CS seeing shared data is undesirable)
+        // if (in_array($userId, $adminMbcIds)) {
+        //     $query->whereIn('created_by', $allowedCsNames);
+        // }
+
+        // Manager → hanya bisa lihat data Latifah & Tursia
+        if ($userRole === 'manager') {
+            $query->whereIn('created_by', ['Latifah', 'Tursia']);
+        }
+
+        // Filter User
+        if (!empty($csFilter)) {
+            $query->where('created_by', $csFilter);
+        }
+
+        // Filter kelas & bulan & tahun
+        if (!empty($kelasFilter)) {
+            $query->where('kelas_id', $kelasFilter);
+        }
+
+        if (!empty($bulanFilter)) {
+            $query->whereMonth('created_at', $bulanFilter);
+        }
+
+        if (!empty($tahunFilter)) {
+            $query->whereYear('created_at', $tahunFilter);
+        }
+
+        // New Filters (Server Side)
+        $sumberFilter = $request->input('sumber');
+        $kotaFilter = $request->input('kota');
+        $provinsiFilter = $request->input('provinsi');
+
+        if (!empty($sumberFilter)) {
+            $query->where('leads', $sumberFilter);
+        }
+
+        if (!empty($kotaFilter)) {
+            // Kota is stored as 'kota_nama' or linked via ID. Checking view logic, it seems to be 'kota_nama'.
+            // Let's verify view usage. In row.blade.php it uses $item->kota_nama.
+            $query->where('kota_nama', $kotaFilter);
+        }
+
+
+        if (!empty($provinsiFilter)) {
+            $query->where('provinsi_nama', $provinsiFilter);
+        }
+
+        // Filter Spin
+        $spinFilter = $request->input('spin');
+        if ($spinFilter !== null && $spinFilter !== '') {
+            $query->where('spin', $spinFilter);
+        }
+
+        // Filter Zoom
+        $zoomFilter = $request->input('zoom');
+        if ($zoomFilter !== null && $zoomFilter !== '') {
+            $query->where('ikut_zoom', $zoomFilter);
+        }
+
+
+        // CS biasa → hanya datanya sendiri
+        // REMOVED !in_array($userId, $adminMbcIds) check so they fall into this logic
+        $forceMyData = $request->input('view') === 'me';
+        if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
+            $query->where('created_by', $user->name);
+        }
+
+        // Khusus Agus Setyo: Hanya kelas Start-Up Muslim/Muda Indonesia
+        if ($user->name === 'Agus Setyo') {
+            $query->whereHas('kelas', function ($q) {
+                $q->where('nama_kelas', 'Start-Up Muda Indonesia')
+                    ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
+            });
+        }
+
+        // --- Stats Calculation for Dashboard Headers ---
+        // KPI Query: Targets ALL data input (ignoring status_peserta) to reflect Acquisition Performance
+        $kpiQuery = \App\Models\Data::query();
+
+        // Re-apply Permission/Ownership Logic to KPI Query
+        // Manager
+        if ($userRole === 'manager') {
+            $kpiQuery->whereIn('created_by', ['Latifah', 'Tursia']);
+        }
+        // Filter User (Dropdown)
+        if (!empty($csFilter)) {
+            $kpiQuery->where('created_by', $csFilter);
+        }
+        // Strict CS View
+        // Strict CS View
+        if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
+            $kpiQuery->where('created_by', $user->name);
+        }
+        // Agus Setyo
+        if ($user->name === 'Agus Setyo') {
+            $kpiQuery->whereHas('kelas', function ($q) {
+                $q->where('nama_kelas', 'Start-Up Muda Indonesia')
+                    ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
+            });
+        }
+
+        $now = \Carbon\Carbon::now();
+        $statsYear = $tahunFilter ? $tahunFilter : $now->year;
+        $statsMonth = $bulanFilter ? $bulanFilter : $now->month;
+
+        $bulanLabel = \Carbon\Carbon::createFromDate($statsYear, $statsMonth, 1)->isoFormat('MMMM YYYY');
+
+        // Total Database: Count of current table (Queue Size)
+        // We use the original $query which has 'status' & 'time' & 'search' filters applied.
+        $totalDatabase = (clone $query)->count();
+
+        // Database Baru: Performance Metric (Count of ALL inputs in period)
+        $databaseBaru = $kpiQuery
+            ->whereYear('created_at', $statsYear)
+            ->whereMonth('created_at', $statsMonth)
+            ->count();
+
+        $target = 100;
+        $kurang = max($target - $databaseBaru, 0);
+
+        $data = $query->paginate($perPage);
+        $kelas = \App\Models\Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
+
+        // Fetch lists for filters
+        $provinsiList = \App\Models\Data::select('provinsi_nama')
+            ->whereNotNull('provinsi_nama')
+            ->where('provinsi_nama', '!=', '')
+            ->distinct()
+            ->orderBy('provinsi_nama')
+            ->pluck('provinsi_nama');
+
+        $kotaQuery = \App\Models\Data::select('kota_nama')
+            ->whereNotNull('kota_nama')
+            ->where('kota_nama', '!=', '')
+            ->distinct()
+            ->orderBy('kota_nama');
+
+        if (!empty($provinsiFilter)) {
+            $kotaQuery->where('provinsi_nama', $provinsiFilter);
+        }
+
+        $kotaList = $kotaQuery->pluck('kota_nama');
+
+        return view('admin.database.database', [
+            'data' => $data,
+            'kelas' => $kelas,
+            'csList' => $csList,
+            'provinsiList' => $provinsiList,
+            'kotaList' => $kotaList,
+            'databaseBaru' => $databaseBaru,
+            'totalDatabase' => $totalDatabase,
+            'target' => $target,
+            'kurang' => $kurang,
+            'bulanLabel' => $bulanLabel,
+        ]);
     }
-
-    $csList = $csQuery->select('id', 'name')->orderBy('name')->get();
-
-    // --- Ambil filter ---
-    $kelasFilter = $request->input('kelas');
-    $csFilter    = $request->input('cs_name');
-    $bulanFilter = $request->input('bulan');
-    $tahunFilter = $request->input('tahun'); // Tambah filter tahun
-    $searchFilter = $request->input('search');
-    $perPage     = $request->get('per_page', 100);
-
-    // --- Query utama ---
-    $sortByParam = $request->input('sort_by', 'created_at');
-    $sortOrderParam = $request->input('order', 'desc');
-    
-    // Whitelist columns
-    $allowedSorts = ['created_at', 'created_by', 'nama', 'status_peserta']; 
-    if (!in_array($sortByParam, $allowedSorts)) {
-        $sortByParam = 'created_at';
-    }
-    
-    // Base Query: Show both new leads and those already in Sales Plan
-    $query = \App\Models\Data::with('salesplan')->whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
-
-    // Filter Search
-    if (!empty($searchFilter)) {
-        $query->where(function($q) use ($searchFilter) {
-             $q->where('nama', 'LIKE', '%'.$searchFilter.'%')
-               ->orWhere('leads', 'LIKE', '%'.$searchFilter.'%')
-               ->orWhere('nama_bisnis', 'LIKE', '%'.$searchFilter.'%')
-               ->orWhere('no_wa', 'LIKE', '%'.$searchFilter.'%');
-        });
-    }
-
-    $query->orderBy($sortByParam, $sortOrderParam); // Order By must be after search conditions if any
-
-    // Jika admin MBC → hanya 6 CS tertentu (DISABLED/ADJUSTED: User reported CS seeing shared data is undesirable)
-    // if (in_array($userId, $adminMbcIds)) {
-    //     $query->whereIn('created_by', $allowedCsNames);
-    // }
-
-    // Manager → hanya bisa lihat data Latifah & Tursia
-    if ($userRole === 'manager') {
-        $query->whereIn('created_by', ['Latifah', 'Tursia']);
-    }
-
-    // Filter User
-    if (!empty($csFilter)) {
-        $query->where('created_by', $csFilter);
-    }
-
-    // Filter kelas & bulan & tahun
-    if (!empty($kelasFilter)) {
-        $query->where('kelas_id', $kelasFilter);
-    }
-
-    if (!empty($bulanFilter)) {
-        $query->whereMonth('created_at', $bulanFilter);
-    }
-
-    if (!empty($tahunFilter)) {
-        $query->whereYear('created_at', $tahunFilter);
-    }
-
-    // New Filters (Server Side)
-    $sumberFilter = $request->input('sumber');
-    $kotaFilter = $request->input('kota');
-    $provinsiFilter = $request->input('provinsi');
-
-    if (!empty($sumberFilter)) {
-        $query->where('leads', $sumberFilter);
-    }
-
-    if (!empty($kotaFilter)) {
-        // Kota is stored as 'kota_nama' or linked via ID. Checking view logic, it seems to be 'kota_nama'.
-        // Let's verify view usage. In row.blade.php it uses $item->kota_nama.
-        $query->where('kota_nama', $kotaFilter);
-    }
-
-
-    if (!empty($provinsiFilter)) {
-        $query->where('provinsi_nama', $provinsiFilter);
-    }
-
-    // Filter Spin
-    $spinFilter = $request->input('spin');
-    if ($spinFilter !== null && $spinFilter !== '') {
-        $query->where('spin', $spinFilter);
-    }
-
-    // Filter Zoom
-    $zoomFilter = $request->input('zoom');
-    if ($zoomFilter !== null && $zoomFilter !== '') {
-        $query->where('ikut_zoom', $zoomFilter);
-    }
-
-
-    // CS biasa → hanya datanya sendiri
-    // REMOVED !in_array($userId, $adminMbcIds) check so they fall into this logic
-    $forceMyData = $request->input('view') === 'me';
-    if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
-        $query->where('created_by', $user->name);
-    }
-
-    // Khusus Agus Setyo: Hanya kelas Start-Up Muslim/Muda Indonesia
-    if ($user->name === 'Agus Setyo') {
-        $query->whereHas('kelas', function($q) {
-             $q->where('nama_kelas', 'Start-Up Muda Indonesia')
-               ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
-        });
-    }
-
-    // --- Stats Calculation for Dashboard Headers ---
-    // KPI Query: Targets ALL data input (ignoring status_peserta) to reflect Acquisition Performance
-    $kpiQuery = \App\Models\Data::query();
-    
-    // Re-apply Permission/Ownership Logic to KPI Query
-    // Manager
-    if ($userRole === 'manager') {
-        $kpiQuery->whereIn('created_by', ['Latifah', 'Tursia']);
-    }
-    // Filter User (Dropdown)
-    if (!empty($csFilter)) {
-        $kpiQuery->where('created_by', $csFilter);
-    }
-    // Strict CS View
-    // Strict CS View
-    if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
-        $kpiQuery->where('created_by', $user->name);
-    }
-    // Agus Setyo
-    if ($user->name === 'Agus Setyo') {
-        $kpiQuery->whereHas('kelas', function($q) {
-             $q->where('nama_kelas', 'Start-Up Muda Indonesia')
-               ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
-        });
-    }
-
-    $now = \Carbon\Carbon::now();
-    $statsYear = $tahunFilter ? $tahunFilter : $now->year;
-    $statsMonth = $bulanFilter ? $bulanFilter : $now->month;
-    
-    $bulanLabel = \Carbon\Carbon::createFromDate($statsYear, $statsMonth, 1)->isoFormat('MMMM YYYY');
-
-    // Total Database: Count of current table (Queue Size)
-    // We use the original $query which has 'status' & 'time' & 'search' filters applied.
-    $totalDatabase = (clone $query)->count();
-
-    // Database Baru: Performance Metric (Count of ALL inputs in period)
-    $databaseBaru = $kpiQuery
-        ->whereYear('created_at', $statsYear)
-        ->whereMonth('created_at', $statsMonth)
-        ->count();
-
-    $target = 100;
-    $kurang = max($target - $databaseBaru, 0);
-
-    $data = $query->paginate($perPage);
-    $kelas = \App\Models\Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
-
-    // Fetch lists for filters
-    $provinsiList = \App\Models\Data::select('provinsi_nama')
-        ->whereNotNull('provinsi_nama')
-        ->where('provinsi_nama', '!=', '')
-        ->distinct()
-        ->orderBy('provinsi_nama')
-        ->pluck('provinsi_nama');
-
-    $kotaQuery = \App\Models\Data::select('kota_nama')
-        ->whereNotNull('kota_nama')
-        ->where('kota_nama', '!=', '')
-        ->distinct()
-        ->orderBy('kota_nama');
-
-    if (!empty($provinsiFilter)) {
-        $kotaQuery->where('provinsi_nama', $provinsiFilter);
-    }
-
-    $kotaList = $kotaQuery->pluck('kota_nama');
-
-    return view('admin.database.database', [
-        'data' => $data,
-        'kelas' => $kelas,
-        'csList' => $csList,
-        'provinsiList' => $provinsiList,
-        'kotaList' => $kotaList,
-        'databaseBaru' => $databaseBaru,
-        'totalDatabase' => $totalDatabase,
-        'target' => $target,
-        'kurang' => $kurang,
-        'bulanLabel' => $bulanLabel,
-    ]);
-}
 
 
 
@@ -304,13 +304,17 @@ public function index(Request $request)
 
         $data->save();
 
+        if ($field === 'nama') {
+            SalesPlan::where('data_id', $data->id)->update(['nama' => $data->nama]);
+        }
+
         return response()->json(['success' => true]);
     }
 
     public function updateLocation(Request $request)
     {
         $data = Data::findOrFail($request->id);
-        
+
         if ($request->has('provinsi_id')) {
             $data->provinsi_id = $request->provinsi_id;
             $data->provinsi_nama = $request->provinsi_nama;
@@ -336,7 +340,7 @@ public function index(Request $request)
     {
         $data = new Data();
         $data->nama = $request->input('nama');
-        $data->status_peserta = $request->input('status_peserta','peserta_baru');
+        $data->status_peserta = $request->input('status_peserta', 'peserta_baru');
         // Enum field
         $data->leads = $request->input('leads'); // Assuming 'leads' is an enum field
         // Custom field
@@ -381,15 +385,15 @@ public function index(Request $request)
 
         return response()->json(['success' => true]);
     }
-    
-        public function updateSumberLeads(Request $request, $id)
-{
-    $data = data::findOrFail($id);
-    $data->leads = $request->leads;
-    $data->save();
 
-    return response()->json(['success' => true]);
-}
+    public function updateSumberLeads(Request $request, $id)
+    {
+        $data = data::findOrFail($id);
+        $data->leads = $request->leads;
+        $data->save();
+
+        return response()->json(['success' => true]);
+    }
 
 
 
@@ -452,7 +456,8 @@ public function index(Request $request)
 
         $data->save();
 
-
+        // 🔥 SYNC NAMA TO SALES PLAN
+        SalesPlan::where('data_id', $data->id)->update(['nama' => $data->nama]);
 
         // Redirect to the index page with a success message
         return redirect()->route('admin.database.database')->with('success', 'Data has been updated successfully.');
@@ -503,31 +508,31 @@ public function index(Request $request)
     }
 
 
-private function filterKelasByUser($user)
-{
-    // Jika Administrator atau Fitra Jaya Saleh: tampil semua
-    if (strtolower($user->role) == 'administrator' || $user->name == 'Fitra Jaya Saleh') {
-        return Kelas::all();
-    }
+    private function filterKelasByUser($user)
+    {
+        // Jika Administrator atau Fitra Jaya Saleh: tampil semua
+        if (strtolower($user->role) == 'administrator' || $user->name == 'Fitra Jaya Saleh') {
+            return Kelas::all();
+        }
 
-    // Jika Tursia atau Latifah â†’ hanya Start-Up Muda Indonesia
-    if (in_array($user->name, ['Tursia', 'Latifah'])) {
-        return Kelas::where('nama_kelas', 'Start-Up Muda Indonesia')->get();
-    }
+        // Jika Tursia atau Latifah â†’ hanya Start-Up Muda Indonesia
+        if (in_array($user->name, ['Tursia', 'Latifah'])) {
+            return Kelas::where('nama_kelas', 'Start-Up Muda Indonesia')->get();
+        }
 
-    // Jika Mutiah â†’ hanya Sekolah Kaya
-    if ($user->name == 'Mutiah') {
-        return Kelas::where('nama_kelas', 'Sekolah Kaya')->get();
-    }
+        // Jika Mutiah â†’ hanya Sekolah Kaya
+        if ($user->name == 'Mutiah') {
+            return Kelas::where('nama_kelas', 'Sekolah Kaya')->get();
+        }
 
-    // Jika Shafa â†’ semua kecuali Start-Up Muda Indonesia
-    if ($user->name == 'Shafa') {
-        return Kelas::where('nama_kelas', '!=', 'Start-Up Muda Indonesia')->get();
-    }
+        // Jika Shafa â†’ semua kecuali Start-Up Muda Indonesia
+        if ($user->name == 'Shafa') {
+            return Kelas::where('nama_kelas', '!=', 'Start-Up Muda Indonesia')->get();
+        }
 
-    // Selain itu â†’ semua kecuali Sekolah Kaya dan Start-Up Muda Indonesia
-    return Kelas::whereNotIn('nama_kelas', ['Sekolah Kaya', 'Start-Up Muda Indonesia'])->get();
-}
+        // Selain itu â†’ semua kecuali Sekolah Kaya dan Start-Up Muda Indonesia
+        return Kelas::whereNotIn('nama_kelas', ['Sekolah Kaya', 'Start-Up Muda Indonesia'])->get();
+    }
 
     public function pindahkesalesplan(Request $request, $id)
     {
@@ -541,9 +546,9 @@ private function filterKelasByUser($user)
         foreach ($kelasIds as $kelasId) {
             // Cek apakah sudah ada di Sales Plan untuk produk ini agar tidak duplikat
             $exists = SalesPlan::where('data_id', $data->id)
-                               ->where('kelas_id', $kelasId)
-                               ->exists();
-            
+                ->where('kelas_id', $kelasId)
+                ->exists();
+
             if (!$exists) {
                 $salesPlan = new SalesPlan();
                 $salesPlan->nama = $data->nama;
@@ -561,14 +566,14 @@ private function filterKelasByUser($user)
         $data->status_peserta = 'sales_plan';
         $data->save();
 
-        return redirect()->back()->with('success', 'Peserta berhasil dipindahkan ke Sales Plan.');
+        return redirect()->route('admin.salesplan.index')->with('success', 'Peserta berhasil dipindahkan ke Sales Plan.');
     }
     public function getStatistik(Request $request)
     {
         $user = Auth::user();
         $userRole = strtolower($user->role);
         $filterUser = $request->input('user');
-        
+
         $query = Data::query();
 
         // Admin & Manager Logic
@@ -583,21 +588,21 @@ private function filterKelasByUser($user)
 
         // Agus Setyo Filter
         if ($user->name === 'Agus Setyo') {
-            $query->whereHas('kelas', function($q) {
-                 $q->where('nama_kelas', 'Start-Up Muda Indonesia')
-                   ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
+            $query->whereHas('kelas', function ($q) {
+                $q->where('nama_kelas', 'Start-Up Muda Indonesia')
+                    ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
             });
         }
 
         // Calculate Stats
         $now = \Carbon\Carbon::now();
         $bulanLabel = $now->isoFormat('MMMM YYYY');
-        
+
         $databaseBaru = (clone $query)
             ->whereYear('created_at', $now->year)
             ->whereMonth('created_at', $now->month)
             ->count();
-            
+
         $totalDatabase = $query->count();
         $target = 100;
         $kurang = max($target - $databaseBaru, 0);
@@ -627,7 +632,7 @@ private function filterKelasByUser($user)
 
         // We can use sync-like logic or just delete and recreate if we don't care about exact row IDs.
         // To preserve created_at for old ones, we should find and update.
-        
+
         $collectedIds = [];
         foreach ($interactions as $index => $item) {
             $spin = $data->spinInteractions()->updateOrCreate(

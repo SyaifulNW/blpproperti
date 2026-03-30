@@ -5,7 +5,7 @@
         data-id="{{ $item->id }}"
 >
 
-    <td>{{ $loop->iteration ?? '-' }}</td>
+    <td style="padding-right: 25px !important; text-align: center; font-weight: bold;">{{ $loop->iteration ?? '-' }}</td>
     
     @php
         $userRole = strtolower(auth()->user()->role);
@@ -19,6 +19,7 @@
             <div class="d-flex align-items-center mb-2">
                 <input type="text" 
                        class="form-control form-control-sm editable fw-bold text-dark me-2" 
+                       data-id="{{ $item->id }}"
                        data-field="nama" 
                        value="{{ $item->nama }}" 
                        placeholder="(silakan isi nama)"
@@ -29,8 +30,10 @@
             <div class="d-flex align-items-center" style="gap: 12px;">
                 <div class="input-group input-group-sm" style="width: 170px;">
                     <input type="text" 
-                           class="form-control editable text-muted" 
+                           class="form-control editable text-muted wa-input" 
+                           data-id="{{ $item->id }}"
                            data-field="no_wa" 
+                           data-original="{{ $item->no_wa }}"
                            value="{{ $item->no_wa }}" 
                            placeholder="No WhatsApp"
                            style="font-size: 0.85rem; border-radius: 6px 0 0 6px; border: 1px solid #ced4da;">
@@ -102,11 +105,11 @@
 
 
     
-    @if(strtolower(auth()->user()->role) !== 'administrator'  && Auth::user()->role !== 'marketing')
+    @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'marketing']))
     @php
         $showMoveBtn = ($item->spin_b == 'Ya' && $item->spin_a == 'Ya' && $item->spin_t == 'Ya');
     @endphp
-    <td>
+    <td class="text-center">
         <button type="button" 
                 class="btn btn-sm btn-primary btn-move-salesplan {{ $showMoveBtn ? '' : 'd-none' }}" 
                 data-id="{{ $item->id }}" 
@@ -120,14 +123,9 @@
 
     @if(in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) || auth()->user()->name === 'Agus Setyo')
     <td>{{ $item->created_by }}</td>
-    
-    {{-- Role Column --}}
-    @if(strtolower(auth()->user()->role) !== 'administrator')
-        <td>{{ $item->created_by_role }}</td>
-    @endif
     @endif
     
-    @if(strtolower(auth()->user()->role) !== 'administrator')
+    @if(!in_array(strtolower(auth()->user()->role), ['administrator']))
         <td>
             <a href="{{ route('admin.database.show', $item->id) }}" class="btn btn-info btn-sm">
                 <i class="fa-solid fa-eye" style="color:#fff;"></i>
