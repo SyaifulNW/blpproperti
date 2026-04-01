@@ -73,7 +73,7 @@ class PenilaianController extends Controller
         // ============================
         // 2. NILAI OMSET (60%)
         // ============================
-        $targetGlobal = 1000000000; // Target 1 Miliar
+        $targetGlobal = 1250000000; // Target 1.25 Miliar
         $nilaiOmset = $targetGlobal > 0 ? min(60, intval($totalOmset / $targetGlobal * 60)) : 0;
 
         // ============================
@@ -215,7 +215,7 @@ class PenilaianController extends Controller
             $totalOmset += $kelas->salesplans->sum('nominal');
         }
 
-        $targetGlobal = 1000000000;
+        $targetGlobal = 1250000000;
         $nilaiOmset = $targetGlobal > 0 ? min(60, floor($totalOmset / $targetGlobal * 60)) : 0;
 
         // CLOSING PAKET (REMOVED)
@@ -284,7 +284,7 @@ class PenilaianController extends Controller
                 ->get();
         }
         $totalOmset = $kelasOmset->sum(fn ($k) => $k->salesplans->sum('nominal'));
-        $targetOmset = 1000000000;
+        $targetOmset = 1250000000;
         $nilaiOmset = min(60, intval($totalOmset / $targetOmset * 60));
 
         // 2. DATABASE BARU

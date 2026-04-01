@@ -151,7 +151,7 @@ class PenilaianCsController extends Controller
             ->sum('nominal');
         
         // 1. Omset (Bobot 60%)
-        $targetOmset = 1000000000; // 1 Miliar
+        $targetOmset = 1250000000; // 1.25 Miliar
         $scoreOmset = $targetOmset > 0 ? min(60, round(($totalOmset / $targetOmset) * 60, 2)) : 0;
         $nilaiOmset = $targetOmset > 0 ? min(100, round(($totalOmset / $targetOmset) * 100)) : 0;
 
@@ -538,7 +538,7 @@ public function store(Request $request)
             ->whereMonth('updated_at', $bulan)
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
-        $targetOmset = 1000000000; 
+        $targetOmset = 1250000000; 
         $scoreOmset = $targetOmset > 0 ? min(60, round(($totalOmset / $targetOmset) * 60, 2)) : 0;
 
         // 2. Closing Paket (REMOVED)

@@ -212,7 +212,7 @@ class SalesPlanController extends Controller
                     $namaKelas = $item->kelas->nama_kelas;
 
                     // Logic Target: 1 Miliar per kelas
-                    $t = 1000000000;
+                    $t = 1250000000;
                     $totalTargetCS += $t;
                 }
                 $csTargets[$csId] = $totalTargetCS;

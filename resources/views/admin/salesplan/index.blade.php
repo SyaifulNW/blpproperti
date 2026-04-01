@@ -152,7 +152,7 @@
 
     <div class="container">
     @php
-        $targetOmset = 1000000000; // Rp 1.000.000.000
+        $targetOmset = 1250000000; // Rp 1.250.000.000
         $groupedByCS = $salesplans->groupBy('created_by');
 
         $namaCS = [
@@ -381,8 +381,8 @@
                 $totalNominal = $items->sum('nominal');
             }
 
-            // Tentukan Target Omset: 1 Miliar per bulan
-            $targetOmset = 1000000000;
+            // Tentukan Target Omset: 1.25 Miliar per bulan
+            $targetOmset = 1250000000;
             $selisih = max(0, $targetOmset - $totalNominal);
             $tercapai = $totalNominal >= $targetOmset;
             $persentase = $targetOmset > 0 ? round(($totalNominal / $targetOmset) * 100, 1) : 0;
@@ -1233,7 +1233,7 @@
                 <tr style="background: #d1e7dd; font-weight: bold; color: #0f5132;">
                     <td colspan="3" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Target Omset</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        @php $targetOmsetVal = 1000000000; @endphp
+                        @php $targetOmsetVal = 1250000000; @endphp
                         Rp {{ number_format($targetOmsetVal, 0, ',', '.') }}
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;"></td>

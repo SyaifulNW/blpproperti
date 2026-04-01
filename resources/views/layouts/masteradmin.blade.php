@@ -352,8 +352,8 @@
                 @if(strtolower(Auth::user()->role) === 'marketing')
                     {{-- <ul class="navbar-nav sidebar sidebar-dark" style="background-color: #0b198f;"> --}}
                         <!-- Removed nested ul that was in original code as it might break layout, kept items inline or check if separate section needed. 
-                                         Original code started a NEW ul inside the sidebar ul which is invalid HTML structure. 
-                                         I will flatten this out into the existing list. -->
+                                                 Original code started a NEW ul inside the sidebar ul which is invalid HTML structure. 
+                                                 I will flatten this out into the existing list. -->
 
                         <hr class="sidebar-divider my-0">
 
@@ -439,13 +439,7 @@
                     @endif
                 @endif
 
-                {{-- DATA KPR --}}
-                <li class="nav-item {{ request()->routeIs('admin.kpr.index') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.kpr.index') }}">
-                        <i class="fas fa-fw fa-university text-warning"></i>
-                        <span><strong>DATA KPR</strong></span>
-                    </a>
-                </li>
+
 
                 {{-- Menu Khusus CS MBC & CS SMI --}}
                 @if(in_array(strtolower(trim(Auth::user()->role)), ['cs-mbc', 'cs-smi']))

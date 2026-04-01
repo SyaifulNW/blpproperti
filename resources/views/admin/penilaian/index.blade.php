@@ -122,7 +122,7 @@
                     <tr>
                         <td class="text-center fw-bold">{{ $no++ }}</td>
                         <td class="fw-bold">Penjualan & Omset</td>
-                        <td>Target Rp 1 Miliar/bulan</td>
+                        <td>Target Rp 1.25 Miliar/bulan</td>
                         <td class="text-center fw-bold">60%</td>
                         <td class="fw-bold">Rp {{ number_format($totalOmset) }}</td>
                         <td class="text-center fw-bold">{{ $nilaiOmset }}</td>

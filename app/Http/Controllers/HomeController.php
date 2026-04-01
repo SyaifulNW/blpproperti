@@ -185,7 +185,7 @@ class HomeController extends Controller
     
     // OMSET
     $totalOmset = $kelasOmsetFiltered->sum('omset'); 
-    $targetBulananOmset = 1000000000; // Target Tetap 1 Miliar
+    $targetBulananOmset = 1250000000; // Target Tetap 1.25 Miliar
     
     // 🔥 Pencapaian Omset untuk ditampilkan di tabel
     $pencapaianOmset = $totalOmset;
@@ -241,7 +241,7 @@ class HomeController extends Controller
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
 
-        if ($omsetBulanIni >= 1000000000) {
+        if ($omsetBulanIni >= 1250000000) {
             $consecutiveMonths++;
         } else {
             break;
@@ -331,7 +331,7 @@ private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $ro
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
     }
-    $targetGlobal = 1000000000;
+    $targetGlobal = 1250000000;
     
     // Nilai Omset (0-100) -> Bobot 60%
     $nilaiOmsetSkor = $targetGlobal > 0 ? min(100, round(($totalOmset / $targetGlobal) * 100)) : 0;

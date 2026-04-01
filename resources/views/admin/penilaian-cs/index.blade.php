@@ -219,7 +219,7 @@
                             <tr>
                                 <td>1</td>
                                 <td>Penjualan & Omset</td>
-                                <td>Target Rp 1 Miliar/bulan</td>
+                                <td>Target Rp 1.25 Miliar/bulan</td>
                                 <td>60%</td>
                                 <td>Rp {{ number_format($totalOmset ?? 0,0,',','.') }}</td>
                                 <td>{{ $scoreOmset ?? 0 }}</td>
