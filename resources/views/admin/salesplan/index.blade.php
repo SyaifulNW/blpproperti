@@ -894,13 +894,17 @@
                                 <tr class="{{ $rowClass }}">
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td>
-                                            <span>{{ $plan->nama ?? '-' }}</span>
+                                        <div class="fw-bold">{{ $plan->nama ?? '-' }}</div>
                                     </td>
                                     {{-- Potensi (Nominal) --}}
-                                    <td contenteditable="true" class="editable fw-bold text-dark text-center"
+                                    <td @if(!isset($plan->total_nominal_aggregated)) contenteditable="true" @endif class="editable fw-bold text-dark text-center"
                                         data-id="{{ $plan->id }}"
                                         data-field="nominal">
-                                        {{ number_format($plan->nominal, 0, ',', '.') }}
+                                        @if(isset($plan->total_nominal_aggregated))
+                                            {{ number_format($plan->total_nominal_aggregated, 0, ',', '.') }}
+                                        @else
+                                            {{ number_format($plan->nominal, 0, ',', '.') }}
+                                        @endif
                                     </td>
                                     {{-- Status Dropdown --}}
                                     <td class="text-center">

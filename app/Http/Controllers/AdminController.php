@@ -12,34 +12,80 @@ class AdminController extends Controller
 {
     public function index()
     {
-        
-   
-            
-        // 1. Total User
-        $totalUser = User::count();
+        $now = \Carbon\Carbon::now();
+        $bulanNum = $now->month;
+        $tahun = $now->year;
 
-        // 2. Total Database (semua data peserta)
-        $totalDatabase = Data::count();
+        // 1. Total Penjualan Bulanan
+        $totalBulanan = \App\Models\SalesPlan::whereMonth('updated_at', $bulanNum)
+            ->whereYear('updated_at', $tahun)
+            ->where('status', 'sudah_transfer')
+            ->sum('nominal');
 
-        // 3. Jumlah Kelas
-        $totalKelas = Kelas::count();
+        // 2. Total Penjualan Tahunan
+        $totalTahunan = \App\Models\SalesPlan::whereYear('updated_at', $tahun)
+            ->where('status', 'sudah_transfer')
+            ->sum('nominal');
 
-        // 4. List CS + Total database masing-masing (berdasarkan created_by)
-        $listCs = User::where('role', 'cs')
-            ->select('users.id', 'users.name',
-                DB::raw('(SELECT COUNT(*) FROM data WHERE data.created_by = users.id) AS total_database')
-            )
-            ->get();
+        // 3. YoY Growth
+        $totalLalu = \App\Models\SalesPlan::whereYear('updated_at', $tahun - 1)
+            ->where('status', 'sudah_transfer')
+            ->sum('nominal');
+        $yoyGrowth = $totalLalu > 0 ? round((($totalTahunan - $totalLalu) / $totalLalu) * 100, 1) : 15.0;
+
+        // 4. Rata-rata Penjualan / Hari
+        $avgDay = $now->day > 0 ? $totalBulanan / $now->day : 0;
+
+        // 5. Total Pelanggan Aktif
+        $totalPelanggan = \App\Models\Data::count();
+        $pelangganBaru = \App\Models\Data::whereMonth('created_at', $bulanNum)
+            ->whereYear('created_at', $tahun)
+            ->count();
+
+        // 6. Target Global
+        $targetReal = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 1250000000;
+
+        // 7. Grafik Pertumbuhan (Monthly)
+        $chartData = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $chartData[] = (float) \App\Models\SalesPlan::whereMonth('updated_at', $m)
+                ->whereYear('updated_at', $tahun)
+                ->where('status', 'sudah_transfer')
+                ->sum('nominal');
+        }
+
+        // 8. List Sales & Omset (Ranking)
+        $salesRanking = User::whereIn('role', ['cs', 'cs-smi', 'cs-mbc', 'marketing'])
+            ->get()
+            ->map(function ($user) use ($bulanNum, $tahun, $targetReal) {
+                $user->omset_bulan_ini = \App\Models\SalesPlan::where('created_by', $user->id)
+                    ->whereMonth('updated_at', $bulanNum)
+                    ->whereYear('updated_at', $tahun)
+                    ->where('status', 'sudah_transfer')
+                    ->sum('nominal');
+
+                $user->target_omset = $targetReal;
+                $user->kekurangan = max(0, $targetReal - $user->omset_bulan_ini);
+                $user->persentase = $targetReal > 0 ? round(($user->omset_bulan_ini / $targetReal) * 100, 1) : 0;
+                $user->status_capaian = ($user->omset_bulan_ini >= $targetReal) ? 'Tercapai' : 'Belum Tercapai';
+
+                return $user;
+            })->sortByDesc('omset_bulan_ini');
 
         return view('administrator', compact(
-            'totalUser',
-            'totalDatabase',
-            'totalKelas',
-            'listCs'
+            'totalBulanan',
+            'totalTahunan',
+            'yoyGrowth',
+            'avgDay',
+            'totalPelanggan',
+            'pelangganBaru',
+            'targetReal',
+            'chartData',
+            'salesRanking'
         ));
     }
-    
-     public function salesplan($id)
+
+    public function salesplan($id)
     {
         $cs = User::findOrFail($id);
         $salesplan = $cs->salesplans; // relasi ke tabel salesplan

@@ -300,13 +300,8 @@
                     $labels = array_keys($sumberDatabase);
                     $values = array_values($sumberDatabase);
 
-                    $totalKomisi = collect($kelasOmsetFiltered)->sum(function ($k) use ($commissionRate) {
-                        // Update: Komisi dinamis (0.5% atau 0.75%)
-                        return $k['omset'] * ($commissionRate ?? 0.005);
-                    });
-
-                    // OMSET CALCULATION
                     $totalOmset = $kelasOmsetFiltered->sum('omset');
+                    $totalKomisi = ($totalOmset * $commissionRate) + $bonus3BulanAmount;
                     $targetBulanan = 1250000000;
                     $persenTercapai = $targetBulanan > 0 ? round(($totalOmset / $targetBulanan) * 100, 2) : 0;
                 @endphp
@@ -357,6 +352,15 @@
                                                 {{ $persenTercapai }}%
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td colspan="2" class="p-2">
+                                                <div class="progress" style="height: 10px; border-radius: 5px;">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated {{ $persenTercapai >= 100 ? 'bg-success' : ($persenTercapai >= 75 ? 'bg-warning' : 'bg-danger') }}"
+                                                        role="progressbar" style="width: {{ min($persenTercapai, 100) }}%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </tfoot>
                                 </table>
                             </div>
@@ -389,24 +393,85 @@
                         </div>
 
                         {{-- Card Komisi --}}
-                        <div class="card shadow-lg border-0 mb-4">
+                        <div class="card shadow-lg border-0 mb-4card-commission">
                             <div class="card-header bg-warning text-dark fw-bold py-2 text-center">
                                 <i class="fas fa-hand-holding-usd me-2"></i> KOMISI SEMENTARA
                             </div>
                             <div class="card-body text-center">
-                                <h2 class="fw-bold text-success mb-0" style="font-size: 2.2rem;">
+                                <h2 class="fw-bold text-success mb-0" style="font-size: 2rem;">
                                     Rp{{ number_format($totalKomisi, 0, ',', '.') }}
                                 </h2>
-                                <p class="text-muted small">Estimasi Komisi
-                                    <strong>{{ ($commissionRate ?? 0.005) * 100 }}%</strong></p>
+                                <p class="text-muted small mb-2">Estimasi Komisi
+                                    <strong>{{ $commissionRate * 100 }}%</strong>
+                                </p>
+
+                                @if($neededForNext > 0)
+                                    <div class="alert alert-info py-2 px-2 m-0" style="font-size: 0.8rem; line-height: 1.2;">
+                                        <i class="fas fa-rocket me-1"></i>
+                                        Kurang <strong>Rp{{ number_format($neededForNext, 0, ',', '.') }}</strong> lagi untuk
+                                        naik komisi <strong>{{ $nextCommissionValue }}</strong>
+                                    </div>
+                                @else
+                                    <div class="alert alert-success py-2 px-2 m-0" style="font-size: 0.8rem;">
+                                        <i class="fas fa-crown me-1 text-warning"></i>
+                                        Anda di level komisi tertinggi!
+                                    </div>
+                                @endif
                                 <hr class="my-2">
                                 <div class="text-start small">
                                     <i class="fas fa-info-circle me-1 text-info"></i>
-                                    <span class="text-muted">Rumus: <strong>{{ ($commissionRate ?? 0.005) * 100 }}% dari
-                                            Omset</strong>. <br> (Contoh: Rp 400jt &times;
-                                        {{ ($commissionRate ?? 0.005) * 100 }}% = Rp
-                                        {{ number_format(400000000 * ($commissionRate ?? 0.005), 0, ',', '.') }})</span>
+                                    <span class="text-muted" style="font-size: 0.75rem;">
+                                        Rumus: <strong>{{ $commissionRate * 100 }}% dari Omset</strong>.
+                                    </span>
                                 </div>
+                            </div>
+                        </div>
+
+                        {{-- Card Bonus Streak --}}
+                        <div class="card shadow-lg border-0 mb-4 card-streak">
+                            <div class="card-header bg-primary text-white fw-bold py-2 text-center">
+                                <i class="fas fa-fire me-2"></i> KONSISTENSI 3 BULAN
+                            </div>
+                            <div class="card-body text-center">
+                                @if($consecutiveMonths >= 3)
+                                    <h4 class="fw-bold text-success mb-1">Rp10.000.000</h4>
+                                    <span class="badge bg-success text-white mb-2 p-2">
+                                        <i class="fas fa-check-circle me-1"></i> BONUS TERCAPAI
+                                    </span>
+                                @else
+                                    <h5 class="fw-bold text-dark mb-1">{{ $consecutiveMonths }} Bulan Streak</h5>
+                                    <div class="progress mb-2" style="height: 10px; border-radius: 5px;">
+                                        <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated"
+                                            role="progressbar" style="width: {{ ($consecutiveMonths / 3) * 100 }}%"></div>
+                                    </div>
+                                    <p class="text-muted small mb-0" style="font-size: 0.8rem;">
+                                        <strong>{{ 3 - $consecutiveMonths }} bulan lagi</strong> untuk dapat <strong>Rp10
+                                            Juta</strong>
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Card Reward Tahunan --}}
+                        <div class="card shadow-lg border-0 mb-4 card-yearly">
+                            <div class="card-header bg-dark text-white fw-bold py-2 text-center">
+                                <i class="fas fa-motorcycle me-2"></i> REWARD TAHUNAN
+                            </div>
+                            <div class="card-body text-center py-2">
+                                <h6 class="fw-bold mb-1">{{ $rewardTahunanNama ?? 'Reward Tahunan' }}</h6>
+                                <div class="progress mb-2" style="height: 18px; border-radius: 10px; position: relative;">
+                                    <div class="progress-bar bg-danger fw-bold" role="progressbar"
+                                        style="width: {{ min(($totalOmsetTahunan / $targetTahunan) * 100, 100) }}%">
+                                        <small>{{ number_format(($totalOmsetTahunan / $targetTahunan) * 100, 1) }}%</small>
+                                    </div>
+                                </div>
+                                @if(!$isEligibleBonusTahunan)
+                                    <p class="text-muted small mb-0" style="font-size: 0.75rem;">
+                                        Kurang <strong>Rp{{ number_format($neededForYearly, 0, ',', '.') }}</strong> lagi!
+                                    </p>
+                                @else
+                                    <p class="text-success small fw-bold mb-0">🏆 Target 12M Tercapai!</p>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -462,29 +527,7 @@
                         <h3 class="fw-bold" style="color: #5a5c69;">Penilaian Sales</h3>
                     </div>
 
-                    {{-- FILTER BULAN & TAHUN --}}
-                    <form method="GET" action="{{ route('home') }}"
-                        class="d-flex justify-content-center align-items-center mb-4" style="gap: 10px;">
-                        <input type="hidden" name="active_tab" value="performance">
-
-                        <select name="bulan" class="form-control" style="width: auto; display: inline-block;"
-                            onchange="this.form.submit()">
-                            @foreach(range(1, 12) as $m)
-                                <option value="{{ sprintf('%02d', $m) }}" {{ $bulanParse->month == $m ? 'selected' : '' }}>
-                                    {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <select name="tahun" class="form-control" style="width: auto; display: inline-block;"
-                            onchange="this.form.submit()">
-                            @foreach(range(date('Y'), 2023) as $y)
-                                <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-
-                    {{-- PROGRESS BAR TOTAL PENCAPAIAN --}}
+                    {{-- TABEL PENILAIAN UTAMA --}}
                     @php
                         $hValTotal = $totalNilaiHasil ?? 0;
                         if ($hValTotal > 100)
@@ -624,11 +667,21 @@
                         </div>
 
                         {{-- NOTE KOMISI --}}
-                        <div class="mt-4 p-3 rounded text-center"
-                            style="background-color: #f1f4f9; border-left: 5px solid #007bff;">
-                            <i class="fas fa-info-circle text-primary me-2"></i>
-                            <span class="fw-bold text-dark">"Jika omset tercapai dalam 3 bulan maka komisinya naik menjadi
-                                0,75%"</span>
+                        <div class="mt-4 p-3 rounded shadow-sm"
+                            style="background-color: #f8fbff; border-left: 5px solid #007bff;">
+                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-info-circle me-2"></i> KETENTUAN KOMISI &
+                                BONUS</h6>
+                            <ul class="small text-dark mb-0 ps-3" style="line-height: 1.6;">
+                                <li><strong>Komisi Bulanan:</strong>
+                                    < 1.25M (0.5%), ≥ 1.25M (0.75%), ≥ 1.5M (1%), ≥ 1.875M (1.25%)</li>
+                                <li><strong>Bonus Konsistensi:</strong> Rp
+                                    {{ number_format($bonus3BulanAmountFixed ?? 10000000, 0, ',', '.') }} (Jika omset ≥ Rp
+                                    {{ number_format($targetBulananOmset ?? 1250000000, 0, ',', '.') }} selama 3 bulan
+                                    berturut-turut)</li>
+                                <li><strong>Apresiasi Tahunan:</strong> {{ $rewardTahunanNama ?? 'Motor Yamaha NMAX' }}
+                                    (Jika total omset 1 tahun ≥ Rp
+                                    {{ number_format($targetTahunan ?? 12000000000, 0, ',', '.') }})</li>
+                            </ul>
                         </div>
                     </div>
 
@@ -815,6 +868,9 @@
 
             document.getElementById('popupOverlay').style.display = 'block';
             document.getElementById('motivasiPopup').style.display = 'block';
+
+            // Tandai sudah muncul di sesi ini
+            sessionStorage.setItem('motivasi_shown', 'true');
         }
     }
 
@@ -823,8 +879,9 @@
         document.getElementById('motivasiPopup').style.display = 'none';
     }
 
-    // Muncul otomatis setelah 1.5 detik jika halaman baru dimuat
-    // Bisa tambahkan logic session storage jika ingin muncul sekali per sesi
-    setTimeout(tampilMotivasi, 1500);
+    // Muncul otomatis setelah 1.5 detik hanya jika belum pernah muncul di sesi ini
+    if (!sessionStorage.getItem('motivasi_shown')) {
+        setTimeout(tampilMotivasi, 1500);
+    }
 
 </script>

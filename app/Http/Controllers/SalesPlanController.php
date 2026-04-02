@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -119,36 +118,47 @@ class SalesPlanController extends Controller
             ->pluck('total_nominal', 'created_by');
 
         $salesplans = SalesPlan::with(['kelas', 'data'])
-
             ->when($kelasFilter, function ($query) use ($kelasFilter) {
                 $query->whereHas('kelas', function ($sub) use ($kelasFilter) {
                     $sub->where('nama_kelas', $kelasFilter);
                 });
             })
+            ->when(!$kelasFilter, function ($query) {
+                // Jika "Semua Produk", gabungkan baris berdasarkan data_id
+                $aggregated = \DB::table('salesplans')
+                    ->join('kelas', 'salesplans.kelas_id', '=', 'kelas.id')
+                    ->select('data_id', 
+                        \DB::raw('SUM(nominal) as total_nominal_aggregated'),
+                        \DB::raw('GROUP_CONCAT(kelas.nama_kelas SEPARATOR ", ") as all_kelas_names')
+                    )
+                    ->whereNull('salesplans.deleted_at')
+                    ->groupBy('data_id');
+                
+                $latestRows = \DB::table('salesplans')
+                    ->select(\DB::raw('MAX(id) as latest_id'))
+                    ->whereNull('deleted_at')
+                    ->groupBy('data_id');
 
+                $query->joinSub($latestRows, 'latest', 'salesplans.id', '=', 'latest.latest_id')
+                      ->joinSub($aggregated, 'agg', 'salesplans.data_id', '=', 'agg.data_id')
+                      ->select('salesplans.*', 'agg.total_nominal_aggregated', 'agg.all_kelas_names');
+            })
             ->when($csFilter, function ($query) use ($csFilter) {
-                $query->where('created_by', $csFilter);
+                $query->where('salesplans.created_by', $csFilter);
             })
-
             ->when($statusFilter, function ($query) use ($statusFilter) {
-                $query->where('status', $statusFilter);
+                $query->where('salesplans.status', $statusFilter);
             })
-
             ->when($bulanFilter, function ($query) use ($bulanFilter) {
-                $query->whereMonth('updated_at', $bulanFilter);
+                $query->whereMonth('salesplans.updated_at', $bulanFilter);
             })
             ->when($tahunFilter, function ($query) use ($tahunFilter) {
-                $query->whereYear('updated_at', $tahunFilter);
+                $query->whereYear('salesplans.updated_at', $tahunFilter);
             })
-
-
-
-
             ->when(!$isAdmin && !in_array(auth()->user()->name, $exemptUsers), function ($query) use ($userId) {
-                $query->where('created_by', $userId);
+                $query->where('salesplans.created_by', $userId);
             })
-
-            ->orderBy('created_at', 'desc')
+            ->orderBy('salesplans.created_at', 'desc')
             ->paginate($perPage);
 
 

@@ -276,6 +276,13 @@
                                     @endforeach
                                 </select>
                             @endif
+                            
+                            <select onchange="updateFilter('survei', this.value)" 
+                                class="form-select form-select-sm border-radius-50 px-3" style="min-width: 120px;">
+                                <option value="">-- Survei --</option>
+                                <option value="Ya" {{ request('survei') == 'Ya' ? 'selected' : '' }}>Sudah Survei</option>
+                                <option value="Tidak" {{ request('survei') == 'Tidak' ? 'selected' : '' }}>Belum Survei</option>
+                            </select>
 
                             <div class="input-group input-group-sm" style="width: auto;">
                                 <span class="input-group-text bg-white"><i
@@ -368,13 +375,15 @@
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title fw-bold"><i class="fas fa-history me-2"></i> SPIN: <span
                             id="spin_nama_peserta"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body bg-light">
                     <div id="spinCardsContainer" class="d-flex flex-row overflow-auto p-2" style="min-height: 400px;"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
                     <button type="button" class="btn btn-primary" id="btnSaveSpinInteractions">Simpan</button>
                 </div>
             </div>
@@ -387,7 +396,9 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title fw-bold">Move to Sales Plan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <form id="moveSalesPlanForm" method="POST">
                     @csrf
@@ -405,7 +416,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary">Pindahkan</button>
                     </div>
                 </form>
@@ -564,49 +575,52 @@
                 $('#modalRiwayatSpin').modal('show');
 
                 $.get(`/admin/database/${id}/spin-interactions`, function (data) {
-                    let html = '';
-                    data.forEach(spin => {
+                    let html = `
+                        <div class="add-spin-card shadow-sm" id="addNewSpin">
+                            <div class="text-center p-4">
+                                <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                                <div class="fw-bold text-primary">Tambah SPIN Baru</div>
+                            </div>
+                        </div>`;
+
+                    const interactions = data.interactions || [];
+
+                    interactions.forEach(spin => {
                         html += `
-                                                <div class="spin-card" data-spin-id="${spin.id}">
-                                                    <div class="spin-card-header">
-                                                        <span><i class="fas fa-calendar-alt me-1"></i> ${new Date(spin.created_at).toLocaleDateString()}</span>
-                                                        <span class="badge bg-white text-dark">ID: ${spin.id}</span>
-                                                    </div>
-                                                    <div class="p-3">
-                                                        <label class="small fw-bold">Hasil Interaksi</label>
-                                                        <textarea class="form-control spin-hasil mb-2" rows="3">${spin.hasil || ''}</textarea>
-                                                        <label class="small fw-bold">Tindak Lanjut</label>
-                                                        <textarea class="form-control spin-tindak" rows="3">${spin.tindak_lanjut || ''}</textarea>
-                                                    </div>
-                                                </div>`;
+                                <div class="spin-card" data-spin-id="${spin.id}">
+                                    <div class="spin-card-header">
+                                        <span><i class="fas fa-calendar-alt me-1"></i> ${new Date(spin.created_at).toLocaleDateString()}</span>
+                                        <span class="badge bg-white text-dark">ID: ${spin.id}</span>
+                                    </div>
+                                    <div class="p-3">
+                                        <label class="small fw-bold">Hasil Interaksi</label>
+                                        <textarea class="form-control spin-hasil mb-2" rows="3">${spin.hasil_fu || ''}</textarea>
+                                        <label class="small fw-bold">Tindak Lanjut</label>
+                                        <textarea class="form-control spin-tindak" rows="3">${spin.tindak_lanjut || ''}</textarea>
+                                    </div>
+                                </div>`;
                     });
-                    html += `
-                                            <div class="add-spin-card shadow-sm" id="addNewSpin">
-                                                <div class="text-center p-4">
-                                                    <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
-                                                    <div class="fw-bold text-primary">Tambah PIN Baru</div>
-                                                </div>
-                                            </div>`;
+
                     $('#spinCardsContainer').html(html);
                 });
             });
 
             $(document).on('click', '#addNewSpin', function () {
                 const newCard = `
-                                        <div class="spin-card shadow-lg bg-light" data-spin-id="new">
-                                            <div class="spin-card-header bg-primary text-white">
-                                                <span><i class="fas fa-plus me-1"></i> PIN BARU</span>
-                                                <span class="badge bg-white text-primary">NEW</span>
-                                            </div>
-                                            <div class="p-3">
-                                                <label class="small fw-bold text-primary">Hasil Interaksi</label>
-                                                <textarea class="form-control spin-hasil mb-2" rows="3" placeholder="Apa hasil interaksi hari ini?"></textarea>
-                                                <label class="small fw-bold text-primary">Tindak Lanjut</label>
-                                                <textarea class="form-control spin-tindak" rows="3" placeholder="Rencana langkah berikutnya?"></textarea>
-                                            </div>
-                                        </div>`;
-                $(this).before(newCard);
-                $('#spinCardsContainer').animate({ scrollLeft: $('#spinCardsContainer')[0].scrollWidth }, 500);
+                        <div class="spin-card shadow-lg bg-light" data-spin-id="new">
+                            <div class="spin-card-header bg-primary text-white">
+                                <span><i class="fas fa-plus me-1"></i> SPIN BARU</span>
+                                <span class="badge bg-white text-primary">NEW</span>
+                            </div>
+                            <div class="p-3">
+                                <label class="small fw-bold text-primary">Hasil Interaksi</label>
+                                <textarea class="form-control spin-hasil mb-2" rows="3" placeholder="Apa hasil interaksi hari ini?"></textarea>
+                                <label class="small fw-bold text-primary">Tindak Lanjut</label>
+                                <textarea class="form-control spin-tindak" rows="3" placeholder="Rencana langkah berikutnya?"></textarea>
+                            </div>
+                        </div>`;
+                $(this).after(newCard);
+                $('#spinCardsContainer').animate({ scrollLeft: 0 }, 500);
             });
 
             $('#btnSaveSpinInteractions').on('click', function () {
@@ -615,14 +629,14 @@
                 $('.spin-card').each(function () {
                     spins.push({
                         id: $(this).data('spin-id'),
-                        hasil: $(this).find('.spin-hasil').val(),
+                        hasil_fu: $(this).find('.spin-hasil').val(),
                         tindak_lanjut: $(this).find('.spin-tindak').val()
                     });
                 });
 
                 $.post(`/admin/database/${dataId}/save-spin-interactions`, {
                     _token: '{{ csrf_token() }}',
-                    spins: spins
+                    interactions: spins
                 }, function () {
                     Swal.fire('Berhasil', 'Data SPIN disimpan', 'success');
                     $('#modalRiwayatSpin').modal('hide');

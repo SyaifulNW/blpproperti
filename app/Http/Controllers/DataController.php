@@ -157,6 +157,12 @@ class DataController extends Controller
             $query->where('provinsi_nama', $provinsiFilter);
         }
 
+        // Filter Survei
+        $surveiFilter = $request->input('survei');
+        if ($surveiFilter !== null && $surveiFilter !== '') {
+            $query->where('survei_lokasi', $surveiFilter);
+        }
+
         // Filter Spin
         $spinFilter = $request->input('spin');
         if ($spinFilter !== null && $spinFilter !== '') {

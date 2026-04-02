@@ -28,7 +28,7 @@ class HomeController extends Controller
         $bulanNum = $carbonBulan->month;
 
         // ====================== 👤 USER LOGIN ======================
-        $csId   = auth()->id();
+        $csId = auth()->id();
         $csName = auth()->user()->name;
 
         // ====================== 🔔 NOTIFIKASI ======================
@@ -50,7 +50,7 @@ class HomeController extends Controller
 
         if ($isCsSmi) {
             // Khusus CS SMI: Filter salesplans sesuai CS dan waktu
-            $allProducts = $allProducts->filter(function($q) {
+            $allProducts = $allProducts->filter(function ($q) {
                 return \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muda Indonesia') || \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muslim Indonesia');
             });
         }
@@ -71,18 +71,18 @@ class HomeController extends Controller
 
             return [
                 'nama_kelas' => $kelas->nama_kelas,
-                'tanggal'    => $kelas->tanggal_mulai,
-                'omset'      => $omset,
-                'target'     => $target,
-                'persen'     => $target > 0 ? round(($omset / $target) * 100, 2) : 0,
-                'komisi'     => $komisiTotal,
+                'tanggal' => $kelas->tanggal_mulai,
+                'omset' => $omset,
+                'target' => $target,
+                'persen' => $target > 0 ? round(($omset / $target) * 100, 2) : 0,
+                'komisi' => $komisiTotal,
             ];
         })->values();
 
         $totalKomisi = $kelasOmsetFiltered->sum('komisi');
 
         // ====================== 📊 PERHITUNGAN NILAI HASIL CS ======================
-     
+
 
         // ====================== 📈 LEADS ======================
         $leads = SalesPlan::select('status', DB::raw('count(*) as total'))
@@ -92,11 +92,11 @@ class HomeController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $cold           = $leads['cold'] ?? 0;
-        $tertarik       = $leads['tertarik'] ?? 0;
-        $mau_transfer   = $leads['mau_transfer'] ?? 0;
+        $cold = $leads['cold'] ?? 0;
+        $tertarik = $leads['tertarik'] ?? 0;
+        $mau_transfer = $leads['mau_transfer'] ?? 0;
         $sudah_transfer = $leads['sudah_transfer'] ?? 0;
-        $no             = $leads['no'] ?? 0;
+        $no = $leads['no'] ?? 0;
 
         $totalLeadAktif = $cold + $tertarik + $mau_transfer + $sudah_transfer + $no;
 
@@ -104,7 +104,8 @@ class HomeController extends Controller
         $hariKerja = 0;
         for ($d = 1; $d <= $carbonBulan->daysInMonth; $d++) {
             $day = Carbon::create($tahun, $bulanNum, $d);
-            if ($day->dayOfWeek != Carbon::SUNDAY) $hariKerja++;
+            if ($day->dayOfWeek != Carbon::SUNDAY)
+                $hariKerja++;
         }
 
         $activities = Activity::with('kategori')
@@ -142,7 +143,8 @@ class HomeController extends Controller
                 $percent = 0;
                 if ($targetBulanan > 0) {
                     $percent = ($totalRealisasi / $targetBulanan) * 100;
-                    if ($percent > 100) $percent = 100;
+                    if ($percent > 100)
+                        $percent = 100;
                 }
 
                 $activityPercents[] = $percent;
@@ -157,11 +159,11 @@ class HomeController extends Controller
 
             $kpiData[] = [
                 'categories_id' => $kategoriId,
-                'nama'        => $categoryName,
-                'target'      => '100%',
-                'bobot'       => $bobotKategori,
-                'persentase'  => round($skorKategori, 2),
-                'nilai'       => round($nilaiKategori, 2),
+                'nama' => $categoryName,
+                'target' => '100%',
+                'bobot' => $bobotKategori,
+                'persentase' => round($skorKategori, 2),
+                'nilai' => round($nilaiKategori, 2),
             ];
 
             $totalKpi += $nilaiKategori;
@@ -176,193 +178,239 @@ class HomeController extends Controller
             ->whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulanNum)
             ->count();
-            
+
         $persentaseDatabaseBaru = $databaseTotal > 0 ? round(($databaseBaru / $databaseTotal) * 100, 2) : 0;
         $persentaseDatabaseLama = 100 - $persentaseDatabaseBaru;
 
 
-            // ====================== 📊 PERHITUNGAN NILAI HASIL CS ======================
-    
-    // OMSET
-    $totalOmset = $kelasOmsetFiltered->sum('omset'); 
-    $targetBulananOmset = 1250000000; // Target Tetap 1.25 Miliar
-    
-    // 🔥 Pencapaian Omset untuk ditampilkan di tabel
-    $pencapaianOmset = $totalOmset;
-    
-    // Nilai Omset (0-100)
-    $nilaiOmset = $targetBulananOmset > 0
-        ? min(100, round(($totalOmset / $targetBulananOmset) * 100))
-        : 0;
-    
-    // Bobot 60%
-    $nilaiOmset = round(($nilaiOmset / 100) * 60, 2);
-    
-    
-    // ============ Closing Paket (REMOVED) ============
-    $closingPaket = 0;
-    $pencapaianClosingPaket = 0;
-    $nilaiClosingPaket = 0;
-    
-    
-    // ============ Database Baru (Sudah Dihitung Diatas) ============
-    
-    // 🔥 Pencapaian Database Baru untuk tabel
-    $pencapaianDatabaseBaru = $databaseBaru;
-    
-    // Target 100 Database, Bobot 20%
-    $nilaiDatabaseBaru = min(20, round(($databaseBaru / 100) * 20, 2));
+        // ====================== 📊 PERHITUNGAN NILAI HASIL CS ======================
+        // Ambil Pengaturan Dynamic
+        $targetBulananOmset = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 1250000000;
+        $targetTahunan = \App\Models\Setting::where('key', 'target_omset_tahunan')->value('value') ?? 12000000000;
+        $bonus3BulanAmountFixed = \App\Models\Setting::where('key', 'bonus_3_bulanan_amount')->value('value') ?? 10000000;
+        $rewardTahunanNama = \App\Models\Setting::where('key', 'reward_tahunan_nama')->value('value') ?? 'Motor Yamaha NMAX';
+
+        // OMSET
+        $totalOmset = $kelasOmsetFiltered->sum('omset');
+
+        // 🔥 Pencapaian Omset untuk ditampilkan di tabel
+        $pencapaianOmset = $totalOmset;
+
+        // Nilai Omset (0-100)
+        $nilaiOmset = $targetBulananOmset > 0
+            ? min(100, round(($totalOmset / $targetBulananOmset) * 100))
+            : 0;
+
+        // Bobot 60%
+        $nilaiOmset = round(($nilaiOmset / 100) * 60, 2);
+
+
+        // ============ Closing Paket (REMOVED) ============
+        $closingPaket = 0;
+        $pencapaianClosingPaket = 0;
+        $nilaiClosingPaket = 0;
+
+
+        // ============ Database Baru (Sudah Dihitung Diatas) ============
+
+        // 🔥 Pencapaian Database Baru untuk tabel
+        $pencapaianDatabaseBaru = $databaseBaru;
+
+        // Target 100 Database, Bobot 20%
+        $nilaiDatabaseBaru = min(20, round(($databaseBaru / 100) * 20, 2));
 
 
 
-    // ====================== MANUAL ASSESSMENT ======================
-    $manual = \App\Models\PenilaianManual::where('user_id', $csId)
-        ->where('bulan', $bulanNum)
-        ->where('tahun', $tahun)
-        ->first();
+        // ====================== MANUAL ASSESSMENT ======================
+        $manual = \App\Models\PenilaianManual::where('user_id', $csId)
+            ->where('bulan', $bulanNum)
+            ->where('tahun', $tahun)
+            ->first();
 
-    $nilaiManualPart = 0;
-    if ($manual) {
-        $sum = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
-        $bobotManual = ($isCsSmi) ? 30 : 20;
-        $nilaiManualPart = round(($sum / 500) * $bobotManual);
-    }
-
-    // ====================== COMMISSION RATE CALCULATION (3 MOS TARGET) ======================
-    $consecutiveMonths = 0;
-    for ($i = 0; $i < 3; $i++) {
-        $checkDate = $carbonBulan->copy()->subMonths($i);
-        $mCheck = $checkDate->month;
-        $yCheck = $checkDate->year;
-
-        $omsetBulanIni = \App\Models\SalesPlan::where('created_by', $csId)
-            ->whereYear('updated_at', $yCheck)
-            ->whereMonth('updated_at', $mCheck)
-            ->where('status', 'sudah_transfer')
-            ->sum('nominal');
-
-        if ($omsetBulanIni >= 1250000000) {
-            $consecutiveMonths++;
-        } else {
-            break;
+        $nilaiManualPart = 0;
+        if ($manual) {
+            $sum = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
+            $bobotManual = ($isCsSmi) ? 30 : 20;
+            $nilaiManualPart = round(($sum / 500) * $bobotManual);
         }
-    }
 
-    $isEligibleCommission075 = ($consecutiveMonths >= 3);
-    $commissionRate = $isEligibleCommission075 ? 0.0075 : 0.005;
+        // ====================== COMMISSION RATE CALCULATION (NEW RULES) ======================
+        // Rule: < 1.25M = 0.5%, >= 1.25M = 0.75%, >= 1.5M = 1%, >= 1.875M = 1.25%
+        $commissionRate = 0.005;
+        $nextCommissionTarget = $targetBulananOmset;
+        $nextCommissionValue = "0.75%";
 
-    // ====================== TOTAL NILAI HASIL ======================
-    // Note: $nilaiOmset, $nilaiClosingPaket, $nilaiDatabaseBaru are already calculated above.
-    $totalNilaiHasil = $nilaiOmset + $nilaiClosingPaket + $nilaiDatabaseBaru + $nilaiManualPart;
+        if ($totalOmset >= 1.5 * $targetBulananOmset) {
+            $commissionRate = 0.0125;
+            $nextCommissionTarget = 0;
+        } elseif ($totalOmset >= 1.2 * $targetBulananOmset) {
+            $commissionRate = 0.01;
+            $nextCommissionTarget = 1.5 * $targetBulananOmset;
+            $nextCommissionValue = "1.25%";
+        } elseif ($totalOmset >= $targetBulananOmset) {
+            $commissionRate = 0.0075;
+            $nextCommissionTarget = 1.2 * $targetBulananOmset;
+            $nextCommissionValue = "1%";
+        }
 
+        $neededForNext = $nextCommissionTarget > 0 ? ($nextCommissionTarget - $totalOmset) : 0;
 
-    // ====================== HISTORY KINERJA (12 BULAN) ======================
-    $historyNilai = [];
-    $role = auth()->user()->role;
+        // ====================== BONUS 3 BULANAN (KONSISTENSI) ======================
+        $consecutiveMonths = 0;
+        for ($i = 0; $i < 3; $i++) {
+            $checkDate = $carbonBulan->copy()->subMonths($i);
+            $mCheck = $checkDate->month;
+            $yCheck = $checkDate->year;
 
-    for ($m = 1; $m <= 12; $m++) {
-        $historyNilai[$m] = $this->hitungTotalNilaiHasil($csId, auth()->user()->name, $m, $tahun, $role);
-    }
+            $omsetBulanCek = \App\Models\SalesPlan::where('created_by', $csId)
+                ->whereYear('updated_at', $yCheck)
+                ->whereMonth('updated_at', $mCheck)
+                ->where('status', 'sudah_transfer')
+                ->sum('nominal');
 
-    // ====================== RETURN ======================
-    return view('home', compact(
-        'kelasOmsetFiltered',
-        'totalKomisi',
+            if ($omsetBulanCek >= $targetBulananOmset) {
+                $consecutiveMonths++;
+            } else {
+                break;
+            }
+        }
 
-        // Nilai hasil CS
-        'nilaiOmset',
-        'nilaiClosingPaket',
-        'nilaiDatabaseBaru',
-        'nilaiManualPart',
-        'totalNilaiHasil',
-        'manual',
-        'historyNilai',
+        $isEligibleBonus3Bulan = ($consecutiveMonths >= 3);
+        $bonus3BulanAmount = $isEligibleBonus3Bulan ? $bonus3BulanAmountFixed : 0;
 
-        'cold',
-        'tertarik',
-        'mau_transfer',
-        'sudah_transfer',
-        'no',
-        'totalLeadAktif',
-
-        'csName',
-        'bulan',
-
-        'kpiData',
-        'totalBobot',
-        'totalNilai',
-
-        'databaseBaru',
-        'databaseTotal',
-        'persentaseDatabaseBaru',
-        'persentaseDatabaseLama',
-
-        'pencapaianOmset',
-        'pencapaianClosingPaket',
-        'pencapaianDatabaseBaru',
-        
-        // Closing Paket
-        'closingPaket',  
-
-    
-        'notifikasi',
-        'notifCount',
-        'isEligibleCommission075',
-        'commissionRate'
-    ));
-}
-
-private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $role)
-{
-    // OMSET - Ambil semua produk dan filter berdasarkan role (seperti di index)
-    $allProducts = \App\Models\Kelas::all();
-    if ($role === 'cs-smi') {
-        $allProducts = $allProducts->filter(function($q) {
-            return \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muda Indonesia') || \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muslim Indonesia');
-        });
-    }
-
-    $totalOmset = 0;
-    foreach ($allProducts as $kelas) {
-        $totalOmset += $kelas->salesplans()
-            ->where('created_by', $csId)
+        // ====================== BONUS TAHUNAN (REWARD TAHUNAN) ======================
+        $totalOmsetTahunan = \App\Models\SalesPlan::where('created_by', $csId)
             ->whereYear('updated_at', $tahun)
-            ->whereMonth('updated_at', $bulan)
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
+        $isEligibleBonusTahunan = ($totalOmsetTahunan >= $targetTahunan);
+        $neededForYearly = max(0, $targetTahunan - $totalOmsetTahunan);
+
+
+        // ====================== TOTAL NILAI HASIL ======================
+        // Note: $nilaiOmset, $nilaiClosingPaket, $nilaiDatabaseBaru are already calculated above.
+        $totalNilaiHasil = $nilaiOmset + $nilaiClosingPaket + $nilaiDatabaseBaru + $nilaiManualPart;
+
+
+        // ====================== HISTORY KINERJA (12 BULAN) ======================
+        $historyNilai = [];
+        $role = auth()->user()->role;
+
+        for ($m = 1; $m <= 12; $m++) {
+            $historyNilai[$m] = $this->hitungTotalNilaiHasil($csId, auth()->user()->name, $m, $tahun, $role);
+        }
+
+        // ====================== RETURN ======================
+        return view('home', compact(
+            'kelasOmsetFiltered',
+            'totalKomisi',
+
+            // Nilai hasil CS
+            'nilaiOmset',
+            'nilaiClosingPaket',
+            'nilaiDatabaseBaru',
+            'nilaiManualPart',
+            'totalNilaiHasil',
+            'manual',
+            'historyNilai',
+
+            'cold',
+            'tertarik',
+            'mau_transfer',
+            'sudah_transfer',
+            'no',
+            'totalLeadAktif',
+
+            'csName',
+            'bulan',
+
+            'kpiData',
+            'totalBobot',
+            'totalNilai',
+
+            'databaseBaru',
+            'databaseTotal',
+            'persentaseDatabaseBaru',
+            'persentaseDatabaseLama',
+
+            'pencapaianOmset',
+            'pencapaianClosingPaket',
+            'pencapaianDatabaseBaru',
+
+            // Closing Paket
+            'closingPaket',
+
+
+            'notifikasi',
+            'notifCount',
+            'commissionRate',
+            'nextCommissionTarget',
+            'nextCommissionValue',
+            'neededForNext',
+            'consecutiveMonths',
+            'bonus3BulanAmount',
+            'isEligibleBonus3Bulan',
+            'totalOmsetTahunan',
+            'targetTahunan',
+            'isEligibleBonusTahunan',
+            'neededForYearly',
+            'rewardTahunanNama',
+            'bonus3BulanAmountFixed',
+            'targetBulananOmset'
+        ));
     }
-    $targetGlobal = 1250000000;
-    
-    // Nilai Omset (0-100) -> Bobot 60%
-    $nilaiOmsetSkor = $targetGlobal > 0 ? min(100, round(($totalOmset / $targetGlobal) * 100)) : 0;
-    $nilaiOmset = round(($nilaiOmsetSkor / 100) * 60, 2);
+
+    private function hitungTotalNilaiHasil($csId, $namaUserData, $bulan, $tahun, $role)
+    {
+        // OMSET - Ambil semua produk dan filter berdasarkan role (seperti di index)
+        $allProducts = \App\Models\Kelas::all();
+        if ($role === 'cs-smi') {
+            $allProducts = $allProducts->filter(function ($q) {
+                return \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muda Indonesia') || \Illuminate\Support\Str::contains($q->nama_kelas, 'Start-Up Muslim Indonesia');
+            });
+        }
+
+        $totalOmset = 0;
+        foreach ($allProducts as $kelas) {
+            $totalOmset += $kelas->salesplans()
+                ->where('created_by', $csId)
+                ->whereYear('updated_at', $tahun)
+                ->whereMonth('updated_at', $bulan)
+                ->where('status', 'sudah_transfer')
+                ->sum('nominal');
+        }
+        $targetGlobal = 1250000000;
+
+        // Nilai Omset (0-100) -> Bobot 60%
+        $nilaiOmsetSkor = $targetGlobal > 0 ? min(100, round(($totalOmset / $targetGlobal) * 100)) : 0;
+        $nilaiOmset = round(($nilaiOmsetSkor / 100) * 60, 2);
 
 
-    // CLOSING PAKET (REMOVED)
-    $nilaiClosing = 0;
+        // CLOSING PAKET (REMOVED)
+        $nilaiClosing = 0;
 
-    // DATABASE BARU (20%)
-    $dbBaru = Data::where('created_by', $namaUserData) // Gunakan NAMA, bukan ID
-        ->whereYear('created_at', $tahun)
-        ->whereMonth('created_at', $bulan)
-        ->count();
+        // DATABASE BARU (20%)
+        $dbBaru = Data::where('created_by', $namaUserData) // Gunakan NAMA, bukan ID
+            ->whereYear('created_at', $tahun)
+            ->whereMonth('created_at', $bulan)
+            ->count();
 
-    $dbScore = min(20, round(($dbBaru / 100) * 20, 2));
-    $nilaiDb = $dbScore;
+        $dbScore = min(20, round(($dbBaru / 100) * 20, 2));
+        $nilaiDb = $dbScore;
 
-    // MANUAL (20%)
-    $manual = \App\Models\PenilaianManual::where('user_id', $csId)
-                ->where('bulan', $bulan)
-                ->where('tahun', $tahun)
-                ->first();
+        // MANUAL (20%)
+        $manual = \App\Models\PenilaianManual::where('user_id', $csId)
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun)
+            ->first();
 
-    $nilaiManualPart = 0;
-    if ($manual) {
-        $sum = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
-        $bobotManual = 20; 
-        $nilaiManualPart = round(($sum / 500) * $bobotManual);
+        $nilaiManualPart = 0;
+        if ($manual) {
+            $sum = $manual->kerajinan + $manual->kerjasama + $manual->tanggung_jawab + $manual->inisiatif + $manual->komunikasi;
+            $bobotManual = 20;
+            $nilaiManualPart = round(($sum / 500) * $bobotManual);
+        }
+
+        return $nilaiOmset + $nilaiClosing + $nilaiDb + $nilaiManualPart;
     }
-
-    return $nilaiOmset + $nilaiClosing + $nilaiDb + $nilaiManualPart;
-}
 }

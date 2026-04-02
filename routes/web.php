@@ -335,6 +335,7 @@ Route::prefix('admin')->middleware(['auth', 'role:administrator'])->group(functi
     Route::put('/settings/users/{id}', [App\Http\Controllers\Admin\SettingController::class, 'updateUser'])->name('admin.settings.users.update');
     Route::delete('/settings/users/{id}', [App\Http\Controllers\Admin\SettingController::class, 'destroyUser'])->name('admin.settings.users.destroy');
     Route::post('/settings/target', [App\Http\Controllers\Admin\SettingController::class, 'updateTarget'])->name('admin.settings.target.update');
+    Route::post('/settings/reward', [App\Http\Controllers\Admin\SettingController::class, 'updateReward'])->name('admin.settings.reward.update');
     Route::post('/settings/menus/toggle', [App\Http\Controllers\Admin\SettingController::class, 'toggleMenu'])->name('admin.settings.menus.toggle');
     Route::post('/settings/role-menus/update', [App\Http\Controllers\Admin\SettingController::class, 'updateRoleMenu'])->name('admin.settings.role-menus.update');
 

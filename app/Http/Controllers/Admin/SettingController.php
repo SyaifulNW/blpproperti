@@ -11,15 +11,29 @@ class SettingController extends Controller
     {
         $users = \App\Models\User::all();
         $menus = \App\Models\Menu::all();
-        $targetOmset = \App\Models\Setting::where('key', 'target_omset')->value('value');
-        $targetOmsetSmi = \App\Models\Setting::where('key', 'target_omset_smi')->value('value');
+        $targetOmset = \App\Models\Setting::where('key', 'target_omset')->value('value') ?? 1250000000;
+        $targetOmsetSmi = \App\Models\Setting::where('key', 'target_omset_smi')->value('value') ?? 0;
 
-        // Fetch unique roles from users table (could also be a static list if preferred)
-        $roles = \App\Models\User::distinct('role')->pluck('role')->map(function($role) {
+        // Reward Settings
+        $targetOmsetTahunan = \App\Models\Setting::where('key', 'target_omset_tahunan')->value('value') ?? 12000000000;
+        $rewardTahunanNama = \App\Models\Setting::where('key', 'reward_tahunan_nama')->value('value') ?? 'Motor Yamaha NMAX';
+        $bonus3BulananAmount = \App\Models\Setting::where('key', 'bonus_3_bulanan_amount')->value('value') ?? 10000000;
+
+        // Fetch unique roles from users table
+        $roles = \App\Models\User::distinct('role')->pluck('role')->map(function ($role) {
             return strtolower(trim($role));
         })->unique()->values();
 
-        return view('admin.settings.index', compact('users', 'menus', 'targetOmset', 'targetOmsetSmi', 'roles'));
+        return view('admin.settings.index', compact(
+            'users',
+            'menus',
+            'targetOmset',
+            'targetOmsetSmi',
+            'roles',
+            'targetOmsetTahunan',
+            'rewardTahunanNama',
+            'bonus3BulananAmount'
+        ));
     }
 
     // --- USERS ---
@@ -45,10 +59,10 @@ class SettingController extends Controller
     public function updateUser(Request $request, $id)
     {
         $user = \App\Models\User::findOrFail($id);
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'email' => 'required|email|unique:users,email,' . $id,
             'role' => 'required|string',
             'password' => 'nullable|string|min:6',
         ]);
@@ -99,6 +113,22 @@ class SettingController extends Controller
         }
 
         return redirect()->back()->with('success', 'Target Omset berhasil diperbarui.');
+    }
+
+    // --- REWARDS ---
+    public function updateReward(Request $request)
+    {
+        $request->validate([
+            'bonus_3_bulanan_amount' => 'required|numeric',
+            'target_omset_tahunan' => 'required|numeric',
+            'reward_tahunan_nama' => 'required|string',
+        ]);
+
+        \App\Models\Setting::updateOrCreate(['key' => 'bonus_3_bulanan_amount'], ['value' => $request->bonus_3_bulanan_amount]);
+        \App\Models\Setting::updateOrCreate(['key' => 'target_omset_tahunan'], ['value' => $request->target_omset_tahunan]);
+        \App\Models\Setting::updateOrCreate(['key' => 'reward_tahunan_nama'], ['value' => $request->reward_tahunan_nama]);
+
+        return redirect()->back()->with('success', 'Pengaturan Reward berhasil diperbarui.');
     }
 
     // --- MENUS ---
