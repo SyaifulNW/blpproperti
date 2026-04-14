@@ -54,8 +54,11 @@
                         data-id="{{ $item->id }}" 
                         data-nama="{{ $item->nama }}"
                         style="border-radius: 50px; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); font-size: 0.75rem; font-weight: 600; height: 32px; white-space: nowrap;">
-                    <i class="fa-solid fa-comments me-2"></i>Interaksi
+                    <i class="fa-solid fa-file-invoice me-2"></i>Interaksi
                 </button>
+
+
+
             </div>
         </div>
     </td>

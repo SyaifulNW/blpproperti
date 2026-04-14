@@ -94,128 +94,23 @@ class DataController extends Controller
             $sortByParam = 'created_at';
         }
 
-        // Base Query: Show both new leads and those already in Sales Plan
         $query = \App\Models\Data::with('salesplan')->whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
+        $this->applyFilters($request, $query);
 
-        // Filter Search
-        if (!empty($searchFilter)) {
-            $query->where(function ($q) use ($searchFilter) {
-                $q->where('nama', 'LIKE', '%' . $searchFilter . '%')
-                    ->orWhere('leads', 'LIKE', '%' . $searchFilter . '%')
-                    ->orWhere('nama_bisnis', 'LIKE', '%' . $searchFilter . '%')
-                    ->orWhere('no_wa', 'LIKE', '%' . $searchFilter . '%');
-            });
-        }
-
-        $query->orderBy($sortByParam, $sortOrderParam); // Order By must be after search conditions if any
-
-        // Jika admin MBC → hanya 6 CS tertentu (DISABLED/ADJUSTED: User reported CS seeing shared data is undesirable)
-        // if (in_array($userId, $adminMbcIds)) {
-        //     $query->whereIn('created_by', $allowedCsNames);
-        // }
-
-        // Manager → hanya bisa lihat data Latifah & Tursia
-        if ($userRole === 'manager') {
-            $query->whereIn('created_by', ['Latifah', 'Tursia']);
-        }
-
-        // Filter User
-        if (!empty($csFilter)) {
-            $query->where('created_by', $csFilter);
-        }
-
-        // Filter kelas & bulan & tahun
-        if (!empty($kelasFilter)) {
-            $query->where('kelas_id', $kelasFilter);
-        }
-
-        if (!empty($bulanFilter)) {
-            $query->whereMonth('created_at', $bulanFilter);
-        }
-
-        if (!empty($tahunFilter)) {
-            $query->whereYear('created_at', $tahunFilter);
-        }
-
-        // New Filters (Server Side)
-        $sumberFilter = $request->input('sumber');
-        $kotaFilter = $request->input('kota');
-        $provinsiFilter = $request->input('provinsi');
-
-        if (!empty($sumberFilter)) {
-            $query->where('leads', $sumberFilter);
-        }
-
-        if (!empty($kotaFilter)) {
-            // Kota is stored as 'kota_nama' or linked via ID. Checking view logic, it seems to be 'kota_nama'.
-            // Let's verify view usage. In row.blade.php it uses $item->kota_nama.
-            $query->where('kota_nama', $kotaFilter);
-        }
-
-
-        if (!empty($provinsiFilter)) {
-            $query->where('provinsi_nama', $provinsiFilter);
-        }
-
-        // Filter Survei
-        $surveiFilter = $request->input('survei');
-        if ($surveiFilter !== null && $surveiFilter !== '') {
-            $query->where('survei_lokasi', $surveiFilter);
-        }
-
-        // Filter Spin
-        $spinFilter = $request->input('spin');
-        if ($spinFilter !== null && $spinFilter !== '') {
-            $query->where('spin', $spinFilter);
-        }
-
-        // Filter Zoom
-        $zoomFilter = $request->input('zoom');
-        if ($zoomFilter !== null && $zoomFilter !== '') {
-            $query->where('ikut_zoom', $zoomFilter);
-        }
-
-
-        // CS biasa → hanya datanya sendiri
-        // REMOVED !in_array($userId, $adminMbcIds) check so they fall into this logic
-        $forceMyData = $request->input('view') === 'me';
-        if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
-            $query->where('created_by', $user->name);
-        }
-
-        // Khusus Agus Setyo: Hanya kelas Start-Up Muslim/Muda Indonesia
-        if ($user->name === 'Agus Setyo') {
-            $query->whereHas('kelas', function ($q) {
-                $q->where('nama_kelas', 'Start-Up Muda Indonesia')
-                    ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
-            });
+        $sortByParam = $request->input('sort_by', 'created_at');
+        $sortOrderParam = $request->input('order', 'desc');
+        $allowedSorts = ['created_at', 'created_by', 'nama', 'status_peserta'];
+        if (in_array($sortByParam, $allowedSorts)) {
+            $query->orderBy($sortByParam, $sortOrderParam);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
         // --- Stats Calculation for Dashboard Headers ---
         // KPI Query: Targets ALL data input (ignoring status_peserta) to reflect Acquisition Performance
         $kpiQuery = \App\Models\Data::query();
+        $this->applyFilters($request, $kpiQuery);
 
-        // Re-apply Permission/Ownership Logic to KPI Query
-        // Manager
-        if ($userRole === 'manager') {
-            $kpiQuery->whereIn('created_by', ['Latifah', 'Tursia']);
-        }
-        // Filter User (Dropdown)
-        if (!empty($csFilter)) {
-            $kpiQuery->where('created_by', $csFilter);
-        }
-        // Strict CS View
-        // Strict CS View
-        if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
-            $kpiQuery->where('created_by', $user->name);
-        }
-        // Agus Setyo
-        if ($user->name === 'Agus Setyo') {
-            $kpiQuery->whereHas('kelas', function ($q) {
-                $q->where('nama_kelas', 'Start-Up Muda Indonesia')
-                    ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
-            });
-        }
 
         $now = \Carbon\Carbon::now();
         $statsYear = $tahunFilter ? $tahunFilter : $now->year;
@@ -658,5 +553,123 @@ class DataController extends Controller
         // $data->spinInteractions()->whereNotIn('id', $collectedIds)->delete();
 
         return response()->json(['success' => true]);
+    }
+    public function cetakInteraksiPdf($id)
+    {
+        $data = Data::with('spinInteractions')->findOrFail($id);
+        $pdf = \PDF::loadView('admin.database.pdf-rekap', compact('data'));
+        return $pdf->stream('Rekap-Interaksi-' . $data->nama . '.pdf');
+    }
+
+    public function cetakInteraksiPdfAll(Request $request)
+    {
+        $user = Auth::user();
+        $query = Data::with('spinInteractions')->whereIn('status_peserta', ['peserta_baru', 'sales_plan']);
+        $this->applyFilters($request, $query);
+        
+        $data = $query->orderBy('created_at', 'desc')->get();
+        
+        $bulanFilter = $request->input('bulan');
+        $tahunFilter = $request->input('tahun');
+        $periode = 'Semua Periode';
+        if ($bulanFilter && $tahunFilter) {
+            $periode = \Carbon\Carbon::create()->month($bulanFilter)->year($tahunFilter)->translatedFormat('F Y');
+        } elseif ($tahunFilter) {
+            $periode = $tahunFilter;
+        }
+
+        $pdf = \PDF::loadView('admin.database.pdf-rekap-bulanan', [
+            'data' => $data,
+            'periode' => $periode,
+            'csName' => $request->input('cs_name') ?: $user->name
+        ])->setPaper([0, 0, 609.4488, 935.433], 'landscape'); // F4 Landscape
+        
+        return $pdf->stream('Rekap-Interaksi-' . $periode . '.pdf');
+    }
+
+    private function applyFilters(Request $request, $query)
+    {
+        $user = Auth::user();
+        $userRole = strtolower($user->role);
+        
+        $kelasFilter = $request->input('kelas');
+        $csFilter = $request->input('cs_name');
+        $bulanFilter = $request->input('bulan');
+        $tahunFilter = $request->input('tahun'); 
+        $searchFilter = $request->input('search');
+        $sumberFilter = $request->input('sumber');
+        $kotaFilter = $request->input('kota');
+        $provinsiFilter = $request->input('provinsi');
+        $surveiFilter = $request->input('survei');
+        $spinFilter = $request->input('spin');
+        $zoomFilter = $request->input('zoom');
+        $view = $request->input('view');
+
+        if (!empty($searchFilter)) {
+            $query->where(function ($q) use ($searchFilter) {
+                $q->where('nama', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('leads', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('nama_bisnis', 'LIKE', '%' . $searchFilter . '%')
+                    ->orWhere('no_wa', 'LIKE', '%' . $searchFilter . '%');
+            });
+        }
+
+        if ($userRole === 'manager') {
+            $query->whereIn('created_by', ['Latifah', 'Tursia']);
+        }
+
+        if (!empty($csFilter)) {
+            $query->where('created_by', $csFilter);
+        }
+
+        if (!empty($kelasFilter)) {
+            $query->where('kelas_id', $kelasFilter);
+        }
+
+        if (!empty($bulanFilter)) {
+            $query->whereMonth('created_at', $bulanFilter);
+        }
+
+        if (!empty($tahunFilter)) {
+            $query->whereYear('created_at', $tahunFilter);
+        }
+
+        if (!empty($sumberFilter)) {
+            $query->where('leads', $sumberFilter);
+        }
+
+        if (!empty($kotaFilter)) {
+            $query->where('kota_nama', $kotaFilter);
+        }
+
+        if (!empty($provinsiFilter)) {
+            $query->where('provinsi_nama', $provinsiFilter);
+        }
+
+        if ($surveiFilter !== null && $surveiFilter !== '') {
+            $query->where('survei_lokasi', $surveiFilter);
+        }
+
+        if ($spinFilter !== null && $spinFilter !== '') {
+            $query->where('spin', $spinFilter);
+        }
+
+        if ($zoomFilter !== null && $zoomFilter !== '') {
+            $query->where('ikut_zoom', $zoomFilter);
+        }
+
+        $forceMyData = $view === 'me';
+        if (($user->name === 'Linda' && $forceMyData) || (!in_array($userRole, ['administrator', 'manager']) && $user->name !== 'Agus Setyo' && $user->name !== 'Linda')) {
+            $query->where('created_by', $user->name);
+        }
+
+        if ($user->name === 'Agus Setyo') {
+            $query->whereHas('kelas', function ($q) {
+                $q->where('nama_kelas', 'Start-Up Muda Indonesia')
+                    ->orWhere('nama_kelas', 'Start-Up Muslim Indonesia');
+            });
+        }
+        
+        return $query;
     }
 }

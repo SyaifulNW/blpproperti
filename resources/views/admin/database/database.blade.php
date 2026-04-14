@@ -254,7 +254,11 @@
                             <button type="button" class="btn btn-success" id="btnTambahInline">
                                 <i class="fa-solid fa-plus"></i> Tambah
                             </button>
+                            <a href="{{ route('admin.database.pdf-rekap-all', request()->all()) }}" target="_blank" class="btn btn-primary ms-2" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); border: none; border-radius: 5px;">
+                                <i class="fas fa-file-pdf me-2"></i>Interaksi
+                            </a>
                         @endif
+
                     </div>
 
                     <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -384,8 +388,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <a href="#" target="_blank" class="btn btn-danger" id="btnCetakPdfSpin"><i class="fas fa-file-pdf me-2"></i>Cetak PDF</a>
                     <button type="button" class="btn btn-primary" id="btnSaveSpinInteractions">Simpan</button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -570,8 +576,10 @@
                 const nama = $(this).data('nama');
                 $('#spin_nama_peserta').text(nama);
                 $('#btnSaveSpinInteractions').data('id', id);
+                $('#btnCetakPdfSpin').attr('href', `/admin/database/${id}/pdf-rekap`);
 
                 $('#spinCardsContainer').html('<div class="p-4 w-100 text-center text-muted">Memuat data...</div>');
+
                 $('#modalRiwayatSpin').modal('show');
 
                 $.get(`/admin/database/${id}/spin-interactions`, function (data) {

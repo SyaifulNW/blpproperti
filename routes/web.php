@@ -223,6 +223,11 @@ Route::post('/admin/database/update-location', [DataController::class, 'updateLo
 Route::post('/admin/database/update-potensi/{id}', [DataController::class, 'updatePotensi']);
 Route::get('/admin/database/{id}/spin-interactions', [DataController::class, 'getSpinInteractions']);
 Route::post('/admin/database/{id}/save-spin-interactions', [DataController::class, 'saveSpinInteractions']);
+Route::get('/admin/database/{id}/pdf-rekap', [DataController::class, 'cetakInteraksiPdf'])->name('admin.database.pdf-rekap');
+Route::get('/admin/database-pdf-rekap-all', [DataController::class, 'cetakInteraksiPdfAll'])->name('admin.database.pdf-rekap-all');
+
+
+
 
 
 // InlineSalesplan

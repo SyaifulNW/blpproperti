@@ -317,38 +317,38 @@
                                 <table class="table table-hover mb-0 align-middle" style="font-size: 1rem;">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>Produk</th>
-                                            <th class="text-end">Omset</th>
+                                            <th class="fw-bold">Produk</th>
+                                            <th class="text-end fw-bold">Omset</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($kelasOmsetFiltered as $k)
                                             <tr>
-                                                <td class="fw-semibold">{{ $k['nama_kelas'] }}</td>
+                                                <td class="fw-bold">{{ $k['nama_kelas'] }}</td>
                                                 <td class="text-end text-success fw-bold">
                                                     Rp{{ number_format($k['omset'], 0, ',', '.') }}
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="2" class="text-muted fst-italic text-center">No data</td>
+                                                <td colspan="2" class="text-muted fst-italic text-center fw-bold">No data</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
                                     <tfoot class="bg-light">
                                         <tr class="fw-bold">
-                                            <td>Total Omset</td>
-                                            <td class="text-end text-success">
+                                            <td class="fw-bold">Total Omset</td>
+                                            <td class="text-end text-success fw-bold">
                                                 Rp{{ number_format($totalOmset, 0, ',', '.') }}</td>
                                         </tr>
                                         <tr class="small text-muted">
-                                            <td>Target Bulanan</td>
-                                            <td class="text-end">Rp{{ number_format($targetBulanan, 0, ',', '.') }}</td>
+                                            <td class="fw-bold">Target Bulanan</td>
+                                            <td class="text-end fw-bold">Rp{{ number_format($targetBulanan, 0, ',', '.') }}</td>
                                         </tr>
                                         <tr class="fw-bold">
-                                            <td>Persentase</td>
+                                            <td class="fw-bold">Persentase</td>
                                             <td
-                                                class="text-end {{ $persenTercapai >= 100 ? 'text-success' : ($persenTercapai >= 75 ? 'text-warning' : 'text-danger') }}">
+                                                class="text-end fw-bold {{ $persenTercapai >= 100 ? 'text-success' : ($persenTercapai >= 75 ? 'text-warning' : 'text-danger') }}">
                                                 {{ $persenTercapai }}%
                                             </td>
                                         </tr>
@@ -367,7 +367,7 @@
                         </div>
                     </div>
 
-                    {{-- Kolom 2: DATABASE & KOMISI --}}
+                    {{-- Kolom 2: DATABASE & SUMBER LEADS --}}
                     <div class="col-12 col-md-4 d-flex flex-column">
                         {{-- Card Database --}}
                         <div class="card shadow-lg border-0 mb-4">
@@ -376,7 +376,7 @@
                             </div>
                             <div class="card-body text-center">
                                 <h2 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">{{ $databaseBaru }}</h2>
-                                <p class="text-muted small mb-3">Database Baru</p>
+                                <p class="text-muted small mb-3 fw-bold">Database Baru</p>
 
                                 <div class="progress mb-3" style="height: 12px; border-radius: 10px;">
                                     <div class="progress-bar bg-success fw-bold" role="progressbar"
@@ -392,8 +392,22 @@
                             </div>
                         </div>
 
+                        {{-- Card Sumber Leads --}}
+                        <div class="card shadow-lg border-0">
+                            <div class="card-header bg-primary text-white fw-bold py-2 text-center">
+                                <i class="fas fa-chart-pie me-2"></i> SUMBER LEADS
+                            </div>
+                            <div class="card-body d-flex justify-content-center align-items-center"
+                                style="min-height: 250px;">
+                                <canvas id="pieSumberDbSmall"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Kolom 3: KOMISI & BONUS --}}
+                    <div class="col-12 col-md-4 d-flex flex-column">
                         {{-- Card Komisi --}}
-                        <div class="card shadow-lg border-0 mb-4card-commission">
+                        <div class="card shadow-lg border-0 mb-4 card-commission">
                             <div class="card-header bg-warning text-dark fw-bold py-2 text-center">
                                 <i class="fas fa-hand-holding-usd me-2"></i> KOMISI SEMENTARA
                             </div>
@@ -401,7 +415,7 @@
                                 <h2 class="fw-bold text-success mb-0" style="font-size: 2rem;">
                                     Rp{{ number_format($totalKomisi, 0, ',', '.') }}
                                 </h2>
-                                <p class="text-muted small mb-2">Estimasi Komisi
+                                <p class="text-muted small mb-2 fw-bold">Estimasi Komisi
                                     <strong>{{ $commissionRate * 100 }}%</strong>
                                 </p>
 
@@ -418,11 +432,41 @@
                                     </div>
                                 @endif
                                 <hr class="my-2">
-                                <div class="text-start small">
+                                <div class="text-start small mb-2">
                                     <i class="fas fa-info-circle me-1 text-info"></i>
-                                    <span class="text-muted" style="font-size: 0.75rem;">
+                                    <span class="text-muted fw-bold" style="font-size: 0.75rem;">
                                         Rumus: <strong>{{ $commissionRate * 100 }}% dari Omset</strong>.
                                     </span>
+                                </div>
+                                {{-- Legenda Komisi --}}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered text-center mb-0"
+                                        style="font-size: 0.75rem; border-color: #dee2e6;">
+                                        <thead style="background-color: #f8f9fa; color: #495057;">
+                                            <tr>
+                                                <th class="py-1 fw-bold">Pencapaian Omset</th>
+                                                <th class="py-1 fw-bold">Rate</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="{{ $commissionRate == 0.005 ? 'bg-light fw-bold' : '' }}">
+                                                <td class="py-1 text-start ps-2 fw-bold">&lt; Rp1,25 Miliar</td>
+                                                <td class="py-1 fw-bold">0,5%</td>
+                                            </tr>
+                                            <tr class="{{ $commissionRate == 0.0075 ? 'bg-light fw-bold' : '' }}">
+                                                <td class="py-1 text-start ps-2 fw-bold">≥ Rp1,25 Miliar</td>
+                                                <td class="py-1 fw-bold">0,75%</td>
+                                            </tr>
+                                            <tr class="{{ $commissionRate == 0.01 ? 'bg-light fw-bold' : '' }}">
+                                                <td class="py-1 text-start ps-2 fw-bold">≥ Rp1,5 Miliar</td>
+                                                <td class="py-1 fw-bold">1,0%</td>
+                                            </tr>
+                                            <tr class="{{ $commissionRate == 0.0125 ? 'bg-light fw-bold' : '' }}">
+                                                <td class="py-1 text-start ps-2 fw-bold">≥ Rp1,875 Miliar</td>
+                                                <td class="py-1 fw-bold">1,25%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -441,10 +485,10 @@
                                 @else
                                     <h5 class="fw-bold text-dark mb-1">{{ $consecutiveMonths }} Bulan Streak</h5>
                                     <div class="progress mb-2" style="height: 10px; border-radius: 5px;">
-                                        <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated"
+                                        <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated fw-bold"
                                             role="progressbar" style="width: {{ ($consecutiveMonths / 3) * 100 }}%"></div>
                                     </div>
-                                    <p class="text-muted small mb-0" style="font-size: 0.8rem;">
+                                    <p class="text-muted small mb-0 fw-bold" style="font-size: 0.8rem;">
                                         <strong>{{ 3 - $consecutiveMonths }} bulan lagi</strong> untuk dapat <strong>Rp10
                                             Juta</strong>
                                     </p>
@@ -466,25 +510,12 @@
                                     </div>
                                 </div>
                                 @if(!$isEligibleBonusTahunan)
-                                    <p class="text-muted small mb-0" style="font-size: 0.75rem;">
+                                    <p class="text-muted small mb-0 fw-bold" style="font-size: 0.75rem;">
                                         Kurang <strong>Rp{{ number_format($neededForYearly, 0, ',', '.') }}</strong> lagi!
                                     </p>
                                 @else
-                                    <p class="text-success small fw-bold mb-0">🏆 Target 12M Tercapai!</p>
+                                    <p class="text-success small fw-bold mb-0 fw-bold">🏆 Target 12M Tercapai!</p>
                                 @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Kolom 3: SUMBER LEADS --}}
-                    <div class="col-12 col-md-4">
-                        <div class="card shadow-lg border-0">
-                            <div class="card-header bg-primary text-white fw-bold py-2 text-center">
-                                <i class="fas fa-chart-pie me-2"></i> SUMBER LEADS
-                            </div>
-                            <div class="card-body d-flex justify-content-center align-items-center"
-                                style="min-height: 250px;">
-                                <canvas id="pieSumberDbSmall"></canvas>
                             </div>
                         </div>
                     </div>
@@ -563,12 +594,12 @@
                             <table class="table table-bordered mb-0 text-center align-middle">
                                 <thead style="background-color: #ffed8b;">
                                     <tr>
-                                        <th>No</th>
-                                        <th>Aspek Kinerja</th>
-                                        <th>Indikator</th>
-                                        <th>Bobot</th>
-                                        <th>Pencapaian</th>
-                                        <th>Nilai</th>
+                                        <th class="fw-bold">No</th>
+                                        <th class="fw-bold">Aspek Kinerja</th>
+                                        <th class="fw-bold">Indikator</th>
+                                        <th class="fw-bold">Bobot</th>
+                                        <th class="fw-bold">Pencapaian</th>
+                                        <th class="fw-bold">Nilai</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -677,10 +708,12 @@
                                 <li><strong>Bonus Konsistensi:</strong> Rp
                                     {{ number_format($bonus3BulanAmountFixed ?? 10000000, 0, ',', '.') }} (Jika omset ≥ Rp
                                     {{ number_format($targetBulananOmset ?? 1250000000, 0, ',', '.') }} selama 3 bulan
-                                    berturut-turut)</li>
+                                    berturut-turut)
+                                </li>
                                 <li><strong>Apresiasi Tahunan:</strong> {{ $rewardTahunanNama ?? 'Motor Yamaha NMAX' }}
                                     (Jika total omset 1 tahun ≥ Rp
-                                    {{ number_format($targetTahunan ?? 12000000000, 0, ',', '.') }})</li>
+                                    {{ number_format($targetTahunan ?? 12000000000, 0, ',', '.') }})
+                                </li>
                             </ul>
                         </div>
                     </div>

@@ -237,19 +237,19 @@ class HomeController extends Controller
         // ====================== COMMISSION RATE CALCULATION (NEW RULES) ======================
         // Rule: < 1.25M = 0.5%, >= 1.25M = 0.75%, >= 1.5M = 1%, >= 1.875M = 1.25%
         $commissionRate = 0.005;
-        $nextCommissionTarget = $targetBulananOmset;
+        $nextCommissionTarget = 1250000000; // 1.25M
         $nextCommissionValue = "0.75%";
 
-        if ($totalOmset >= 1.5 * $targetBulananOmset) {
+        if ($totalOmset >= 1875000000) { // 1.875M
             $commissionRate = 0.0125;
             $nextCommissionTarget = 0;
-        } elseif ($totalOmset >= 1.2 * $targetBulananOmset) {
+        } elseif ($totalOmset >= 1500000000) { // 1.5M
             $commissionRate = 0.01;
-            $nextCommissionTarget = 1.5 * $targetBulananOmset;
+            $nextCommissionTarget = 1875000000;
             $nextCommissionValue = "1.25%";
-        } elseif ($totalOmset >= $targetBulananOmset) {
+        } elseif ($totalOmset >= 1250000000) { // 1.25M
             $commissionRate = 0.0075;
-            $nextCommissionTarget = 1.2 * $targetBulananOmset;
+            $nextCommissionTarget = 1500000000;
             $nextCommissionValue = "1%";
         }
 
@@ -268,7 +268,7 @@ class HomeController extends Controller
                 ->where('status', 'sudah_transfer')
                 ->sum('nominal');
 
-            if ($omsetBulanCek >= $targetBulananOmset) {
+            if ($omsetBulanCek >= 1250000000) { // Target Minimal 1.25M
                 $consecutiveMonths++;
             } else {
                 break;
