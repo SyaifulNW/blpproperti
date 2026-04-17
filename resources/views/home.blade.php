@@ -343,7 +343,8 @@
                                         </tr>
                                         <tr class="small text-muted">
                                             <td class="fw-bold">Target Bulanan</td>
-                                            <td class="text-end fw-bold">Rp{{ number_format($targetBulanan, 0, ',', '.') }}</td>
+                                            <td class="text-end fw-bold">Rp{{ number_format($targetBulanan, 0, ',', '.') }}
+                                            </td>
                                         </tr>
                                         <tr class="fw-bold">
                                             <td class="fw-bold">Persentase</td>
@@ -474,7 +475,7 @@
                         {{-- Card Bonus Streak --}}
                         <div class="card shadow-lg border-0 mb-4 card-streak">
                             <div class="card-header bg-primary text-white fw-bold py-2 text-center">
-                                <i class="fas fa-fire me-2"></i> KONSISTENSI 3 BULAN
+                                Bonus Konsistensi 3 Bulan
                             </div>
                             <div class="card-body text-center">
                                 @if($consecutiveMonths >= 3)
@@ -499,7 +500,7 @@
                         {{-- Card Reward Tahunan --}}
                         <div class="card shadow-lg border-0 mb-4 card-yearly">
                             <div class="card-header bg-dark text-white fw-bold py-2 text-center">
-                                <i class="fas fa-motorcycle me-2"></i> REWARD TAHUNAN
+                                REWARD TAHUNAN
                             </div>
                             <div class="card-body text-center py-2">
                                 <h6 class="fw-bold mb-1">{{ $rewardTahunanNama ?? 'Reward Tahunan' }}</h6>
@@ -706,9 +707,7 @@
                                 <li><strong>Komisi Bulanan:</strong>
                                     < 1.25M (0.5%), ≥ 1.25M (0.75%), ≥ 1.5M (1%), ≥ 1.875M (1.25%)</li>
                                 <li><strong>Bonus Konsistensi:</strong> Rp
-                                    {{ number_format($bonus3BulanAmountFixed ?? 10000000, 0, ',', '.') }} (Jika omset ≥ Rp
-                                    {{ number_format($targetBulananOmset ?? 1250000000, 0, ',', '.') }} selama 3 bulan
-                                    berturut-turut)
+                                    {{ number_format($bonus3BulanAmountFixed ?? 10000000, 0, ',', '.') }} (Reward bonus konsistensi selama 3 bulan berturut-turut)
                                 </li>
                                 <li><strong>Apresiasi Tahunan:</strong> {{ $rewardTahunanNama ?? 'Motor Yamaha NMAX' }}
                                     (Jika total omset 1 tahun ≥ Rp

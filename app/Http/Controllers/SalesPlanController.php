@@ -323,7 +323,13 @@ class SalesPlanController extends Controller
             return response()->json(['error' => 'Field tidak diizinkan'], 400);
         }
 
-        $plan->{$request->field} = $request->value;
+        $value = $request->value;
+        if ($request->field === 'nominal') {
+            // Strip dots and convert to numeric if it's nominal
+            $value = str_replace('.', '', $value);
+        }
+
+        $plan->{$request->field} = $value;
         $plan->save();
 
         return response()->json(['success' => true]);
@@ -353,5 +359,55 @@ class SalesPlanController extends Controller
         $plan->delete();
 
         return back()->with('success', 'Data berhasil dihapus');
+    }
+
+    public function dataPembeli(Request $request)
+    {
+        $kelasFilter = $request->input('kelas');
+        $csFilter = $request->input('created_by');
+        $bulanFilter = $request->input('bulan');
+        $tahunFilter = $request->input('tahun', date('Y'));
+        
+        $userId = auth()->id();
+        $isAdmin = in_array($userId, [1]);
+        $exemptUsers = ['Agus Setyo', 'Fitra Jaya Saleh', 'Linda'];
+
+        $pesertaTransfer = SalesPlan::whereIn('status', ['sudah_transfer', 'mau_transfer'])
+            ->with(['data', 'kelas', 'kpr'])
+            ->when($kelasFilter, function ($query) use ($kelasFilter) {
+                $query->whereHas('kelas', function ($sub) use ($kelasFilter) {
+                    $sub->where('nama_kelas', $kelasFilter);
+                });
+            })
+            ->when($csFilter, function ($query) use ($csFilter) {
+                $query->where('created_by', $csFilter);
+            })
+            ->when(!$isAdmin && !in_array(auth()->user()->name, $exemptUsers), function ($query) use ($userId) {
+                $query->where('created_by', $userId);
+            })
+            ->when($bulanFilter, function ($query) use ($bulanFilter) {
+                $query->whereMonth('updated_at', $bulanFilter);
+            })
+            ->when($tahunFilter, function ($query) use ($tahunFilter) {
+                $query->whereYear('updated_at', $tahunFilter);
+            })
+            ->orderBy('updated_at', 'desc')
+            ->paginate(100);
+
+        $kelasList = Kelas::all();
+        $csList = User::where('role', 'sales')
+            ->orWhereIn('name', ['Yasmin', 'Linda', 'Arifa', 'Putri', 'Puput', 'Gunawan', 'Fitra Jaya Saleh', 'Agus Setyo'])
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('admin.salesplan.data_pembeli', [
+            'pesertaTransfer' => $pesertaTransfer,
+            'kelasList' => $kelasList,
+            'csList' => $csList,
+            'kelasFilter' => $kelasFilter,
+            'csFilter' => $csFilter,
+            'bulanFilter' => $bulanFilter,
+            'tahunFilter' => $tahunFilter,
+        ]);
     }
 }

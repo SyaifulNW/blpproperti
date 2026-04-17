@@ -27,7 +27,7 @@
             <div class="card border-0 shadow-sm bg-success text-white rounded-3">
                 <div class="card-body text-center">
                     <i class="bi bi-journal-check fs-3 mb-2"></i>
-                    <h6>Total Sales Plan</h6>
+                    <h6>Total Prospek</h6>
                     <h2 class="fw-bold mb-0">42</h2>
                 </div>
             </div>
@@ -94,10 +94,10 @@
         </div>
     </div>
 
-    {{-- Tabel Sales Plan --}}
+    {{-- Tabel Prospek --}}
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-list-task"></i> Sales Plan</h5>
+            <h5 class="mb-0"><i class="bi bi-list-task"></i> Prospek</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">

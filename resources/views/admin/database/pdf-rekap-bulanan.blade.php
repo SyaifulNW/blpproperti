@@ -99,7 +99,7 @@
                 @endfor
             </tr>
             <tr>
-                <th class="col-wa">NO WA</th>
+                <th class="col-wa"></th>
                 @for($i=1; $i<=10; $i++)
                     <th class="fu-sub-header" style="width: 25px;">TELP</th>
                     <th class="fu-sub-header" style="width: 25px;">WA</th>
@@ -125,7 +125,7 @@
                     <td rowspan="2" style="text-align: center;">{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/y') }}</td>
                     <td rowspan="2">
                         <div style="font-weight: bold;">{{ $item->nama }}</div>
-                        <div style="font-size: 7px;">{{ $item->no_wa }}</div>
+
                     </td>
                     @for($i=1; $i<=10; $i++)
                         @php $fu = $fus[$i] ?? null; @endphp
@@ -165,7 +165,7 @@
                 <th style="width: 30px;">NO</th>
                 <th style="width: 80px;">TANGGAL</th>
                 <th style="width: 150px;">NAMA</th>
-                <th style="width: 100px;">NO WA</th>
+
                 <th>TINDAK LANJUT</th>
             </tr>
         </thead>
@@ -181,7 +181,7 @@
                         <td style="text-align: center;">{{ $noFollowUp++ }}</td>
                         <td style="text-align: center;">{{ \Carbon\Carbon::parse($latestInteraction->created_at)->format('d/m/Y') }}</td>
                         <td>{{ $item->nama }}</td>
-                        <td>{{ $item->no_wa }}</td>
+
                         <td>{{ $latestInteraction->tindak_lanjut }}</td>
                     </tr>
                 @endif

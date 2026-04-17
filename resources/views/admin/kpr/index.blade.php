@@ -5,7 +5,7 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Monitoring Data KPR</h1>
         <a href="{{ route('admin.salesplan.index') }}" class="btn btn-sm btn-secondary shadow-sm">
-            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali ke Sales Plan
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali ke Prospek
         </a>
     </div>
 

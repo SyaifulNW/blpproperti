@@ -84,8 +84,7 @@
             <td>: {{ \Carbon\Carbon::parse($data->created_at)->translatedFormat('d F Y') }}</td>
         </tr>
         <tr>
-            <td class="info-label">No. WhatsApp</td>
-            <td>: {{ $data->no_wa }}</td>
+
             <td class="info-label">Sales / CS</td>
             <td>: {{ $data->created_by }}</td>
         </tr>

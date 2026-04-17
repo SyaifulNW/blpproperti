@@ -119,7 +119,7 @@
 
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">
-            Sales Plan
+            Prospek
             @if($kelasFilter)
             / {{ $kelasFilter }}
             @endif
@@ -128,7 +128,7 @@
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                <li class="breadcrumb-item">Sales Plan</li>
+                <li class="breadcrumb-item">Prospek</li>
                 @if($kelasFilter)
                 <li class="breadcrumb-item active">{{ $kelasFilter }}</li>
                 @endif
@@ -589,7 +589,7 @@
         <!--</a>-->
         <div class="card shadow-lg border-0 rounded-lg mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Daftar Sales Plan</h5>
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Daftar Prospek</h5>
             </div>
             <div class="card-body">
         @php
@@ -827,7 +827,7 @@
                             <tr>
                                 <th rowspan="3">No</th>
                                 <th rowspan="3">Nama</th>
-                                <th rowspan="3">Potensi</th>
+                                <th rowspan="3">Nominal</th>
                                 <th rowspan="3">Status</th>
                                 @if(strtolower(auth()->user()->role) !== 'administrator')
                                     <th rowspan="3">Sumber Leads</th>
@@ -896,7 +896,7 @@
                                     <td>
                                         <div class="fw-bold">{{ $plan->nama ?? '-' }}</div>
                                     </td>
-                                    {{-- Potensi (Nominal) --}}
+                                    {{-- Nominal --}}
                                     <td @if(!isset($plan->total_nominal_aggregated)) contenteditable="true" @endif class="editable fw-bold text-dark text-center"
                                         data-id="{{ $plan->id }}"
                                         data-field="nominal">
@@ -969,7 +969,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="25" class="text-center text-muted">Tidak ada data sales plan ditemukan.</td>
+                                    <td colspan="25" class="text-center text-muted">Tidak ada data prospek ditemukan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -997,77 +997,7 @@
 
         <script>
             // Simpan nilai awal saat fokus
-            $(document).on('focus', '.editable', function() {
-                let currentText = $(this).text().trim();
-                $(this).data('original', currentText);
-                
-                // UX: Jika isinya hanya strip '-', kosongkan saat user mau ngetik
-                if (currentText === '-') {
-                    $(this).text('');
-                }
-            });
 
-            $(document).on('blur', '.editable', function() {
-                let id = $(this).data('id');
-                let field = $(this).data('field');
-                let value = $(this).text().trim();
-                let original = $(this).data('original');
-                let $element = $(this); // Capture element reference
-
-                // Jika kosong, kembalikan ke '-' agar rapi
-                if (value === '') {
-                    value = '-';
-                    $element.text('-');
-                }
-
-                // Jika tidak ada perubahan, jangan kirim request
-                if (value === original) return;
-
-                $.ajax({
-                    url: "{{ route('admin.salesplan.inline-update') }}", 
-                    type: "POST",
-                    context: this, // Ensure 'this' refers to the DOM element in callbacks
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        id: id,
-                        field: field,
-                        value: value
-                    },
-                    success: function(res) {
-                        console.log("✅ Update sukses:", res);
-                        $element.data('original', value);
-                        
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            timerProgressBar: true
-                        });
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Tersimpan'
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("❌ Gagal update:", xhr.responseText);
-                        $element.text(original); // Revert safely
-                        
-                        let msg = "Gagal update data!";
-                        if(xhr.responseJSON && xhr.responseJSON.message) {
-                            msg += "\n" + xhr.responseJSON.message;
-                        } else if (xhr.responseJSON && xhr.responseJSON.error) {
-                            msg += "\n" + xhr.responseJSON.error;
-                        } else {
-                            msg += "\nStatus: " + xhr.status + " " + xhr.statusText;
-                            if (xhr.responseText) {
-                                msg += "\n" + xhr.responseText.substring(0, 50);
-                            }
-                        }
-                        alert(msg);
-                    }
-                });
-            });
         </script>
 
 
@@ -1098,154 +1028,8 @@
 
 
 
-    {{-- Tabel Sales Plan yang sudah ada --}}
+    {{-- Tabel Prospek yang sudah ada --}}
 
-    {{-- Tabel Daftar Pembeli (Eks Peserta) --}}
-    <h4 class="mt-4 fw-bold text-center">
-        Daftar Pembeli / {{ $kelasFilter }}
-        @if(auth()->check() && strtolower(auth()->user()->role) === 'cs-mbc')
-            - {{ auth()->user()->name }}
-        @endif
-    </h4>
-
-
-    <!-- Dropdown contoh -->
-
-    <hr>
-
-
-    <!-- Tabel daftar peserta -->
-    <div class="d-flex justify-content-end align-items-center mb-2">
-        <div style="width: 200px;">
-            <label class="small fw-bold mb-0">Filter Status:</label>
-            <select id="filterStatusDaftar" class="form-control form-control-sm">
-                <option value="all">Semua Status</option>
-                <option value="Tunai">Tunai</option>
-                <option value="KPR">KPR</option>
-            </select>
-        </div>
-    </div>
-
-    <div style="overflow-x: auto; white-space: nowrap;">
-        <table id="tabelPeserta" style="border-collapse: collapse; width: 100%; text-align: center; font-family: Arial, sans-serif; font-size: 14px; min-width: 500px;">
-            <thead>
-                <tr style="background: linear-gradient(to right, #376bb9ff, #1c7f91ff); color: white;">
-                    <th style="padding: 10px; border: 1px solid #ccc;">No</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Nama Peserta</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Status</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Nominal</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">KPR Action</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Monitoring KPR</th>
-                </tr>
-            </thead>
-    <tbody style="font-weight: bold; color: #000;">
-        @php $totalNominal = 0; @endphp
-        @forelse(($pesertaTransfer ?? collect()) as $i => $p)
-            @php 
-                $statusLabel = ($p->status == 'mau_transfer') ? 'KPR' : 'Tunai'; 
-                $statusBadge = ($p->status == 'mau_transfer') ? 'bg-success' : 'bg-info';
-            @endphp
-            <tr class="peserta-row" data-status="{{ $statusLabel }}">
-                <td style="padding: 8px; border: 1px solid #ccc;">{{ $i+1 }}</td>
-                <td style="padding: 8px; border: 1px solid #ccc;">{{ $p->nama }}</td>
-                <td style="padding: 8px; border: 1px solid #ccc;">
-                    <span class="badge {{ $statusBadge }} text-white">{{ $statusLabel }}</span>
-                </td>
-                <td style="padding: 8px; border: 1px solid #ccc;">
-                    Rp {{ number_format($p->nominal, 0, ',', '.') }}
-                </td>
-                <td style="padding: 8px; border: 1px solid #ccc;">
-                    @if($p->status == 'mau_transfer' && !$p->kpr)
-                    <form action="{{ route('admin.kpr.move', $p->id) }}" method="POST" class="form-kpr-move">
-                        @csrf
-                        <button type="button" class="btn btn-sm btn-primary btn-move-kpr" data-nama="{{ $p->nama }}">
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </form>
-                    @else
-                        -
-                    @endif
-                </td>
-                <td style="padding: 8px; border: 1px solid #ccc;">
-                    @if($p->status == 'mau_transfer')
-                        @php
-                            $kprP = $p->kpr; 
-                        @endphp
-                        @if($kprP)
-                            <div class="kpr-tracker-mini d-flex justify-content-center">
-                                @php
-                                    $stepOrder = ['Booking Fee', 'Berkas KPR', 'Pengajuan Bank', 'Appraisal', 'SP3K/Approval', 'Akad Kredit', 'Pencairan/Final'];
-                                    $stepLabels = ['Booking', 'Berkas', 'Bank', 'Appraisal', 'Approval', 'Akad', 'Final'];
-                                    $currentIndex = array_search($kprP->tahap_posisi, $stepOrder);
-                                    if ($currentIndex === false) $currentIndex = 0;
-                                    if ($kprP->status_global == 'Success') $currentIndex = 99;
-                                @endphp
-                                @foreach($stepOrder as $idx => $stage)
-                                    @php
-                                        $isCompleted = ($idx < $currentIndex || $kprP->status_global == 'Success');
-                                        $isActive = ($idx === $currentIndex && $kprP->status_global != 'Success');
-                                    @endphp
-                                    <div class="kpr-step-item">
-                                        <div class="kpr-step-dot {{ $isCompleted ? 'completed' : ($isActive ? 'active' : '') }} kpr-clickable-dot" 
-                                             data-kpr-id="{{ $kprP->id }}" 
-                                             data-stage="{{ $stage }}"
-                                             style="cursor: pointer;"
-                                             title="Klik untuk ubah ke tahap {{ $stage }}">
-                                            @if($isCompleted)<i class="fas fa-check font-size-10 text-white"></i>@endif
-                                        </div>
-                                        <span class="kpr-step-label">{{ $stepLabels[$idx] }}</span>
-                                    </div>
-                                    @if(!$loop->last)
-                                        <i class="fas fa-chevron-right kpr-step-line-chevron {{ $isCompleted ? 'completed' : '' }}"></i>
-                                    @endif
-                                @endforeach
-                            </div>
-                            <div class="mt-1">
-                                <a href="{{ route('admin.kpr.show', $kprP->id) }}" class="btn btn-xs btn-outline-primary py-0" style="font-size: 10px;">
-                                    <i class="fas fa-eye"></i> Detail
-                                </a>
-                            </div>
-                        @else
-                            <span class="text-muted small">Belum diinput</span>
-                        @endif
-                    @else
-                        <span class="text-muted">-</span>
-                    @endif
-                </td>
-            </tr>
-            @php $totalNominal += $p->nominal; @endphp
-        @empty
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 15px; color: #999;">
-                    Salesplan belum ada
-                </td>
-            </tr>
-        @endforelse
-    </tbody>
-
-            <tfoot>
-                <tr style="background: #f2f2f2; font-weight: bold; color: #040e0fff;">
-                    <td colspan="3" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Total Omset</td>
-                    <td style="padding: 10px; border: 1px solid #ccc;">
-                        Rp {{ number_format($totalNominal, 0, ',', '.') }}
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ccc;"></td>
-                    <td style="padding: 10px; border: 1px solid #ccc;"></td>
-                </tr>
-
-                <!-- Target Omset -->
-                <tr style="background: #d1e7dd; font-weight: bold; color: #0f5132;">
-                    <td colspan="3" style="padding: 10px; border: 1px solid #ccc; text-align: right;">Target Omset</td>
-                    <td style="padding: 10px; border: 1px solid #ccc;">
-                        @php $targetOmsetVal = 1250000000; @endphp
-                        Rp {{ number_format($targetOmsetVal, 0, ',', '.') }}
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ccc;"></td>
-                    <td style="padding: 10px; border: 1px solid #ccc;"></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
 
 
 

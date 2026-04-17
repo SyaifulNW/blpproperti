@@ -23,7 +23,7 @@ class DataController extends Controller
         try {
             $user = Auth::user();
             $newData = new Data();
-            $newData->nama = '(Edit Nama)';
+            $newData->nama = '';
             $newData->status_peserta = 'peserta_baru';
             $newData->created_by = $user->name;
             $newData->created_by_role = $user->role;

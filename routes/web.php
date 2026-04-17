@@ -185,6 +185,7 @@ Route::post('/admin/alumni/update-kelas', [\App\Http\Controllers\AlumniControlle
 // Sales Plan Routes 
 Route::post('/data/{id}/pindah-ke-salesplan', [DataController::class, 'pindahKeSalesPlan'])->name('data.pindahKeSalesPlan');
 Route::get('/admin/salesplans', [SalesPlanController::class, 'index'])->name('admin.salesplan.index');
+Route::get('/admin/data-pembeli', [SalesPlanController::class, 'dataPembeli'])->name('admin.pembeli.index');
 Route::get('/admin/salesplan/{id}/edit', [SalesPlanController::class, 'edit'])->name('admin.salesplan.edit');
 Route::put('/admin/salesplan/{id}', [SalesPlanController::class, 'update'])->name('admin.salesplan.update');
 
@@ -273,6 +274,8 @@ Route::get('/admin/daily-activity/export-pdf/{bulan}', [DailyController::class, 
 
 
 Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
+Route::get('/admin/profile', [AdminController::class, 'profile'])->name('admin.profile');
+Route::post('/admin/profile/update', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
 
 
 Route::get('/admin/operasional', [DashboardController::class, 'operasional'])->name('admin.operasional')->middleware('auth');

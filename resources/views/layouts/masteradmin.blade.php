@@ -397,7 +397,13 @@
                         <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
                             <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
                                 <i class="fas fa-fw fa-chart-line"></i>
-                                <span><strong>SALES PLAN</strong></span>
+                                <span><strong>PROSPEK</strong></span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('admin.pembeli.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('admin.pembeli.index') }}">
+                                <i class="fas fa-fw fa-user-check"></i>
+                                <span><strong>DATA PEMBELI</strong></span>
                             </a>
                         </li>
                     @endif
@@ -785,34 +791,24 @@
                             <div class="topbar-divider d-none d-sm-block"></div>
 
                             <!-- Nav Item - User Information -->
-                            <li class="nav-item dropdown no-arrow">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                        <strong>{{ strtoupper(Auth::user()->role) }} - {{ Auth::user()->name }}</strong>
+                            <li class="nav-item d-flex align-items-center no-arrow">
+                                <div class="nav-link d-flex align-items-center pr-0">
+                                    <span class="mr-3 d-none d-lg-inline text-gray-700 small" style="font-weight: 800;">
+                                        {{ strtoupper(Auth::user()->role) }}<br>
+                                        <span class="text-primary">- {{ Auth::user()->name }}</span>
                                     </span>
-                                    <img class="img-profile rounded-circle"
-                                        src="{{ asset('backend/img/undraw_profile.svg') }}" alt="Profile Image" />
-                                </a>
-                                <!-- Dropdown - User Information -->
-                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                    aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="#">
-                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Profile
+                                    <img class="img-profile rounded-circle border shadow-sm"
+                                        src="{{ Auth::user()->photo ? asset('uploads/profiles/' . Auth::user()->photo) : asset('backend/img/undraw_profile.svg') }}" alt="Profile Image" 
+                                        style="width: 40px; height: 40px; object-fit: cover;"/>
+                                </div>
+                                <div class="d-flex align-items-center ml-2">
+                                    <a class="btn btn-sm btn-primary border border-primary shadow-sm px-3 py-1 mr-2 fw-bold text-white shadow" href="{{ route('admin.profile') }}" style="border-radius: 8px;">
+                                        <i class="fas fa-user-circle fa-sm mr-1"></i> Profile
                                     </a>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Settings
-                                    </a>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Activity Log
-                                    </a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Logout
+                                    <a class="btn btn-sm btn-danger border border-danger shadow-sm px-3 py-1 fw-bold text-white shadow" href="{{ route('logout') }}" 
+                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                       style="border-radius: 8px;">
+                                        <i class="fas fa-sign-out-alt fa-sm mr-1"></i> Logout
                                     </a>
                                 </div>
                             </li>
@@ -852,36 +848,9 @@
     </a>
     -->
 
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Apakah anda yakin ingi Keluar ?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">X</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Pilih "Logout" Jika anda ingin keluar dari sistem.
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">
-                        Cancel
-                    </button>
-                    <!-- Logout Redirect Login -->
-                    <a class="btn btn-primary" href="{{ route('logout') }}"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        Logout
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+        @csrf
+    </form>
 
     <!-- jQuery WAJIB PALING ATAS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

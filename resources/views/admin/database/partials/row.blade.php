@@ -22,7 +22,7 @@
                        data-id="{{ $item->id }}"
                        data-field="nama" 
                        value="{{ $item->nama }}" 
-                       placeholder="(silakan isi nama)"
+
                        style="font-size: 0.95rem; border-radius: 6px; border: 1px solid #ced4da; flex-grow: 1;">
             </div>
             
@@ -118,7 +118,7 @@
                 data-id="{{ $item->id }}" 
                 data-nama="{{ $item->nama }}"
                 data-existing-kelas="{{ $item->salesplan->pluck('kelas_id')->toJson() }}"
-                title="Pindahkan ke Sales Plan">
+                title="Pindahkan ke Prospek">
             <i class="fa fa-arrow-right"></i>
         </button>
     </td>

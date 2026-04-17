@@ -2,11 +2,11 @@
 @section('content')
 
 <div class="container-fluid px-4">
-    <h3 class="mb-4">Detail Sales Plan</h3>
+    <h3 class="mb-4">Detail Prospek</h3>
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-table me-1"></i>
-            Detail Sales Plan: {{ $data->kelas->nama_kelas }} &nbsp; &nbsp; &nbsp;  {{ $data->nama }}
+            Detail Prospek: {{ $data->kelas->nama_kelas }} &nbsp; &nbsp; &nbsp;  {{ $data->nama }}
         </div>
         </div>
         </div>

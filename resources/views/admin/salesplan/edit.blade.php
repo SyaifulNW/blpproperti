@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mt-4">
-    <h3>Edit Sales Plan</h3>
+    <h3>Edit Prospek</h3>
     <div class="card shadow mb-4">
         <div class="card-body">
             <form method="POST" action="{{ route('admin.salesplan.update', $plan->id) }}">
@@ -11,7 +11,7 @@
 
                 {{-- Potensi --}}
                 <!-- <div class="form-group">
-                    <label for="nominal">Potensi</label>
+                    <label for="nominal">Nominal</label>
                     <input
                         type="number"
                         name="nominal"

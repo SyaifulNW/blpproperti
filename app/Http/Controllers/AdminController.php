@@ -98,4 +98,57 @@ class AdminController extends Controller
         $database = $cs->databases; // relasi ke tabel database peserta
         return view('admin.cs.database', compact('cs', 'database'));
     }
+
+    public function profile()
+    {
+        $user = auth()->user();
+        return view('admin.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+        
+        $request->validate([
+            'wa' => 'nullable|string|max:20',
+            'biodata' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        if ($request->filled('new_password')) {
+            $request->validate([
+                'password' => 'required',
+                'new_password' => 'required|min:6|confirmed',
+            ]);
+
+            if (!\Hash::check($request->password, $user->password)) {
+                return back()->with('error', 'Password saat ini salah.');
+            }
+            
+            $user->password = \Hash::make($request->new_password);
+        }
+
+        $user->wa = $request->wa;
+        $user->biodata = $request->biodata;
+
+        if ($request->hasFile('photo')) {
+            // Ensure directory exists
+            if (!file_exists(public_path('uploads/profiles'))) {
+                mkdir(public_path('uploads/profiles'), 0777, true);
+            }
+
+            // Delete old photo if exists
+            if ($user->photo && file_exists(public_path('uploads/profiles/' . $user->photo))) {
+                @unlink(public_path('uploads/profiles/' . $user->photo));
+            }
+            
+            $file = $request->file('photo');
+            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/profiles'), $filename);
+            $user->photo = $filename;
+        }
+
+        $user->save();
+        return back()->with('success', 'Profile berhasil diperbarui.');
+    }
 }

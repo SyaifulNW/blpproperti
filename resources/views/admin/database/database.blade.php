@@ -345,7 +345,7 @@
                                 <th class="text-center">A</th>
                                 <th class="text-center">T</th>
                                 @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'marketing']))
-                                    <th>Sales Plan</th>
+                                    <th>Prospek</th>
                                 @endif
                                 @if(in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) || auth()->user()->name === 'Agus Setyo')
                                     <th>Input Oleh</th>
@@ -401,7 +401,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold">Move to Sales Plan</h5>
+                    <h5 class="modal-title fw-bold">Move to Prospek</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -409,7 +409,7 @@
                 <form id="moveSalesPlanForm" method="POST">
                     @csrf
                     <div class="modal-body">
-                        <p>Pindahkan <strong id="move_nama_peserta"></strong> ke Sales Plan produk:</p>
+                        <p>Pindahkan <strong id="move_nama_peserta"></strong> ke Prospek produk:</p>
                         <div class="product-list border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
                             @foreach($kelas as $k)
                                 <div class="form-check mb-2">
