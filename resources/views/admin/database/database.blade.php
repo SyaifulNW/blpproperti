@@ -574,11 +574,21 @@
                             if (lowVal === 'cold') $row.addClass('status-cold');
                             else if (lowVal === 'tunai') {
                                 $row.addClass('status-tunai');
-                                // Focus pada input nominal jika Tunai
-                                $row.find('input[data-field="nominal"]').focus();
+                                // Enable dan focus nominal input
+                                $row.find('input[data-field="nominal"]')
+                                    .prop('disabled', false)
+                                    .css({'opacity':'1','cursor':'text','background':''})
+                                    .attr('placeholder', 'Masukkan nominal')
+                                    .focus();
                             }
                             else if (lowVal === 'kpr') {
                                 $row.addClass('status-kpr');
+                                // Disable nominal input karena KPR tidak perlu nominal
+                                $row.find('input[data-field="nominal"]')
+                                    .val('0')
+                                    .prop('disabled', true)
+                                    .css({'opacity':'0.5','cursor':'not-allowed','background':'#f0f0f0'})
+                                    .attr('placeholder', 'KPR - tidak perlu nominal');
                             }
                             else if (lowVal === 'tertarik') $row.addClass('status-tertarik');
                             else if (lowVal === 'no') $row.addClass('status-no');
@@ -594,32 +604,53 @@
             $(document).on('click', '.btn-direct-alumni', function() {
                 const id = $(this).data('id');
                 const nama = $(this).data('nama');
+                const $row = $(this).closest('tr');
                 
-                if (confirm(`Pindahkan ${nama} ke Data Pelanggan?`)) {
-                    const $btn = $(this);
-                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-                    
-                    $.post(`/data/pindah-ke-alumni/${id}`, {
-                        _token: '{{ csrf_token() }}'
-                    }, function(response) {
-                        if (response.success) {
-                            $btn.closest('tr').fadeOut(500, function() {
-                                $(this).remove();
-                            });
-                            // Optional: update stats counters if needed
-                        } else {
-                            alert('Gagal memindahkan data');
+                // Ambil status yang dipilih di baris ini
+                const status = $row.find('.status-select-dynamic').val() || 'Tunai';
+                
+                Swal.fire({
+                    title: 'Pindahkan Data?',
+                    html: `Pindahkan <b>${nama}</b> ke Data Pelanggan dengan status <b>${status}</b>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Pindahkan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const $btn = $(this);
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                        
+                        $.post(`/data/pindah-ke-alumni/${id}`, {
+                            _token: '{{ csrf_token() }}',
+                            status: status
+                        }, function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: 'Data sedang dialihkan...',
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href = response.redirect_url || '{{ route("admin.pembeli.index") }}';
+                                });
+                            } else {
+                                Swal.fire('Gagal!', 'Gagal memindahkan data.', 'error');
+                                $btn.prop('disabled', false).html('<i class="fas fa-arrow-right"></i>');
+                            }
+                        }).fail(function(xhr) {
+                            var msg = 'Error terjadi';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            }
+                            Swal.fire('Error!', msg, 'error');
                             $btn.prop('disabled', false).html('<i class="fas fa-arrow-right"></i>');
-                        }
-                    }).fail(function(xhr) {
-                        var msg = 'Error terjadi';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            msg = xhr.responseJSON.message;
-                        }
-                        alert(msg);
-                        $btn.prop('disabled', false).html('<i class="fas fa-arrow-right"></i>');
-                    });
-                }
+                        });
+                    }
+                });
             });
 
             $(document).on('change', '.checkbox-inline', function () {

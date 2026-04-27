@@ -545,64 +545,58 @@ class DataController extends Controller
         return $pdf->stream('Rekap-Interaksi-' . $periode . '.pdf');
     }
 
-    public function pindahKeAlumni($id)
+    public function pindahKeAlumni(Request $request, $id)
     {
         try {
             $data = Data::findOrFail($id);
             
-            // Cek apakah sudah ada di salesplans dengan status sudah_transfer
-            $existingSalesPlan = \DB::table('salesplans')
-                ->where('data_id', $data->id)
-                ->whereIn('status', ['sudah_transfer', 'mau_transfer'])
-                ->first();
+            // Ambil status yang dipilih user (KPR atau Tunai)
+            $statusPilihan = $request->input('status', $data->status ?? 'Tunai');
             
-            if ($existingSalesPlan) {
-                // Sudah ada — pastikan statusnya sudah_transfer
-                \DB::table('salesplans')
-                    ->where('id', $existingSalesPlan->id)
-                    ->update([
-                        'status'     => 'sudah_transfer',
-                        'nominal'    => $data->nominal ?: 0,
-                        'updated_at' => now(),
-                    ]);
-            } else {
-                // Cek jika sudah ada salesplan biasa untuk data ini
-                $anyPlan = \DB::table('salesplans')
-                    ->where('data_id', $data->id)
-                    ->whereNull('deleted_at')
-                    ->first();
+            // Cek apakah sudah pernah dipindahkan dengan PRODUK YANG SAMA
+            $duplicate = \DB::table('salesplans')
+                ->where('data_id', $data->id)
+                ->where('kelas_id', $data->kelas_id)
+                ->whereNull('deleted_at')
+                ->first();
 
-                if ($anyPlan) {
-                    // Update salesplan yang ada ke sudah_transfer
-                    \DB::table('salesplans')
-                        ->where('id', $anyPlan->id)
-                        ->update([
-                            'status'     => 'sudah_transfer',
-                            'nominal'    => $data->nominal ?: $anyPlan->nominal ?: 0,
-                            'updated_at' => now(),
-                        ]);
-                } else {
-                    // Buat salesplan baru
-                    \DB::table('salesplans')->insert([
-                        'data_id'    => $data->id,
-                        'nama'       => $data->nama ?: '-',
-                        'kelas_id'   => $data->kelas_id,
-                        'status'     => 'sudah_transfer',
-                        'nominal'    => $data->nominal ?: 0,
-                        'created_by' => auth()->id(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+            if ($duplicate) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Data ini sudah pernah dipindahkan ke Data Pelanggan untuk produk/kelas tersebut.'
+                ], 422);
             }
+            
+            // Map status ke salesplan status
+            // KPR → mau_transfer, Tunai → sudah_transfer
+            $salesplanStatus = (strtolower($statusPilihan) === 'kpr') ? 'mau_transfer' : 'sudah_transfer';
+            $nominal = (strtolower($statusPilihan) === 'kpr') ? 0 : ($data->nominal ?: 0);
 
-            // Update status di tabel data agar hilang dari view Database
-            \DB::table('data')->where('id', $data->id)->update([
-                'status_peserta' => 'sales_plan',
-                'updated_at'     => now(),
+            // Karena kita sudah memvalidasi duplikasi (data_id + kelas_id) di atas,
+            // maka jika sampai ke sini, berarti ini adalah produk BARU untuk pelanggan ini.
+            // Langsung insert sebagai record baru agar pelanggan yang sama bisa punya banyak produk.
+            \DB::table('salesplans')->insert([
+                'data_id'    => $data->id,
+                'nama'       => $data->nama ?: '-',
+                'kelas_id'   => $data->kelas_id,
+                'status'     => $salesplanStatus,
+                'nominal'    => $nominal,
+                'created_by' => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            return response()->json(['success' => true]);
+            // TIDAK menghapus dari Database Calon — data tetap ada
+            // Hanya update status_peserta ke 'sales_plan' agar bisa ditracking
+            // tapi TIDAK dihilangkan dari view karena user ingin data tetap ada
+            // (Jangan update status_peserta)
+
+            $redirectUrl = route('admin.pembeli.index');
+
+            return response()->json([
+                'success'      => true,
+                'redirect_url' => $redirectUrl,
+            ]);
         } catch (\Throwable $e) {
             \Log::error("Error pindahKeAlumni: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
