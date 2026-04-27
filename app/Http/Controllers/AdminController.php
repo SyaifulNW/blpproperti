@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $now = \Carbon\Carbon::now();
-        $bulanNum = $now->month;
-        $tahun = $now->year;
+        $bulanNum = $request->get('bulan', \Carbon\Carbon::now()->month);
+        $tahun = $request->get('tahun', \Carbon\Carbon::now()->year);
+        $now = \Carbon\Carbon::createFromDate($tahun, $bulanNum, 1);
 
         // 1. Total Penjualan Bulanan
         $totalBulanan = \App\Models\SalesPlan::whereMonth('updated_at', $bulanNum)
@@ -31,10 +31,13 @@ class AdminController extends Controller
         $totalLalu = \App\Models\SalesPlan::whereYear('updated_at', $tahun - 1)
             ->where('status', 'sudah_transfer')
             ->sum('nominal');
-        $yoyGrowth = $totalLalu > 0 ? round((($totalTahunan - $totalLalu) / $totalLalu) * 100, 1) : 15.0;
+        $yoyGrowth = $totalLalu > 0 ? round((($totalTahunan - $totalLalu) / $totalLalu) * 100, 1) : 0;
 
         // 4. Rata-rata Penjualan / Hari
-        $avgDay = $now->day > 0 ? $totalBulanan / $now->day : 0;
+        $daysInMonth = $now->daysInMonth;
+        $isCurrentMonth = ($bulanNum == \Carbon\Carbon::now()->month && $tahun == \Carbon\Carbon::now()->year);
+        $divisor = $isCurrentMonth ? max(1, \Carbon\Carbon::now()->day) : $daysInMonth;
+        $avgDay = $totalBulanan / $divisor;
 
         // 5. Total Pelanggan Aktif
         $totalPelanggan = \App\Models\Data::count();
@@ -55,7 +58,7 @@ class AdminController extends Controller
         }
 
         // 8. List Sales & Omset (Ranking)
-        $salesRanking = User::whereIn('role', ['cs', 'cs-smi', 'cs-mbc', 'marketing'])
+        $salesRanking = User::whereIn('role', ['sales', 'marketing', 'cs-mbc', 'cs-smi']) // Include 'sales' and keeping others for compatibility
             ->get()
             ->map(function ($user) use ($bulanNum, $tahun, $targetReal) {
                 $user->omset_bulan_ini = \App\Models\SalesPlan::where('created_by', $user->id)
@@ -81,7 +84,9 @@ class AdminController extends Controller
             'pelangganBaru',
             'targetReal',
             'chartData',
-            'salesRanking'
+            'salesRanking',
+            'bulanNum',
+            'tahun'
         ));
     }
 

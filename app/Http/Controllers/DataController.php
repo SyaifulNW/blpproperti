@@ -168,12 +168,6 @@ class DataController extends Controller
         ]);
     }
 
-
-
-
-
-
-
     /**
      * Show the form for creating a new resource.
      *
@@ -193,10 +187,10 @@ class DataController extends Controller
      */
     public function updateInline(Request $request)
     {
-
         $data = Data::findOrFail($request->id);
         $field = $request->field;
-        $data->$field = $request->value;
+        $value = $request->value;
+        $data->$field = $value;
 
         // Auto update spin_updated_at if SPIN/BAT fields change
         if (in_array($field, ['spin', 'spin_b', 'spin_a', 'spin_t'])) {
@@ -206,7 +200,17 @@ class DataController extends Controller
         $data->save();
 
         if ($field === 'nama') {
-            SalesPlan::where('data_id', $data->id)->update(['nama' => $data->nama]);
+            SalesPlan::where('data_id', $data->id)->update(['nama' => $value]);
+        }
+
+        // Sinkronisasi status dan nominal ke SalesPlan (Prospek)
+        if (in_array($field, ['status', 'nominal'])) {
+            $v = $value;
+            if ($field === 'status') {
+                $m = ['Tunai' => 'sudah_transfer', 'KPR' => 'mau_transfer'];
+                $v = $m[$value] ?? strtolower($value);
+            }
+            SalesPlan::where('data_id', $data->id)->update([$field => $v]);
         }
 
         return response()->json(['success' => true]);
@@ -234,9 +238,6 @@ class DataController extends Controller
         return response()->json(['success' => true]);
     }
 
-
-
-
     public function store(Request $request)
     {
         $data = new Data();
@@ -254,15 +255,11 @@ class DataController extends Controller
         $data->provinsi_nama = $request->input('provinsi_nama');
         $data->kota_id = $request->input('kota_id');
         $data->kota_nama = $request->input('kota_nama');
-        $data->jenisbisnis = $request->input('jenisbisnis');
-        $data->nama_bisnis = $request->input('nama_bisnis');
+        $data->jenisbisnis = $request->input('jenisbisnis') ?? $request->input('jenis_bisnis') ?? '';
+        $data->nama_bisnis = $request->input('nama_bisnis') ?? '';
         $data->no_wa = $request->input('no_wa');
         $data->situasi_bisnis = $request->input('situasi_bisnis');
         $data->kendala = $request->input('kendala');
-
-        // Ya atau tidak
-        // Enum Peserta Baru
-
 
         // Role
         $data->created_by = Auth::user()->name;
@@ -270,13 +267,6 @@ class DataController extends Controller
         $data->save();
         return redirect()->route('admin.database.database')->with('success', 'Data has been added successfully.');
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
 
     public function updatePotensi(Request $request, $id)
     {
@@ -296,8 +286,6 @@ class DataController extends Controller
         return response()->json(['success' => true]);
     }
 
-
-
     public function show($id)
     {
         // Fetch the data by ID
@@ -307,12 +295,6 @@ class DataController extends Controller
         return view('admin.database.show', compact('data', 'kelas'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         // Fetch the data by ID
@@ -323,13 +305,6 @@ class DataController extends Controller
         return view('admin.database.edit', compact('data', 'kelas'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         // Validate the request data
@@ -347,13 +322,11 @@ class DataController extends Controller
         $data->provinsi_id = $request->input('provinsi_id');
 
         $data->kota_nama = $request->input('kota_nama');
-        $data->jenisbisnis = $request->input('jenisbisnis');
-        $data->nama_bisnis = $request->input('nama_bisnis');
+        $data->jenisbisnis = $request->input('jenisbisnis') ?? $request->input('jenis_bisnis') ?? '';
+        $data->nama_bisnis = $request->input('nama_bisnis') ?? '';
         $data->no_wa = $request->input('no_wa');
         $data->situasi_bisnis = $request->input('situasi_bisnis');
         $data->kendala = $request->input('kendala');
-
-        // Ya atau tidak
 
         $data->save();
 
@@ -364,13 +337,6 @@ class DataController extends Controller
         return redirect()->route('admin.database.database')->with('success', 'Data has been updated successfully.');
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         // Fetch the data by ID
@@ -380,9 +346,6 @@ class DataController extends Controller
         // Redirect to the index page with a success message
         return redirect()->route('admin.database.database')->with('success', 'Data has been deleted successfully.');
     }
-
-
-    // app/Http/Controllers/DatabaseController.php
 
     public function peserta_baru()
     {
@@ -407,7 +370,6 @@ class DataController extends Controller
         }
         return view('admin.database.database', compact('data'));
     }
-
 
     private function filterKelasByUser($user)
     {
@@ -469,6 +431,7 @@ class DataController extends Controller
 
         return redirect()->route('admin.salesplan.index')->with('success', 'Peserta berhasil dipindahkan ke Sales Plan.');
     }
+
     public function getStatistik(Request $request)
     {
         $user = Auth::user();
@@ -531,9 +494,6 @@ class DataController extends Controller
         $data = Data::findOrFail($id);
         $interactions = $request->input('interactions', []);
 
-        // We can use sync-like logic or just delete and recreate if we don't care about exact row IDs.
-        // To preserve created_at for old ones, we should find and update.
-
         $collectedIds = [];
         foreach ($interactions as $index => $item) {
             $spin = $data->spinInteractions()->updateOrCreate(
@@ -549,11 +509,9 @@ class DataController extends Controller
             $collectedIds[] = $spin->id;
         }
 
-        // Cleanup deleted ones? In the UI we might not have a delete button yet but good to have.
-        // $data->spinInteractions()->whereNotIn('id', $collectedIds)->delete();
-
         return response()->json(['success' => true]);
     }
+
     public function cetakInteraksiPdf($id)
     {
         $data = Data::with('spinInteractions')->findOrFail($id);
@@ -585,6 +543,70 @@ class DataController extends Controller
         ])->setPaper([0, 0, 609.4488, 935.433], 'landscape'); // F4 Landscape
         
         return $pdf->stream('Rekap-Interaksi-' . $periode . '.pdf');
+    }
+
+    public function pindahKeAlumni($id)
+    {
+        try {
+            $data = Data::findOrFail($id);
+            
+            // Cek apakah sudah ada di salesplans dengan status sudah_transfer
+            $existingSalesPlan = \DB::table('salesplans')
+                ->where('data_id', $data->id)
+                ->whereIn('status', ['sudah_transfer', 'mau_transfer'])
+                ->first();
+            
+            if ($existingSalesPlan) {
+                // Sudah ada — pastikan statusnya sudah_transfer
+                \DB::table('salesplans')
+                    ->where('id', $existingSalesPlan->id)
+                    ->update([
+                        'status'     => 'sudah_transfer',
+                        'nominal'    => $data->nominal ?: 0,
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                // Cek jika sudah ada salesplan biasa untuk data ini
+                $anyPlan = \DB::table('salesplans')
+                    ->where('data_id', $data->id)
+                    ->whereNull('deleted_at')
+                    ->first();
+
+                if ($anyPlan) {
+                    // Update salesplan yang ada ke sudah_transfer
+                    \DB::table('salesplans')
+                        ->where('id', $anyPlan->id)
+                        ->update([
+                            'status'     => 'sudah_transfer',
+                            'nominal'    => $data->nominal ?: $anyPlan->nominal ?: 0,
+                            'updated_at' => now(),
+                        ]);
+                } else {
+                    // Buat salesplan baru
+                    \DB::table('salesplans')->insert([
+                        'data_id'    => $data->id,
+                        'nama'       => $data->nama ?: '-',
+                        'kelas_id'   => $data->kelas_id,
+                        'status'     => 'sudah_transfer',
+                        'nominal'    => $data->nominal ?: 0,
+                        'created_by' => auth()->id(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            // Update status di tabel data agar hilang dari view Database
+            \DB::table('data')->where('id', $data->id)->update([
+                'status_peserta' => 'sales_plan',
+                'updated_at'     => now(),
+            ]);
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            \Log::error("Error pindahKeAlumni: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     private function applyFilters(Request $request, $query)

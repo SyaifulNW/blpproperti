@@ -356,7 +356,21 @@ class SalesPlanController extends Controller
     public function destroy($id)
     {
         $plan = SalesPlan::findOrFail($id);
+        
+        // Kembalikan status data ke peserta_baru agar kembali ke Database Calon
+        if ($plan->data_id) {
+            \DB::table('data')->where('id', $plan->data_id)->update([
+                'status_peserta' => 'peserta_baru',
+                'updated_at'     => now(),
+            ]);
+        }
+
         $plan->delete();
+
+        // Return JSON for AJAX calls, redirect for normal requests
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
 
         return back()->with('success', 'Data berhasil dihapus');
     }

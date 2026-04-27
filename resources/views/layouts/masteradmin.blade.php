@@ -220,16 +220,65 @@
             <!-- Nav Item - Dashboard -->
             {{-- Nav Item - Dashboard --}}
             {{-- Nav Item - Dashboard --}}
-            @if(strtolower(Auth::user()->role) === 'administrator')
-                @if(\App\Models\Menu::isActive('dashboard_admin'))
-                    <li class="nav-item {{ request()->routeIs('administrator') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('administrator') }}">
+            @php
+                $role = strtolower(trim(Auth::user()->role));
+                $mainRoles = ['administrator', 'sales', 'cs-mbc', 'cs-smi'];
+            @endphp
+
+            @if(in_array($role, $mainRoles))
+                {{-- 1. DASHBOARD --}}
+                @if(\App\Models\Menu::isActive('dashboard_admin') || \App\Models\Menu::isActive('dashboard_general'))
+                    <li class="nav-item {{ (request()->routeIs('administrator') || request()->routeIs('home')) ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ $role === 'administrator' ? route('administrator') : route('home') }}">
                             <i class="fas fa-fw fa-tachometer-alt text-warning"></i>
-                            <span class="fw-bold">DASHBOARD ADMIN</span>
+                            <span class="fw-bold">DASHBOARD</span>
                         </a>
                     </li>
                 @endif
-            @elseif(strtolower(Auth::user()->role) === 'marketing')
+
+                {{-- 2. DATA CALON PELANGGAN --}}
+                @if(\App\Models\Menu::isActive('data_calon_peserta') || \App\Models\Menu::isActive('database_cs'))
+                    <li class="nav-item {{ request()->routeIs('admin.database.database') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.database.database') }}">
+                            <i class="fas fa-fw fa-users text-info"></i>
+                            <span class="fw-bold">DATA CALON PELANGGAN</span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- 3. PROSPEK (HIDDEN) --}}
+                {{-- 
+                @if(\App\Models\Menu::isActive('sales_plan'))
+                    <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
+                            <i class="fas fa-fw fa-chart-line text-success"></i>
+                            <span class="fw-bold">PROSPEK</span>
+                        </a>
+                    </li>
+                @endif
+                --}}
+
+                {{-- 4. DATA PELANGGAN --}}
+                @if(\App\Models\Menu::isActive('sales_plan'))
+                    <li class="nav-item {{ request()->routeIs('admin.pembeli.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.pembeli.index') }}">
+                            <i class="fas fa-fw fa-user-check text-primary"></i>
+                            <span class="fw-bold">DATA PELANGGAN</span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- 5. DAILY ACTIVITY --}}
+                @if(\App\Models\Menu::isActive('daily_activity'))
+                    <li class="nav-item {{ request()->routeIs('admin.dailyactivity.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.dailyactivity.index') }}">
+                            <i class="fas fa-fw fa-calendar-day text-secondary"></i>
+                            <span class="fw-bold">DAILY ACTIVITY</span>
+                        </a>
+                    </li>
+                @endif
+
+            @elseif($role === 'marketing')
                 @if(\App\Models\Menu::isActive('dashboard_marketing'))
                     <li class="nav-item active">
                         {{-- Dashboard untuk Marketing --}}
@@ -273,7 +322,7 @@
                 @if(\App\Models\Menu::isActive('dashboard_general'))
                     <li class="nav-item active">
                         {{-- Dashboard default --}}
-                        <a class="nav-link" href="{{ route('home') }}">
+                        <a class="nav-link" href="{{ (strtolower(Auth::user()->role) === 'administrator' || Auth::user()->name === 'Linda') ? route('administrator') : route('home') }}">
                             <i class="fas fa-fw fa-tachometer-alt"></i>
                             <span>DASHBOARD</span>
                         </a>
@@ -362,52 +411,7 @@
             @endauth
 
                 {{-- Sidebar ini hanya tampil jika BUKAN administrator, marketing, manager, hrd, advertising --}}
-                @if(!in_array(strtolower(trim(Auth::user()->role)), ['administrator', 'marketing', 'manager', 'hrd', 'advertising']))
-                    @if(\App\Models\Menu::isActive('data_calon_peserta'))
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.database.database', ['view' => 'me']) }}">
-                                <i class="fas fa-fw fa-tachometer-alt"></i>
-                                <span><strong>DATA CALON PELANGGAN</strong></span>
-                            </a>
-                        </li>
-                    @endif
 
-                    @if(\App\Models\Menu::isActive('daily_activity'))
-                        <li class="nav-item active">
-                            <a class="nav-link"
-                                href="{{ auth()->user()->name === 'Agus Setyo' ? route('manager.penilaian-cs.index') : route('admin.dailyactivity.index') }}">
-                                <i class="fas fa-fw fa-tachometer-alt"></i>
-                                <span>DAILY ACTIVITY</span>
-                            </a>
-                        </li>
-                    @endif
-
-
-                @endif
-
-                @php
-                    $userName = auth()->user()->name;
-                @endphp
-
-                @php
-                    $userRole = strtolower(trim(Auth::user()->role));
-                @endphp
-                @if(!in_array($userRole, ['marketing', 'hrd', 'advertising']))
-                    @if(\App\Models\Menu::isActive('sales_plan'))
-                        <li class="nav-item {{ request()->routeIs('admin.salesplan.index') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('admin.salesplan.index') }}">
-                                <i class="fas fa-fw fa-chart-line"></i>
-                                <span><strong>PROSPEK</strong></span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ request()->routeIs('admin.pembeli.index') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('admin.pembeli.index') }}">
-                                <i class="fas fa-fw fa-user-check"></i>
-                                <span><strong>DATA PEMBELI</strong></span>
-                            </a>
-                        </li>
-                    @endif
-                @endif
 
 
 
@@ -429,6 +433,7 @@
                 {{-- Dropdown Semua Akun --}}
                 @if(strtolower(auth()->user()->role) === 'administrator' || auth()->user()->name === 'Linda')
                     {{-- Administrator & Linda: langsung ke halaman utama Database CS --}}
+                    {{-- Hidden: duplicate of DATA CALON PELANGGAN
                     @if(\App\Models\Menu::isActive('database_cs'))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.database.database') }}">
@@ -437,6 +442,7 @@
                             </a>
                         </li>
                     @endif
+                    --}}
                 @elseif(auth()->user()->name === 'Agus Setyo')
                     {{-- Agus Setyo: Hanya bisa lihat Tursia dan Latifah --}}
                     <li class="nav-item {{ request()->routeIs('pembelajaran.index') ? 'active' : '' }}">

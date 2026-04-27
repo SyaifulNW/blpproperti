@@ -1,8 +1,35 @@
+    @php
+        // Prioritaskan ambil status & nominal dari SalesPlan (Prospek) jika ada
+        $latestPlan = $item->salesplan->sortByDesc('created_at')->first();
+        
+        $statusVal = strtolower(($latestPlan ? $latestPlan->status : $item->status) ?: 'cold');
+        $nominalVal = $latestPlan ? $latestPlan->nominal : $item->nominal;
+        
+        $statusClass = 'status-cold';
+        $bgStyle = 'background-color: #ffffff; color: #000;'; // Default white
+        
+        if ($statusVal == 'tunai' || $statusVal == 'sudah_transfer') {
+            $statusClass = 'status-tunai';
+            $bgStyle = 'background-color: #48e7ecff; color: #000;';
+        } elseif ($statusVal == 'kpr' || $statusVal == 'mau_transfer') {
+            $statusClass = 'status-kpr';
+            $bgStyle = 'background-color: #1cc600; color: #fff;';
+        } elseif ($statusVal == 'tertarik') {
+            $statusClass = 'status-tertarik';
+            $bgStyle = 'background-color: #ffd900ff; color: #000;';
+        } elseif ($statusVal == 'no') {
+            $statusClass = 'status-no';
+            $bgStyle = 'background-color: #ff4d4d; color: #fff;';
+        }
+    @endphp
+
    <tr 
+    class="{{ $statusClass }}"
+    style="{{ $bgStyle }} font-weight: 700 !important;"
     data-created-by="{{ strtolower($item->created_by) }}"
     data-bulan="{{ \Carbon\Carbon::parse($item->created_at)->month }}"
     data-year="{{ \Carbon\Carbon::parse($item->created_at)->year }}"
-        data-id="{{ $item->id }}"
+    data-id="{{ $item->id }}"
 >
 
     <td style="padding-right: 25px !important; text-align: center; font-weight: bold;">{{ $loop->iteration ?? '-' }}</td>
@@ -18,25 +45,24 @@
             {{-- Baris Nama --}}
             <div class="d-flex align-items-center mb-2">
                 <input type="text" 
-                       class="form-control form-control-sm editable fw-bold text-dark me-2" 
+                       class="form-control form-control-sm editable" 
                        data-id="{{ $item->id }}"
                        data-field="nama" 
                        value="{{ $item->nama }}" 
-
-                       style="font-size: 0.95rem; border-radius: 6px; border: 1px solid #ced4da; flex-grow: 1;">
+                       style="font-size: 1.05rem; border-radius: 6px; border: 2px solid #000 !important; background: transparent !important; color: #000 !important; font-weight: 900; flex-grow: 1; padding: 5px 10px;">
             </div>
             
             {{-- Baris WA & Interaksi --}}
             <div class="d-flex align-items-center" style="gap: 12px;">
-                <div class="input-group input-group-sm" style="width: 170px;">
+                <div class="input-group input-group-sm" style="width: 190px;">
                     <input type="text" 
-                           class="form-control editable text-muted wa-input" 
+                           class="form-control editable wa-input" 
                            data-id="{{ $item->id }}"
                            data-field="no_wa" 
                            data-original="{{ $item->no_wa }}"
                            value="{{ $item->no_wa }}" 
                            placeholder="No WhatsApp"
-                           style="font-size: 0.85rem; border-radius: 6px 0 0 6px; border: 1px solid #ced4da;">
+                           style="font-size: 1rem; border-radius: 6px; border: 2px solid #000 !important; background: transparent !important; color: #000 !important; font-weight: 900; padding: 5px 10px;">
                     
                     @php $waNumber = preg_replace('/^0/', '62', $item->no_wa); @endphp
                     <a href="{{ $item->no_wa ? 'https://wa.me/'.$waNumber : '#' }}" 
@@ -54,7 +80,7 @@
                         data-id="{{ $item->id }}" 
                         data-nama="{{ $item->nama }}"
                         style="border-radius: 50px; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); font-size: 0.75rem; font-weight: 600; height: 32px; white-space: nowrap;">
-                    <i class="fa-solid fa-file-invoice me-2"></i>Interaksi
+                    <i class="fa-solid fa-file-invoice me-2"></i>Follow Up
                 </button>
 
 
@@ -65,7 +91,10 @@
 
     {{-- Sumber Leads --}}
     <td>
-         <select class="form-control form-control-sm select-inline" data-id="{{ $item->id }}" data-field="leads">
+         <select class="form-control form-control-sm select-inline" 
+                 data-id="{{ $item->id }}" 
+                 data-field="leads" 
+                 style="background: transparent !important; color: #000 !important; font-weight: 800; border: 2px solid #000 !important; border-radius: 6px;">
             <option value="">- Pilih Sumber Leads -</option>
             <option value="Marketing" {{ $item->leads == 'Marketing' ? 'selected' : '' }}>Marketing</option>
             <option value="Iklan" {{ $item->leads == 'Iklan' ? 'selected' : '' }}>Iklan</option>
@@ -78,21 +107,21 @@
     
     @if(strtolower(auth()->user()->role) !== 'marketing')
     {{-- Survei Lokasi --}}
-    <td class="text-center">
+    <td class="text-center" style="background: transparent !important;">
         <input type="checkbox" 
                class="checkbox-inline" 
                data-id="{{ $item->id }}" 
                data-field="survei_lokasi"
                {{ $item->survei_lokasi == 'Ya' ? 'checked' : '' }}
-               style="transform: scale(1.5); cursor: pointer;">
+               style="transform: scale(1.5); cursor: pointer; background: transparent !important;">
     </td>
     @endif
 
 
 
     {{-- B --}}
-    <td class="text-center">
-        <input type="checkbox" class="checkbox-inline" data-id="{{ $item->id }}" data-field="spin_b" {{ $item->spin_b == 'Ya' ? 'checked' : '' }} style="transform: scale(1.2); cursor: pointer;">
+    <td class="text-center" style="background: transparent !important;">
+        <input type="checkbox" class="checkbox-inline" data-id="{{ $item->id }}" data-field="spin_b" {{ $item->spin_b == 'Ya' ? 'checked' : '' }} style="transform: scale(1.2); cursor: pointer; background: transparent !important;">
     </td>
 
     {{-- A --}}
@@ -105,24 +134,66 @@
         <input type="checkbox" class="checkbox-inline" data-id="{{ $item->id }}" data-field="spin_t" {{ $item->spin_t == 'Ya' ? 'checked' : '' }} style="transform: scale(1.2); cursor: pointer;">
     </td>
 
+    {{-- Pilih Produk --}}
+    <td class="text-center">
+        <select class="form-control form-control-sm select-inline" 
+                data-id="{{ $item->id }}" 
+                data-field="kelas_id"
+                style="min-width: 160px; border-radius: 6px; font-weight: 800; background: transparent !important; color: #000 !important; border: 2px solid #000 !important;">
+            <option value="">- Pilih Produk -</option>
+            @foreach($kelas as $k)
+                <option value="{{ $k->id }}" {{ $item->kelas_id == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
+            @endforeach
+        </select>
+    </td>
+
 
 
     
-    @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'marketing']))
-    @php
-        $showMoveBtn = ($item->spin_b == 'Ya' && $item->spin_a == 'Ya' && $item->spin_t == 'Ya');
-    @endphp
+    {{-- Status Dropdown --}}
     <td class="text-center">
+        <select class="form-control form-control-sm select-inline status-select-dynamic" 
+                data-id="{{ $item->id }}" 
+                data-field="status"
+                style="min-width: 120px; border-radius: 6px; font-weight: 900; background: transparent !important; color: #000 !important; border: 2px solid #000 !important;">
+            <option value="Cold" style="color: #000;">Cold</option>
+            <option value="Tunai" {{ ($statusVal == 'tunai' || $statusVal == 'sudah_transfer') ? 'selected' : '' }}>Tunai</option>
+            <option value="KPR" {{ ($statusVal == 'kpr' || $statusVal == 'mau_transfer') ? 'selected' : '' }}>KPR</option>
+            <option value="Tertarik" {{ $statusVal == 'tertarik' ? 'selected' : '' }}>Tertarik</option>
+            <option value="No" {{ $statusVal == 'no' ? 'selected' : '' }}>No</option>
+        </select>
+        
+        {{-- Hidden trigger for Move Modal when KPR is selected --}}
         <button type="button" 
-                class="btn btn-sm btn-primary btn-move-salesplan {{ $showMoveBtn ? '' : 'd-none' }}" 
+                class="btn-move-salesplan d-none" 
                 data-id="{{ $item->id }}" 
                 data-nama="{{ $item->nama }}"
-                data-existing-kelas="{{ $item->salesplan->pluck('kelas_id')->toJson() }}"
-                title="Pindahkan ke Prospek">
-            <i class="fa fa-arrow-right"></i>
+                data-existing-kelas="{{ $item->salesplan->pluck('kelas_id')->toJson() }}">
         </button>
     </td>
-    @endif
+
+    {{-- Nominal --}}
+    <td>
+        <input type="text" 
+               class="form-control form-control-sm editable currency-input text-end fw-bold" 
+               data-id="{{ $item->id }}"
+               data-field="nominal" 
+               value="{{ number_format((float)$nominalVal, 0, ',', '.') }}" 
+               placeholder="0"
+               style="min-width: 140px; border-radius: 6px; border: 2px solid #000 !important; background: transparent !important; color: #000 !important; font-weight: 800; padding: 5px 10px;">
+    </td>
+
+    {{-- Pindahkan ke Data Pelanggan --}}
+    <td class="text-center">
+        <button type="button" 
+                class="btn btn-primary btn-sm btn-direct-alumni" 
+                data-id="{{ $item->id }}" 
+                data-nama="{{ $item->nama }}"
+                title="Pindahkan ke Data Pelanggan"
+                style="border-radius: 6px; border: 2px solid #000 !important; font-weight: 800;">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </td>
 
     @if(in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) || auth()->user()->name === 'Agus Setyo')
     <td>{{ $item->created_by }}</td>

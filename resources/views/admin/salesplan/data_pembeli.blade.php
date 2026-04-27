@@ -87,6 +87,7 @@
                             <th>Nominal</th>
                             <th>KPR Action</th>
                             <th>Monitoring KPR</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody style="font-weight: bold; color: #000;">
@@ -156,11 +157,19 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger btn-hapus-pembeli" 
+                                        data-id="{{ $p->id }}"
+                                        data-nama="{{ $p->nama }}"
+                                        title="Hapus data">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
                             @php $totalNominal += $p->nominal; @endphp
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">Belum ada data pembeli.</td>
+                            <td colspan="8" class="text-center py-4 text-muted">Belum ada data pembeli.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -219,6 +228,47 @@
                 confirmButtonText: 'Ya, Masukkan'
             }).then((result) => {
                 if (result.isConfirmed) $form.submit();
+            });
+        });
+
+        // Delete Pembeli
+        $(document).on('click', '.btn-hapus-pembeli', function() {
+            let id = $(this).data('id');
+            let nama = $(this).data('nama');
+            let $row = $(this).closest('tr');
+
+            Swal.fire({
+                title: 'Hapus Data?',
+                html: `Yakin ingin menghapus data <b>${nama}</b> dari Data Pelanggan?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/admin/salesplan/' + id,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'DELETE'
+                        },
+                        success: function(response) {
+                            $row.fadeOut(400, function() {
+                                $(this).remove();
+                                // Update total count
+                                let total = parseInt($('.fw-bold.mb-0').text().replace('Total Pembeli: ', '')) - 1;
+                                $('.fw-bold.mb-0').text('Total Pembeli: ' + total);
+                            });
+                            Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
+                        },
+                        error: function() {
+                            Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus data.', 'error');
+                        }
+                    });
+                }
             });
         });
 

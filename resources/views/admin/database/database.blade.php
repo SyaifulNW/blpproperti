@@ -109,6 +109,31 @@
             border-radius: 8px;
             border: 1px solid #d1d3e2;
         }
+
+        /* Status Row & Dropdown Colors (Matching Prospek) */
+        .status-tunai { background-color: #48e7ecff !important; }
+        .status-kpr { background-color: #1cc600 !important; }
+        .status-tertarik { background-color: #ffd900ff !important; }
+        .status-no { background-color: #ff4d4d !important; color: white !important; }
+        .status-cold { background-color: #ffffff !important; }
+
+        .status-select-dynamic {
+            font-weight: 800 !important;
+            border: 1px solid rgba(0,0,0,0.1) !important;
+            color: #000 !important;
+        }
+
+        .status-no .status-select-dynamic {
+            color: white !important;
+            background-color: rgba(0,0,0,0.2) !important;
+        }
+
+        /* Make inputs transparent to see row color */
+        tr[class^="status-"] .editable, 
+        tr[class^="status-"] .select-inline,
+        tr[class^="status-"] .wa-input {
+            background-color: transparent !important;
+        }
     </style>
 
     @if(auth()->user()->role !== 'administrator')
@@ -255,7 +280,7 @@
                                 <i class="fa-solid fa-plus"></i> Tambah
                             </button>
                             <a href="{{ route('admin.database.pdf-rekap-all', request()->all()) }}" target="_blank" class="btn btn-primary ms-2" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); border: none; border-radius: 5px;">
-                                <i class="fas fa-file-pdf me-2"></i>Interaksi
+                                <i class="fas fa-file-pdf me-2"></i>Follow Up
                             </a>
                         @endif
 
@@ -344,9 +369,10 @@
                                 <th class="text-center">B</th>
                                 <th class="text-center">A</th>
                                 <th class="text-center">T</th>
-                                @if(!in_array(strtolower(auth()->user()->role), ['administrator', 'marketing']))
-                                    <th>Prospek</th>
-                                @endif
+                                <th style="min-width: 150px; text-align: center;">Produk</th>
+                                <th>Status</th>
+                                <th>Nominal</th>
+                                <th class="text-center">Pindah</th>
                                 @if(in_array(strtolower(auth()->user()->role), ['administrator', 'manager']) || auth()->user()->name === 'Agus Setyo')
                                     <th>Input Oleh</th>
                                 @endif
@@ -473,6 +499,16 @@
                 }
             });
 
+            // Currency Formatting for Nominal
+            $(document).on('input', '.currency-input', function () {
+                let val = $(this).val().replace(/\D/g, "");
+                if (val === "") {
+                    $(this).val("");
+                    return;
+                }
+                $(this).val(new Intl.NumberFormat('id-ID').format(val));
+            });
+
             // Smart Behavior for WA Inputs
             $(document).on('focus', '.wa-input', function () {
                 if (isPrivacyMasked) {
@@ -493,7 +529,12 @@
                 const $this = $(this);
                 const id = $this.data('id');
                 const field = $this.data('field');
-                const value = $this.is('input') ? $this.val() : $this.text();
+                let value = $this.is('input') ? $this.val() : $this.text();
+
+                // Bersihkan titik jika nominal sebelum kirim ke server
+                if (field === 'nominal') {
+                    value = value.replace(/\D/g, "");
+                }
 
                 $.ajax({
                     url: '/admin/database/update-inline',
@@ -523,11 +564,62 @@
                     data: { _token: '{{ csrf_token() }}', id, field, value },
                     success: function () {
                         showStatusIcon($this, true);
+
+                        // If it's a dynamic status select, update its color
+                        if ($this.hasClass('status-select-dynamic')) {
+                            const $row = $this.closest('tr');
+                            $row.removeClass('status-cold status-tunai status-kpr status-tertarik status-no');
+                            
+                            const lowVal = value.toLowerCase();
+                            if (lowVal === 'cold') $row.addClass('status-cold');
+                            else if (lowVal === 'tunai') {
+                                $row.addClass('status-tunai');
+                                // Focus pada input nominal jika Tunai
+                                $row.find('input[data-field="nominal"]').focus();
+                            }
+                            else if (lowVal === 'kpr') {
+                                $row.addClass('status-kpr');
+                            }
+                            else if (lowVal === 'tertarik') $row.addClass('status-tertarik');
+                            else if (lowVal === 'no') $row.addClass('status-no');
+                        }
                     },
                     error: function () {
                         showStatusIcon($this, false);
                     }
                 });
+            });
+
+            // Pindah ke Data Pelanggan (AJAX)
+            $(document).on('click', '.btn-direct-alumni', function() {
+                const id = $(this).data('id');
+                const nama = $(this).data('nama');
+                
+                if (confirm(`Pindahkan ${nama} ke Data Pelanggan?`)) {
+                    const $btn = $(this);
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                    
+                    $.post(`/data/pindah-ke-alumni/${id}`, {
+                        _token: '{{ csrf_token() }}'
+                    }, function(response) {
+                        if (response.success) {
+                            $btn.closest('tr').fadeOut(500, function() {
+                                $(this).remove();
+                            });
+                            // Optional: update stats counters if needed
+                        } else {
+                            alert('Gagal memindahkan data');
+                            $btn.prop('disabled', false).html('<i class="fas fa-arrow-right"></i>');
+                        }
+                    }).fail(function(xhr) {
+                        var msg = 'Error terjadi';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        alert(msg);
+                        $btn.prop('disabled', false).html('<i class="fas fa-arrow-right"></i>');
+                    });
+                }
             });
 
             $(document).on('change', '.checkbox-inline', function () {
@@ -656,6 +748,15 @@
                 const id = $(this).data('id');
                 const nama = $(this).data('nama');
                 const existing = $(this).data('existing-kelas') || [];
+
+                // Cegah modal muncul jika status adalah KPR (Karena KPR langsung redirect)
+                const $row = $(this).closest('tr');
+                const currentStatus = $row.find('.status-select-dynamic').val();
+                if ($row.hasClass('status-kpr') || (currentStatus && currentStatus.toLowerCase() === 'kpr')) {
+                    // Jika terlanjur dipanggil, langsung redirect saja
+                    window.location.href = "{{ route('admin.pembeli.index') }}";
+                    return false;
+                }
 
                 $('#move_nama_peserta').text(nama);
                 $('#moveSalesPlanForm').attr('action', `/data/${id}/pindah-ke-salesplan`);

@@ -20,6 +20,8 @@ class Data extends Model
         'jenis_bisnis',
         'nama_bisnis',
         'no_wa',
+        'status',
+        'nominal',
         'situasi_bisnis',
         'kendala',
         'kelas_id', 'created_by', 'created_by_role',
