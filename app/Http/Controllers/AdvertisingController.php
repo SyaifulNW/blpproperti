@@ -148,7 +148,7 @@ class AdvertisingController extends Controller
         // Rumus ROAS untuk ditampilkan
         $rumusRoas = [
             'label' => 'Rumus ROAS',
-            'formula' => 'Pendapatan Iklan (CS) / Biaya Iklan (Keuangan)'
+            'formula' => 'Pendapatan Iklan (Sales) / Biaya Iklan (Keuangan)'
         ];
 
         // ====================== 📋 TABLE DATA PROGRAM KELAS ======================

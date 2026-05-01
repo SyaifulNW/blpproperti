@@ -107,6 +107,7 @@
             <tr>
                 <th style="width: 30px; text-align: center;">No</th>
                 <th style="width: 100px;">Tanggal</th>
+                <th style="width: 80px; text-align: center;">Media</th>
                 <th>Hasil Interaksi (FU)</th>
                 <th>Tindak Lanjut</th>
             </tr>
@@ -116,12 +117,17 @@
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td>{{ \Carbon\Carbon::parse($interaction->created_at)->translatedFormat('d/m/Y H:i') }}</td>
+                    <td style="text-align: center;">
+                        @if($interaction->wa) <span style="color: green;">WA ✓</span> @endif
+                        @if($interaction->telp) <span style="color: blue;">TELP ✓</span> @endif
+                        @if(!$interaction->wa && !$interaction->telp) - @endif
+                    </td>
                     <td>{!! nl2br(e($interaction->hasil_fu)) !!}</td>
                     <td>{!! nl2br(e($interaction->tindak_lanjut)) !!}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" style="text-align: center; padding: 20px; color: #999;">Belum ada riwayat interaksi.</td>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Belum ada riwayat interaksi.</td>
                 </tr>
             @endforelse
         </tbody>

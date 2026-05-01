@@ -269,7 +269,7 @@
                 @endif
 
                 {{-- 5. DAILY ACTIVITY --}}
-                @if(\App\Models\Menu::isActive('daily_activity'))
+                @if(\App\Models\Menu::isActive('daily_activity') && $role !== 'administrator')
                     <li class="nav-item {{ request()->routeIs('admin.dailyactivity.index') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('admin.dailyactivity.index') }}">
                             <i class="fas fa-fw fa-calendar-day text-secondary"></i>
@@ -488,13 +488,6 @@
                 @endif
 
                 @if(strtolower(auth()->user()->role) === 'administrator')
-                    @if(\App\Models\Menu::isActive('jadwal_kelas'))
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.kelas.index') }}">
-                                <strong><i class="fa-solid fa-home me-2"></i> MANAJEMEN PRODUK</strong>
-                            </a>
-                        </li>
-                    @endif
 
                     @if(\App\Models\Menu::isActive('activity_cs'))
                         <li class="nav-item">

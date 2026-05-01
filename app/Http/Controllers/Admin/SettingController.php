@@ -24,6 +24,9 @@ class SettingController extends Controller
             return strtolower(trim($role));
         })->unique()->values();
 
+        $kelas = \App\Models\Kelas::orderByRaw('LOWER(nama_kelas) ASC')->get();
+        $leadSources = \App\Models\LeadSource::orderBy('name')->get();
+
         return view('admin.settings.index', compact(
             'users',
             'menus',
@@ -32,7 +35,9 @@ class SettingController extends Controller
             'roles',
             'targetOmsetTahunan',
             'rewardTahunanNama',
-            'bonus3BulananAmount'
+            'bonus3BulananAmount',
+            'kelas',
+            'leadSources'
         ));
     }
 
@@ -157,5 +162,19 @@ class SettingController extends Controller
         );
 
         return response()->json(['success' => true]);
+    }
+
+    // --- LEAD SOURCES ---
+    public function storeLeadSource(Request $request)
+    {
+        $request->validate(['name' => 'required|string|max:255']);
+        \App\Models\LeadSource::create(['name' => $request->name]);
+        return redirect()->back()->with('success', 'Sumber Leads berhasil ditambahkan.');
+    }
+
+    public function destroyLeadSource($id)
+    {
+        \App\Models\LeadSource::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'Sumber Leads berhasil dihapus.');
     }
 }

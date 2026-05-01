@@ -60,7 +60,7 @@ class SalesPlanController extends Controller
 
         // Filter CS List for Admin Dropdown (Specific Request)
         if (auth()->user()->role === 'administrator' || auth()->user()->role === 'manager') {
-            $csList = User::where('role', 'sales')
+            $csList = User::whereIn('role', ['sales', 'marketing', 'advertising', 'cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi'])
                 ->orWhereIn('name', ['Yasmin', 'Linda', 'Arifa', 'Putri', 'Puput', 'Gunawan'])
                 ->orderBy('name', 'asc')
                 ->get();

@@ -21,16 +21,13 @@
                 <a class="nav-link active" id="users-tab" data-toggle="tab" href="#users" role="tab">Users & Roles</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="target-tab" data-toggle="tab" href="#target" role="tab">Target Omset</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="menus-tab" data-toggle="tab" href="#menus" role="tab">Menu Global</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="rolemenu-tab" data-toggle="tab" href="#rolemenu" role="tab">Akses Menu Role</a>
+                <a class="nav-link" id="kelas-tab" data-toggle="tab" href="#kelas" role="tab">Manajemen Produk</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="reward-tab" data-toggle="tab" href="#reward" role="tab">Setting Reward</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="leads-tab" data-toggle="tab" href="#leads" role="tab">Sumber Leads</a>
             </li>
         </ul>
 
@@ -123,98 +120,53 @@
                 </div>
             </div>
 
-            {{-- TAB 2: TARGET OMSET --}}
-            <div class="tab-pane fade p-3 bg-white border border-top-0" id="target" role="tabpanel">
-                <form action="{{ route('admin.settings.target.update') }}" method="POST" class="col-md-6">
-                    @csrf
-                    <div class="form-group">
-                        <label class="fw-bold">Target Omset Saat Ini (Rp)</label>
-                        <input type="number" name="target_omset" class="form-control" value="{{ $targetOmset }}" required>
-                        <small class="text-muted">Target ini akan digunakan untuk perhitungan bonus semua CS secara default
-                            kecuali diatur lain.</small>
-                    </div>
-
-                    <div class="form-group mt-3">
-                        <label class="fw-bold">Target Omset Start-Up Muda Indonesia (Rp)</label>
-                        <input type="number" name="target_omset_smi" class="form-control" value="{{ $targetOmsetSmi ?? 0 }}"
-                            required>
-                        <small class="text-muted">Target khusus untuk Start-Up Muda Indonesia (SMI).</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Simpan Target</button>
-                </form>
-            </div>
-
-            {{-- TAB 3: MENUS MANAGEMENT (GLOBAL) --}}
-            <div class="tab-pane fade p-3 bg-white border border-top-0" id="menus" role="tabpanel">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Pengaturan ini akan mengaktifkan/menonaktifkan menu secara
-                    <strong>GLOBAL</strong> untuk semua user.
+            {{-- TAB 2: MANAJEMEN PRODUK --}}
+            <div class="tab-pane fade p-3 bg-white border border-top-0" id="kelas" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Daftar Produk</h5>
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#modalTambahKelas">
+                        <i class="fas fa-plus"></i> Tambah Produk
+                    </button>
                 </div>
-                <table class="table table-bordered">
-                    <thead class="bg-dark text-white">
-                        <tr>
-                            <th>Label Menu</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($menus as $m)
-                            <tr>
-                                <td>{{ $m->label }}</td>
-                                <td>
-                                    <div class="custom-control custom-switch">
-                                        <input type="checkbox" class="custom-control-input menu-toggle" id="switch{{ $m->id }}"
-                                            data-id="{{ $m->id }}" {{ $m->is_active ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="switch{{ $m->id }}">
-                                            {{ $m->is_active ? 'Aktif' : 'Non-Aktif' }}
-                                        </label>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
 
-            {{-- TAB 4: ROLE MENU ACCESS --}}
-            <div class="tab-pane fade p-3 bg-white border border-top-0" id="rolemenu" role="tabpanel">
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i> Atur akses menu spesifik per Role. Jika Menu Global
-                    non-aktif, maka menu tetap tidak muncul meski di sini aktif.
-                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped text-center">
-                        <thead class="thead-dark">
+                        <thead class="bg-primary text-white">
                             <tr>
-                                <th class="text-left">Role / Menu</th>
-                                @foreach($menus as $m)
-                                    <th>{{ $m->label }}</th>
-                                @endforeach
+                                <th>No</th>
+                                <th>Nama Produk</th>
+                                <th>Deskripsi</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($roles as $role)
+                            @forelse($kelas as $index => $k)
                                 <tr>
-                                    <td class="text-left font-weight-bold">{{ ucfirst($role) }}</td>
-                                    @foreach($menus as $m)
-                                        @php
-                                            $canAccess = \App\Models\Menu::hasRoleAccess($m->name, $role);
-                                        @endphp
-                                        <td>
-                                            <div class="custom-control custom-switch">
-                                                <input type="checkbox" class="custom-control-input role-menu-toggle"
-                                                    id="role-{{ $role }}-{{ $m->id }}" data-role="{{ $role }}"
-                                                    data-menuid="{{ $m->id }}" {{ $canAccess ? 'checked' : '' }}>
-                                                <label class="custom-control-label" for="role-{{ $role }}-{{ $m->id }}"></label>
-                                            </div>
-                                        </td>
-                                    @endforeach
+                                    <td>{{ $index + 1 }}</td>
+                                    <td class="fw-bold text-dark">{{ $k->nama_kelas }}</td>
+                                    <td class="text-left">{{ $k->deskripsi ?? '-' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning btn-edit-kelas" 
+                                            data-id="{{ $k->id }}"
+                                            data-nama="{{ $k->nama_kelas }}"
+                                            data-deskripsi="{{ $k->deskripsi }}"
+                                            data-toggle="modal" 
+                                            data-target="#modalEditKelas">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-muted italic">Belum ada data produk</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
+                </div>
             </div>
-        </div>
+
+
 
         {{-- TAB 5: SETTING REWARD --}}
         <div class="tab-pane fade p-3 bg-white border border-top-0" id="reward" role="tabpanel">
@@ -264,7 +216,131 @@
             </form>
         </div>
 
+        {{-- TAB 6: SUMBER LEADS --}}
+        <div class="tab-pane fade p-3 bg-white border border-top-0" id="leads" role="tabpanel">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-primary text-white font-weight-bold">
+                            <i class="fas fa-plus-circle mr-1"></i> Tambah Sumber Leads
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ route('admin.settings.lead-sources.store') }}" method="POST">
+                                @csrf
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Nama Sumber Leads</label>
+                                    <input type="text" name="name" class="form-control" placeholder="Contoh: TikTok, Instagram, dsb" required>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-block mt-3">
+                                    <i class="fas fa-save mr-1"></i> Simpan Sumber Leads
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-dark text-white font-weight-bold">
+                            <i class="fas fa-list mr-1"></i> Daftar Sumber Leads
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="px-3">No</th>
+                                            <th>Nama Sumber</th>
+                                            <th class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($leadSources as $index => $ls)
+                                            <tr>
+                                                <td class="px-3">{{ $index + 1 }}</td>
+                                                <td class="fw-bold">{{ $ls->name }}</td>
+                                                <td class="text-center">
+                                                    <form action="{{ route('admin.settings.lead-sources.destroy', $ls->id) }}" method="POST" onsubmit="return confirm('Hapus sumber leads ini?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4 text-muted italic">Belum ada data sumber leads</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
+    </div>
+
+    {{-- Modal Tambah Kelas --}}
+    <div class="modal fade" id="modalTambahKelas" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <form method="POST" action="{{ route('admin.kelas.store') }}">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-plus-circle mr-2"></i> Tambah Produk</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Nama Produk</label>
+                            <input type="text" name="nama_kelas" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save mr-1"></i> Simpan</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Modal Edit Kelas --}}
+    <div class="modal fade" id="modalEditKelas" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <form method="POST" id="formEditKelas">
+                @csrf
+                @method('PUT')
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title font-weight-bold"><i class="fas fa-edit mr-2"></i> Edit Produk</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Nama Produk</label>
+                            <input type="text" name="nama_kelas" id="edit_nama_kelas" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Deskripsi</label>
+                            <textarea name="deskripsi" id="edit_deskripsi" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning font-weight-bold"><i class="fas fa-save mr-1"></i> Update Produk</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     {{-- Add User Modal --}}
@@ -360,6 +436,16 @@
                         if (!data.success) alert('Gagal mengubah akses menu role');
                     })
                     .catch(error => console.error('Error:', error));
+            });
+        });
+
+        // Script Edit Kelas
+        document.querySelectorAll('.btn-edit-kelas').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                document.getElementById('edit_nama_kelas').value = this.dataset.nama;
+                document.getElementById('edit_deskripsi').value = this.dataset.deskripsi;
+                document.getElementById('formEditKelas').action = `/admin/kelas/${id}`;
             });
         });
     </script>

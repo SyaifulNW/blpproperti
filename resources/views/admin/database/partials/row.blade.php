@@ -96,10 +96,9 @@
                  data-field="leads" 
                  style="background: transparent !important; color: #000 !important; font-weight: 800; border: 2px solid #000 !important; border-radius: 6px;">
             <option value="">- Pilih Sumber Leads -</option>
-            <option value="Marketing" {{ $item->leads == 'Marketing' ? 'selected' : '' }}>Marketing</option>
-            <option value="Iklan" {{ $item->leads == 'Iklan' ? 'selected' : '' }}>Iklan</option>
-            <option value="Alumni" {{ $item->leads == 'Alumni' ? 'selected' : '' }}>Referal</option>
-            <option value="Mandiri" {{ $item->leads == 'Mandiri' ? 'selected' : '' }}>Mandiri</option>
+            @foreach($leadSources as $ls)
+                <option value="{{ $ls->name }}" {{ $item->leads == $ls->name ? 'selected' : '' }}>{{ $ls->name }}</option>
+            @endforeach
         </select>
     </td>
 

@@ -346,6 +346,9 @@ Route::prefix('admin')->middleware(['auth', 'role:administrator'])->group(functi
     Route::post('/settings/reward', [App\Http\Controllers\Admin\SettingController::class, 'updateReward'])->name('admin.settings.reward.update');
     Route::post('/settings/menus/toggle', [App\Http\Controllers\Admin\SettingController::class, 'toggleMenu'])->name('admin.settings.menus.toggle');
     Route::post('/settings/role-menus/update', [App\Http\Controllers\Admin\SettingController::class, 'updateRoleMenu'])->name('admin.settings.role-menus.update');
+    Route::post('/settings/lead-sources', [App\Http\Controllers\Admin\SettingController::class, 'storeLeadSource'])->name('admin.settings.lead-sources.store');
+    Route::delete('/settings/lead-sources/{id}', [App\Http\Controllers\Admin\SettingController::class, 'destroyLeadSource'])->name('admin.settings.lead-sources.destroy');
+
 
 });
 

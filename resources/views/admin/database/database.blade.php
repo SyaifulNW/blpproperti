@@ -287,11 +287,7 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        @php
-                            $user = auth()->user();
-                            $csList = \App\Models\User::whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi'])->orderBy('name')->get();
-                        @endphp
-
+                        @php $user = auth()->user(); @endphp
                         {{-- Elegant Filter Group --}}
                         <div class="d-flex gap-2">
                             @if((in_array(strtolower($user->role), ['administrator', 'manager']) && $user->name !== 'Agus Setyo') || ($user->name === 'Linda' && request('view') !== 'me'))
@@ -311,6 +307,14 @@
                                 <option value="">-- Survei --</option>
                                 <option value="Ya" {{ request('survei') == 'Ya' ? 'selected' : '' }}>Sudah Survei</option>
                                 <option value="Tidak" {{ request('survei') == 'Tidak' ? 'selected' : '' }}>Belum Survei</option>
+                            </select>
+
+                            <select onchange="updateFilter('sumber', this.value)" 
+                                class="form-select form-select-sm border-radius-50 px-3" style="min-width: 150px;">
+                                <option value="">-- Sumber Leads --</option>
+                                @foreach($leadSources as $ls)
+                                    <option value="{{ $ls->name }}" {{ request('sumber') == $ls->name ? 'selected' : '' }}>{{ $ls->name }}</option>
+                                @endforeach
                             </select>
 
                             <div class="input-group input-group-sm" style="width: auto;">
@@ -383,7 +387,7 @@
                         </thead>
                         <tbody>
                             @foreach($data as $item)
-                                @include('admin.database.partials.row', ['item' => $item, 'loop' => $loop, 'kelas' => $kelas])
+                                @include('admin.database.partials.row', ['item' => $item, 'loop' => $loop, 'kelas' => $kelas, 'leadSources' => $leadSources])
                             @endforeach
                         </tbody>
                     </table>
@@ -727,7 +731,18 @@
                                         <label class="small fw-bold">Hasil Interaksi</label>
                                         <textarea class="form-control spin-hasil mb-2" rows="3">${spin.hasil_fu || ''}</textarea>
                                         <label class="small fw-bold">Tindak Lanjut</label>
-                                        <textarea class="form-control spin-tindak" rows="3">${spin.tindak_lanjut || ''}</textarea>
+                                        <textarea class="form-control spin-tindak mb-3" rows="3">${spin.tindak_lanjut || ''}</textarea>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <label class="border rounded p-2 flex-fill text-center bg-white shadow-sm mb-0" style="cursor: pointer;">
+                                                <div class="small fw-bold text-dark mb-1">WA</div>
+                                                <input class="spin-wa" type="checkbox" style="transform: scale(1.2);" ${spin.wa ? 'checked' : ''}>
+                                            </label>
+                                            <label class="border rounded p-2 flex-fill text-center bg-white shadow-sm mb-0" style="cursor: pointer;">
+                                                <div class="small fw-bold text-dark mb-1">TELP</div>
+                                                <input class="spin-telp" type="checkbox" style="transform: scale(1.2);" ${spin.telp ? 'checked' : ''}>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>`;
                     });
@@ -747,7 +762,18 @@
                                 <label class="small fw-bold text-primary">Hasil Interaksi</label>
                                 <textarea class="form-control spin-hasil mb-2" rows="3" placeholder="Apa hasil interaksi hari ini?"></textarea>
                                 <label class="small fw-bold text-primary">Tindak Lanjut</label>
-                                <textarea class="form-control spin-tindak" rows="3" placeholder="Rencana langkah berikutnya?"></textarea>
+                                <textarea class="form-control spin-tindak mb-3" rows="3" placeholder="Rencana langkah berikutnya?"></textarea>
+
+                                <div class="d-flex gap-2">
+                                    <label class="border rounded p-2 flex-fill text-center bg-white shadow-sm mb-0" style="cursor: pointer;">
+                                        <div class="small fw-bold text-primary mb-1">WA</div>
+                                        <input class="spin-wa" type="checkbox" style="transform: scale(1.2);">
+                                    </label>
+                                    <label class="border rounded p-2 flex-fill text-center bg-white shadow-sm mb-0" style="cursor: pointer;">
+                                        <div class="small fw-bold text-primary mb-1">TELP</div>
+                                        <input class="spin-telp" type="checkbox" style="transform: scale(1.2);">
+                                    </label>
+                                </div>
                             </div>
                         </div>`;
                 $(this).after(newCard);
@@ -761,7 +787,9 @@
                     spins.push({
                         id: $(this).data('spin-id'),
                         hasil_fu: $(this).find('.spin-hasil').val(),
-                        tindak_lanjut: $(this).find('.spin-tindak').val()
+                        tindak_lanjut: $(this).find('.spin-tindak').val(),
+                        wa: $(this).find('.spin-wa').is(':checked') ? 1 : 0,
+                        telp: $(this).find('.spin-telp').is(':checked') ? 1 : 0
                     });
                 });
 

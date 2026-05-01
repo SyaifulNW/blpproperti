@@ -44,9 +44,9 @@
                 </div>
                 @if(in_array(auth()->user()->role, ['administrator', 'manager']))
                 <div class="col-md-3">
-                    <label class="form-label small fw-bold">Input Oleh (CS)</label>
+                    <label class="form-label small fw-bold">Input Oleh (Sales)</label>
                     <select name="created_by" class="form-control form-control-sm">
-                        <option value="">Semua CS</option>
+                        <option value="">Semua Sales</option>
                         @foreach($csList as $cs)
                             <option value="{{ $cs->id }}" {{ $csFilter == $cs->id ? 'selected' : '' }}>{{ $cs->name }}</option>
                         @endforeach
@@ -145,9 +145,9 @@
                                                     </div>
                                                 @endforeach
                                             </div>
-                                            <div class="mt-1">
-                                                <a href="{{ route('admin.kpr.show', $kprP->id) }}" class="btn btn-xs btn-outline-primary py-0" style="font-size: 10px;">
-                                                    <i class="fas fa-eye"></i> Detail
+                                            <div class="mt-2">
+                                                <a href="{{ route('admin.kpr.show', $kprP->id) }}" class="btn btn-sm btn-primary py-1 px-3 shadow-sm" style="font-size: 12px; font-weight: bold; border-radius: 50px;">
+                                                    <i class="fas fa-eye me-1"></i> Detail
                                                 </a>
                                             </div>
                                         @else

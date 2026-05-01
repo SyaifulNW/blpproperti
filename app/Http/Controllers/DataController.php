@@ -30,11 +30,14 @@ class DataController extends Controller
             $newData->save();
 
             $kelas = Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
+            $leadSources = \App\Models\LeadSource::orderBy('name')->get();
+
             // Gunakan view partial yang sama dengan loop utama untuk konsistensi
             $html = view('admin.database.partials.row', [
                 'item' => $newData,
                 'loop' => (object) ['iteration' => 'New'], // Placeholder iteration
-                'kelas' => $kelas
+                'kelas' => $kelas,
+                'leadSources' => $leadSources
             ])->render();
 
             return response()->json(['success' => true, 'html' => $html]);
@@ -67,8 +70,8 @@ class DataController extends Controller
             // Manager hanya boleh lihat Latifah & Tursia
             $csQuery->whereIn('name', ['Latifah', 'Tursia']);
         } elseif ($userRole === 'administrator' || $user->name === 'Agus Setyo' || $user->name === 'Linda') {
-            // Administrator & Agus Setyo & Linda boleh lihat semua CS
-            $csQuery->whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi']);
+            // Administrator & Agus Setyo & Linda boleh lihat semua CS/Sales/Marketing
+            $csQuery->whereIn('role', ['cs', 'CS', 'customer_service', 'cs-mbc', 'cs-smi', 'marketing', 'sales', 'advertising']);
         } else {
             // CS biasa hanya bisa lihat dirinya sendiri
             $csQuery->where('id', $userId);
@@ -165,6 +168,7 @@ class DataController extends Controller
             'target' => $target,
             'kurang' => $kurang,
             'bulanLabel' => $bulanLabel,
+            'leadSources' => \App\Models\LeadSource::orderBy('name')->get(),
         ]);
     }
 
@@ -297,12 +301,11 @@ class DataController extends Controller
 
     public function edit($id)
     {
-        // Fetch the data by ID
-        $data = data::findOrFail($id);
+        $data = Data::findOrFail($id);
+        $kelas = Kelas::orderBy('nama_kelas')->get();
+        $leadSources = \App\Models\LeadSource::orderBy('name')->get();
 
-        $kelas = Kelas::all(); // Fetch all classes for the sidebar
-        // Return a view to edit the data
-        return view('admin.database.edit', compact('data', 'kelas'));
+        return view('admin.database.edit', compact('data', 'kelas', 'leadSources'));
     }
 
     public function update(Request $request, $id)
